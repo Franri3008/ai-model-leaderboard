@@ -1,0 +1,80 @@
+[
+    {
+        "id": "gpt",
+        "name": "GPT",
+        "org": "OpenAI",
+        "color": "#11a37f"
+    },
+    {
+        "id": "claude",
+        "name": "Claude",
+        "org": "Anthropic",
+        "color": "#ff6b36"
+    },
+    {
+        "id": "deepseek",
+        "name": "Deepseek",
+        "org": "Deepseek",
+        "color": "#4e6bfe"
+    },
+    {
+        "id": "gemini",
+        "name": "Gemini",
+        "org": "Google",
+        "color": "#4185f4"
+    },
+    {
+        "id": "grok",
+        "name": "Grok",
+        "org": "xAI",
+        "color": "#000000"
+    },
+    {
+        "id": "meta",
+        "name": "Meta",
+        "org": "Meta",
+        "color": "#0568e2"
+    },
+    {
+        "id": "mistral",
+        "name": "Mistral",
+        "org": "Mistral AI",
+        "color": "#ffaf00"
+    },
+    {
+        "id": "minimax",
+        "name": "MiniMax",
+        "org": "MiniMax",
+        "color": "#f13d5c"
+    },
+    {
+        "id": "moonshot",
+        "name": "Kimi",
+        "org": "Moonshot AI",
+        "color": "#01245a"
+    },
+    {
+        "id": "qwen",
+        "name": "Qwen",
+        "org": "AliBaba",
+        "color": "#8b5cf6"
+    },
+    {
+        "id": "zai",
+        "name": "GLM",
+        "org": "Z.ai",
+        "color": "#000000"
+    },
+    {
+        "id": "nemotron",
+        "name": "Nemotron",
+        "org": "NVIDIA",
+        "color": "#76b900"
+    },
+    {
+        "id": "baidu",
+        "name": "ERNIE",
+        "org": "Baidu",
+        "color": "#2a32e3"
+    }
+]

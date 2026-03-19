@@ -1,0 +1,422 @@
+[
+    {
+        "model": "gemini-3-1-pro",
+        "name": "Gemini 3.1 Pro (Preview)",
+        "logo": "gemini",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "gemini-3.1-pro-preview",
+        "aa_lookup": "Gemini 3.1 Pro Preview",
+        "lb_lookup": "Gemini 3.1 Pro Preview High**5th rank in unseen questions across all categories"
+    },
+    {
+        "model": "gemini-3-pro",
+        "name": "Gemini 3 Pro",
+        "logo": "gemini",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "gemini-3-pro",
+        "aa_lookup": "Gemini 3 Pro Preview (high)",
+        "lb_lookup": "Gemini 3 Pro Preview High"
+    },
+    {
+        "model": "gemini-3-flash",
+        "name": "Gemini 3 Flash",
+        "logo": "gemini",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "gemini-3-flash",
+        "aa_lookup": "Gemini 3 Flash",
+        "lb_lookup": "Gemini 3 Flash Preview High"
+    },
+    {
+        "model": "gemini-2-5-pro",
+        "name": "Gemini 2.5 Pro",
+        "logo": "gemini",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "gemini-2.5-pro",
+        "aa_lookup": "Gemini 2.5 Pro",
+        "lb_lookup": "Gemini 2.5 Pro (Max Thinking)"
+    },
+    {
+        "model": "gemini-2-5-flash",
+        "name": "Gemini 2.5 Flash",
+        "logo": "gemini",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "gemini-2.5-flash",
+        "aa_lookup": "Gemini 2.5 Flash (Sep)",
+        "lb_lookup": "Gemini 2.5 Flash (Max Thinking) (2025-09-25)"
+    },
+    {
+        "model": "claude-opus-4-6-thinking",
+        "name": "Claude Opus 4.6 (Thinking)",
+        "logo": "claude",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "claude-opus-4-6-thinking",
+        "aa_lookup": "Claude Opus 4.6 (max)",
+        "lb_lookup": "Claude 4.6 Opus Thinking High Effort"
+    },
+    {
+        "model": "claude-sonnet-4-6-thinking",
+        "name": "Claude Sonnet 4.6 (Thinking)",
+        "logo": "claude",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "claude-sonnet-4-6",
+        "aa_lookup": "Claude Sonnet 4.6 (max)",
+        "lb_lookup": "Claude 4.6 Sonnet Thinking Medium Effort"
+    },
+    {
+        "model": "claude-opus-4-5-thinking",
+        "name": "Claude Opus 4.5 (Thinking)",
+        "logo": "claude",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "claude-opus-4-5-20251101-thinking-32k",
+        "aa_lookup": "Claude Opus 4.5",
+        "lb_lookup": "Claude 4.5 Opus Thinking High Effort"
+    },
+    {
+        "model": "claude-sonnet-4-5-thinking",
+        "name": "Claude Sonnet 4.5 (Thinking)",
+        "logo": "claude",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "claude-sonnet-4-5-20250929-thinking-32k",
+        "aa_lookup": "Claude 4.5 Sonnet",
+        "lb_lookup": "Claude Sonnet 4.5 Thinking"
+    },
+    {
+        "model": "claude-opus-4-1",
+        "name": "Claude Opus 4.1",
+        "logo": "claude",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "claude-opus-4-1-20250805",
+        "aa_lookup": "Claude 4.1 Opus",
+        "lb_lookup": "Claude 4.1 Opus Thinking"
+    },
+    {
+        "model": "claude-haiku-4-5",
+        "name": "Claude Haiku 4.5",
+        "logo": "claude",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "claude-haiku-4-5-20251001",
+        "aa_lookup": "Claude 4.5 Haiku",
+        "lb_lookup": "Claude Haiku 4.5 Thinking"
+    },
+    {
+        "model": "gpt-5.4",
+        "name": "GPT-5.4 (Thinking)",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "gpt-5.4-high",
+        "aa_lookup": "GPT-5.4 (xhigh)",
+        "lb_lookup": "GPT-5.4 Thinking xHigh Effort"
+    },
+    {
+        "model": "gpt-5.2",
+        "name": "GPT-5.2 (Thinking)",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "gpt-5.2-high",
+        "aa_lookup": "GPT-5.2 (xhigh)",
+        "lb_lookup": "GPT-5.2 High"
+    },
+    {
+        "model": "gpt-5-1",
+        "name": "GPT-5.1 (Thinking)",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "gpt-5.1-high",
+        "aa_lookup": "GPT-5.1 (high)",
+        "lb_lookup": "GPT-5.1 High"
+    },
+    {
+        "model": "gpt-5-high",
+        "name": "GPT-5 (Thinking)",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "gpt-5-high",
+        "aa_lookup": "GPT-5 (high)",
+        "lb_lookup": "GPT-5 Pro"
+    },
+    {
+        "model": "o3-2025-04-16",
+        "name": "o3",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "o3-2025-04-16",
+        "aa_lookup": "o3",
+        "lb_lookup": null
+    },
+    {
+        "model": "gpt-5-mini",
+        "name": "GPT-5 Mini",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "gpt-5-mini-high",
+        "aa_lookup": "GPT-5 mini (high)",
+        "lb_lookup": "GPT-5 Mini High"
+    },
+    {
+        "model": "gpt-5-nano",
+        "name": "GPT-5 Nano",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "gpt-5-nano-high",
+        "aa_lookup": "GPT-5 nano (high)",
+        "lb_lookup": "GPT-5 Nano"
+    },
+    {
+        "model": "gpt-oss",
+        "name": "GPT-OSS",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 1,
+        "lma_lookup": "gpt-oss-120b",
+        "aa_lookup": "gpt-oss-120B (high)",
+        "lb_lookup": "GPT OSS 120b"
+    },
+    {
+        "model": "glm-5",
+        "name": "GLM 5",
+        "logo": "zai",
+        "geo": "China",
+        "os": 1,
+        "lma_lookup": "glm-5",
+        "aa_lookup": "GLM-5",
+        "lb_lookup": "GLM 5"
+    },
+    {
+        "model": "glm-4-7",
+        "name": "GLM 4.7",
+        "logo": "zai",
+        "geo": "China",
+        "os": 1,
+        "lma_lookup": "glm-4.7",
+        "aa_lookup": "GLM-4.7",
+        "lb_lookup": "GLM 4.7"
+    },
+    {
+        "model": "glm-4-6",
+        "name": "GLM 4.6",
+        "logo": "zai",
+        "geo": "China",
+        "os": 1,
+        "lma_lookup": "glm-4.6",
+        "aa_lookup": "GLM-4.6",
+        "lb_lookup": "GLM 4.6"
+    },
+    {
+        "model": "glm-4-5-air",
+        "name": "GLM 4.5 Air",
+        "logo": "zai",
+        "geo": "China",
+        "os": 1,
+        "lma_lookup": null,
+        "aa_lookup": null,
+        "lb_lookup": null
+    },
+    {
+        "model": "qwen3-5",
+        "name": "Qwen 3.5",
+        "logo": "qwen",
+        "geo": "China",
+        "os": 1,
+        "lma_lookup": "qwen3.5-397b-a17b",
+        "aa_lookup": "Qwen3.5 397B A17B",
+        "lb_lookup": null
+    },
+    {
+        "model": "qwen3-max",
+        "name": "Qwen 3 Max",
+        "logo": "qwen",
+        "geo": "China",
+        "os": 1,
+        "lma_lookup": "qwen3-max-2025-09-23",
+        "aa_lookup": "Qwen3 235B A22B 2507",
+        "lb_lookup": "Qwen 3 235B A22B Thinking 2507"
+    },
+    {
+        "model": "deepseek-v3-2-exp-thinking",
+        "name": "DeepSeek v3.2 (Thinking)",
+        "logo": "deepseek",
+        "geo": "China",
+        "os": 1,
+        "lma_lookup": "deepseek-v3.2-thinking",
+        "aa_lookup": "DeepSeek V3.2",
+        "lb_lookup": "DeepSeek V3.2 Thinking"
+    },
+    {
+        "model": "grok-4-20",
+        "name": "Grok 4.20 (Beta)",
+        "logo": "grok",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "grok-4.20-beta1",
+        "aa_lookup": "Grok 4.20 Beta 0309",
+        "lb_lookup": "Grok 4.20 Beta"
+    },
+    {
+        "model": "grok-4-1-thinking",
+        "name": "Grok 4.1 (Thinking)",
+        "logo": "grok",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "grok-4.1-thinking",
+        "aa_lookup": null,
+        "lb_lookup": null
+    },
+    {
+        "model": "grok-4-1-fast",
+        "name": "Grok 4.1 Fast",
+        "logo": "grok",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "grok-4-1-fast-reasoning",
+        "aa_lookup": "Grok 4.1 Fast",
+        "lb_lookup": "Grok 4.1 Fast"
+    },
+    {
+        "model": "grok-4",
+        "name": "Grok 4",
+        "logo": "grok",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": null,
+        "aa_lookup": null,
+        "lb_lookup": null
+    },
+    {
+        "model": "mistral-medium-2508",
+        "name": "Mistral",
+        "logo": "mistral",
+        "geo": "France",
+        "os": 0,
+        "lma_lookup": null,
+        "aa_lookup": null,
+        "lb_lookup": null
+    },
+    {
+        "model": "magistral-medium",
+        "name": "Magistral Medium",
+        "logo": "mistral",
+        "geo": "France",
+        "os": 0,
+        "lma_lookup": "magistral-medium-2506",
+        "aa_lookup": "Magistral Medium 1.2",
+        "lb_lookup": null
+    },
+    {
+        "model": "llama-4-maverick-17b-128e-instruct",
+        "name": "Llama 4 Maverick",
+        "logo": "meta",
+        "geo": "US",
+        "os": 1,
+        "lma_lookup": null,
+        "aa_lookup": null,
+        "lb_lookup": null
+    },
+    {
+        "model": "nemotron-3-super",
+        "name": "Nemotron 3 Super",
+        "logo": "nemotron",
+        "geo": "US",
+        "os": 1,
+        "lma_lookup": "nvidia-nemotron-3-super-120b-a12b",
+        "aa_lookup": "NVIDIA Nemotron 3 Super",
+        "lb_lookup": null
+    },
+    {
+        "model": "nemotron-ultra-v1",
+        "name": "Nemotron Ultra v1",
+        "logo": "nemotron",
+        "geo": "US",
+        "os": 1,
+        "lma_lookup": "llama-3.1-nemotron-ultra-253b-v1",
+        "aa_lookup": "Llama Nemotron Ultra",
+        "lb_lookup": null
+    },
+    {
+        "model": "nemotron-super-v1-5",
+        "name": "Nemotron Super v1.5",
+        "logo": "nemotron",
+        "geo": "US",
+        "os": 1,
+        "lma_lookup": "nvidia-llama-3.3-nemotron-super-49b-v1.5",
+        "aa_lookup": "Llama Nemotron Super 49B v1.5",
+        "lb_lookup": null
+    },
+    {
+        "model": "nemotron-3-nano",
+        "name": "Nemotron 3 Nano",
+        "logo": "nemotron",
+        "geo": "US",
+        "os": 1,
+        "lma_lookup": "nvidia-nemotron-3-nano-30b-a3b-bf16",
+        "aa_lookup": "NVIDIA Nemotron 3 Nano",
+        "lb_lookup": null
+    },
+    {
+        "model": "minimax-m2-7",
+        "name": "MiniMax M2.7",
+        "logo": "minimax",
+        "geo": "China",
+        "os": 1,
+        "lma_lookup": "minimax-m2.7",
+        "aa_lookup": "MiniMax-M2.7",
+        "lb_lookup": null
+    },
+    {
+        "model": "minimax-m2-5",
+        "name": "MiniMax M2.5",
+        "logo": "minimax",
+        "geo": "China",
+        "os": 1,
+        "lma_lookup": "minimax-m2.5",
+        "aa_lookup": "Minimax-M2.5",
+        "lb_lookup": "Minimax M2.5"
+    },
+    {
+        "model": "ernie-5.0",
+        "name": "ERNIE 5.0",
+        "logo": "baidu",
+        "geo": "China",
+        "os": 0,
+        "lma_lookup": "ernie-5.0-0110",
+        "aa_lookup": "ERNIE 5.0 Thinking Preview",
+        "lb_lookup": null
+    },
+    {
+        "model": "kimi-k2-5-thinking",
+        "name": "Kimi K2.5 (Thinking)",
+        "logo": "moonshot",
+        "geo": "China",
+        "os": 1,
+        "lma_lookup": "kimi-k2.5-thinking",
+        "aa_lookup": "Kimi K2.5",
+        "lb_lookup": "Kimi K2.5 Thinking"
+    },
+    {
+        "model": "kimi-k2-thinking",
+        "name": "Kimi-K2 (Thinking)",
+        "logo": "moonshot",
+        "geo": "China",
+        "os": 1,
+        "lma_lookup": "kimi-k2-thinking-turbo",
+        "aa_lookup": "Kimi K2 Thinking",
+        "lb_lookup": "Kimi K2 Thinking"
+    }
+]
