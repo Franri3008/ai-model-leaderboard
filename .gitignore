@@ -2,3 +2,18 @@ data/scraped/
 __pycache__/
 *.pyc
 .env
+
+*.pyo
+*.pyd
+*.log
+
+venv/
+.venv/
+env/
+
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+._*
