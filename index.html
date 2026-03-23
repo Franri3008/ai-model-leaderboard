@@ -845,10 +845,15 @@
       let rows;
 
       if (active.question === 'ALL') {
-        // Hard-coded baseline values (GPT-5)
-        const maxLma = 1434;
-        const maxAa = 45;
-        const maxLb = 70.48;
+        const gpt5 = rawData.find(d => d.model === 'gpt-5-high' || d.name === 'GPT-5 (Thinking)');
+        
+        if (!gpt5) {
+          alert("CRITICAL ERROR: GPT-5 baseline data is missing from the scraping results!");
+        }
+
+        const maxLma = gpt5 ? parseNum(gpt5.lma) : 1434;
+        const maxAa = gpt5 ? parseNum(gpt5.aa) : 45;
+        const maxLb = gpt5 ? parseNum(gpt5.lb) : 70.48;
 
         rows = rawData.map(d => {
           const model = String(d.model || '').trim();
