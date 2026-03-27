@@ -1,5 +1,5 @@
 NEW MODEL ALERTS REPORT
-Generated on: 2026-03-26 23:31:35
+Generated on: 2026-03-27 23:31:23
 ======================================================================
 
 [LMArena - TOP 30]
@@ -26,7 +26,7 @@ RANK  SCORE    TRACKED?             MODEL NAME
 19    1461.0   [NO] !!!             grok-4.1
 20    1456.0   [YES]                glm-5
 21    1455.0   [YES]                gpt-5.1-high
-22    1454.0   [NO] !!! [NEW]       gpt-5.4-mini-high
+22    1454.0   [NO] !!!             gpt-5.4-mini-high
 23    1454.0   [YES]                kimi-k2.5-thinking
 24    1453.0   [YES]                claude-sonnet-4-5-20250929-thinking-32k
 25    1453.0   [NO] !!!             claude-sonnet-4-5-20250929
