@@ -1,5 +1,5 @@
 NEW MODEL ALERTS REPORT
-Generated on: 2026-03-29 23:31:33
+Generated on: 2026-03-30 23:33:50
 ======================================================================
 
 [LMArena - TOP 30]
@@ -60,15 +60,15 @@ RANK  SCORE    TRACKED?             MODEL NAME
 19    46.0     [NO] !!!             Claude Opus 4.6
 20    46.0     [YES]                Gemini 3 Flash
 21    45.0     [YES]                Qwen3.5 397B A17B
-22    45.0     [YES]                GPT-5 (high)
-23    45.0     [NO] !!!             GPT-5 Codex (high)
+22    45.0     [NO] !!!             GPT-5 Codex (high)
+23    45.0     [YES]                GPT-5 (high)
 24    44.0     [NO] !!!             GPT-5.4 nano (xhigh)
 25    44.0     [NO] !!!             Claude Sonnet 4.6
-26    43.0     [NO] !!!             MiMo-V2-Omni
-27    43.0     [NO] !!!             GPT-5.1 Codex (high)
-28    43.0     [YES]                Claude Opus 4.5
-29    43.0     [YES]                Claude 4.5 Sonnet
-30    43.0     [NO] !!!             Claude Sonnet 4.6 (Non-reasoning, Low Effort)
+26    44.0     [NO] !!! [NEW]       KAT Coder Pro V2
+27    43.0     [NO] !!!             MiMo-V2-Omni
+28    43.0     [NO] !!!             GPT-5.1 Codex (high)
+29    43.0     [YES]                Claude Opus 4.5
+30    43.0     [YES]                Claude 4.5 Sonnet
 
 [LiveBench - TOP 30]
 RANK  SCORE    TRACKED?             MODEL NAME
