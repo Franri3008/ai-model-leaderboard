@@ -297,11 +297,11 @@ print_step("Launching headless Chrome browser...")
 driver = get_chrome_driver();
 print_step("Loading page and waiting for table to render...")
 driver.get("https://artificialanalysis.ai/leaderboards/models?deprecation=all");
-WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, "table.w-full.caption-bottom.text-sm.rounded")));
-print_step("Parsing rendered HTML...")
+WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, "table.w-full.caption-bottom.text-sm")));
+print_step("Parsing rendered HTML...");
 soup = BeautifulSoup(driver.page_source, "html.parser");
 driver.quit();
-table = soup.select_one("table.w-full.caption-bottom.text-sm.rounded");
+table = soup.select_one("table.w-full.caption-bottom.text-sm");
 if not table:
     raise RuntimeError("ArtificialAnalysis table not found")
 aa_df = extract_table_data(table, skip_first_empty=True);
