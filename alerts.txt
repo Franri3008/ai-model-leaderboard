@@ -1,105 +1,91 @@
 NEW MODEL ALERTS REPORT
-Generated on: 2026-03-30 23:33:50
+Generated on: 2026-04-01 17:33:20
 ======================================================================
 
-[LMArena - TOP 30]
-RANK  SCORE    TRACKED?             MODEL NAME
-----------------------------------------------------------------------
-1     1504.0   [YES]                claude-opus-4-6-thinking
-2     1500.0   [NO] !!!             claude-opus-4-6
-3     1493.0   [YES]                gemini-3.1-pro-preview
-4     1491.0   [YES]                grok-4.20-beta1
-5     1486.0   [YES]                gemini-3-pro
-6     1484.0   [YES]                gpt-5.4-high
-7     1483.0   [NO] !!!             grok-4.20-beta-0309-reasoning
-8     1480.0   [NO] !!!             gpt-5.2-chat-latest-20260210
-9     1474.0   [YES]                gemini-3-flash
-10    1474.0   [YES]                claude-opus-4-5-20251101-thinking-32k
-11    1471.0   [YES]                grok-4.1-thinking
-12    1468.0   [NO] !!!             claude-opus-4-5-20251101
-13    1466.0   [NO] !!!             gpt-5.4
-14    1465.0   [NO] !!!             qwen3.5-max-preview
-15    1464.0   [NO] !!!             gpt-5.3-chat-latest
-16    1463.0   [YES]                gemini-3-flash (thinking-minimal)
-17    1463.0   [YES]                claude-sonnet-4-6
-18    1463.0   [NO] !!!             dola-seed-2.0-preview
-19    1461.0   [NO] !!!             grok-4.1
-20    1456.0   [YES]                glm-5
-21    1455.0   [YES]                gpt-5.1-high
-22    1454.0   [NO] !!!             gpt-5.4-mini-high
-23    1454.0   [YES]                kimi-k2.5-thinking
-24    1453.0   [YES]                claude-sonnet-4-5-20250929-thinking-32k
-25    1453.0   [NO] !!!             claude-sonnet-4-5-20250929
-26    1452.0   [YES]                ernie-5.0-0110
-27    1450.0   [YES]                qwen3.5-397b-a17b
-28    1450.0   [NO] !!!             ernie-5.0-preview-1203
-29    1449.0   [YES]                claude-opus-4-1-20250805-thinking-16k
-30    1448.0   [YES]                gemini-2.5-pro
+[NEW] grok-4.20-beta-0309-reasoning
+    First seen: 2026-04-01
+    Matches: LMArena: 'grok-4.20-beta-0309-reasoning' (Rank 7)
 
-[Artificial Analysis - TOP 30]
-RANK  SCORE    TRACKED?             MODEL NAME
-----------------------------------------------------------------------
-1     57.0     [YES]                Gemini 3.1 Pro Preview
-2     57.0     [YES]                GPT-5.4 (xhigh)
-3     54.0     [NO] !!!             GPT-5.3 Codex (xhigh)
-4     53.0     [YES]                Claude Opus 4.6 (max)
-5     52.0     [YES]                Claude Sonnet 4.6 (max)
-6     51.0     [YES]                GPT-5.2 (xhigh)
-7     50.0     [YES]                GLM-5
-8     50.0     [YES]                Claude Opus 4.5
-9     50.0     [YES]                MiniMax-M2.7
-10    49.0     [NO] !!!             MiMo-V2-Pro
-11    49.0     [NO] !!!             GPT-5.2 Codex (xhigh)
-12    48.0     [YES]                Grok 4.20 Beta 0309
-13    48.0     [YES]                Gemini 3 Pro Preview (high)
-14    48.0     [NO] !!!             GPT-5.4 mini (xhigh)
-15    48.0     [YES]                GPT-5.1 (high)
-16    47.0     [YES]                Kimi K2.5
-17    47.0     [YES]                GLM-5-Turbo
-18    47.0     [NO] !!!             GPT-5.2 (medium)
-19    46.0     [NO] !!!             Claude Opus 4.6
-20    46.0     [YES]                Gemini 3 Flash
-21    45.0     [YES]                Qwen3.5 397B A17B
-22    45.0     [NO] !!!             GPT-5 Codex (high)
-23    45.0     [YES]                GPT-5 (high)
-24    44.0     [NO] !!!             GPT-5.4 nano (xhigh)
-25    44.0     [NO] !!!             Claude Sonnet 4.6
-26    44.0     [NO] !!! [NEW]       KAT Coder Pro V2
-27    43.0     [NO] !!!             MiMo-V2-Omni
-28    43.0     [NO] !!!             GPT-5.1 Codex (high)
-29    43.0     [YES]                Claude Opus 4.5
-30    43.0     [YES]                Claude 4.5 Sonnet
+[NEW] gpt-5.2-chat-latest-20260210
+    First seen: 2026-04-01
+    Matches: LMArena: 'gpt-5.2-chat-latest-20260210' (Rank 8)
 
-[LiveBench - TOP 30]
-RANK  SCORE    TRACKED?             MODEL NAME
-----------------------------------------------------------------------
-1     80.28    [YES]                GPT-5.4 Thinking xHigh Effort
-2     79.93    [YES]                Gemini 3.1 Pro Preview High**5th rank in unseen questions across all categories
-3     76.33    [YES]                Claude 4.6 Opus Thinking High Effort
-4     75.96    [YES]                Claude 4.5 Opus Thinking High Effort
-5     75.47    [YES]                Claude 4.6 Sonnet Thinking Medium Effort
-6     74.84    [YES]                GPT-5.2 High
-7     74.3     [NO] !!!             GPT-5.2 Codex
-8     73.98    [NO] !!!             GPT-5.1 Codex Max High
-9     73.39    [YES]                Gemini 3 Pro Preview High
-10    72.76    [NO] !!!             GPT-5.3 Codex High
-11    72.4     [YES]                Gemini 3 Flash Preview High
-12    72.04    [YES]                GPT-5.1 High
-13    70.48    [YES]                GPT-5 Pro
-14    70.13    [NO] !!!             GPT-5.4 Nano xHigh
-15    69.07    [YES]                Kimi K2.5 Thinking
-16    68.85    [YES]                GLM 5
-17    68.61    [NO] !!!             GPT-5.1 Codex
-18    68.19    [YES]                Claude Sonnet 4.5 Thinking
-19    67.96    [YES]                Grok 4.20 Beta
-20    67.54    [NO] !!!             GPT-5.4 Mini xHigh
-21    65.91    [YES]                GPT-5 Mini High
-22    63.49    [NO] !!!             Minimax M2.7
-23    62.2     [YES]                DeepSeek V3.2 Thinking
-24    62.02    [NO] !!!             Grok 4
-25    61.81    [YES]                Claude 4.1 Opus Thinking
-26    61.68    [NO] !!!             Gemini 3.1 Flash Lite Preview High
-27    61.59    [YES]                Kimi K2 Thinking
-28    61.32    [YES]                Claude Haiku 4.5 Thinking
-29    61.27    [NO] !!!             Claude 4 Sonnet Thinking
-30    60.38    [NO] !!!             GPT-5.1 Codex Mini
+[NEW] grok-4.20-multi-agent-beta-0309
+    First seen: 2026-04-01
+    Matches: LMArena: 'grok-4.20-multi-agent-beta-0309' (Rank 11)
+
+[NEW] claude-opus-4-5-20251101
+    First seen: 2026-04-01
+    Matches: LMArena: 'claude-opus-4-5-20251101' (Rank 13)
+
+[NEW] qwen3.5-max-preview
+    First seen: 2026-04-01
+    Matches: LMArena: 'qwen3.5-max-preview' (Rank 14)
+
+[NEW] dola-seed-2.0-preview
+    First seen: 2026-04-01
+    Matches: LMArena: 'dola-seed-2.0-preview' (Rank 17)
+
+[NEW] gpt-5.3-chat-latest
+    First seen: 2026-04-01
+    Matches: LMArena: 'gpt-5.3-chat-latest' (Rank 20)
+
+[NEW] gpt-5.4-mini-high
+    First seen: 2026-04-01
+    Matches: LMArena: 'gpt-5.4-mini-high' (Rank 22), Artificial Analysis: 'GPT-5.4 mini (xhigh)' (Rank 12), LiveBench: 'GPT-5.4 Mini xHigh' (Rank 20)
+
+[NEW] claude-sonnet-4-5-20250929
+    First seen: 2026-04-01
+    Matches: LMArena: 'claude-sonnet-4-5-20250929' (Rank 25)
+
+[NEW] ernie-5.0-preview-1203
+    First seen: 2026-04-01
+    Matches: LMArena: 'ernie-5.0-preview-1203' (Rank 28)
+
+[NEW] GPT-5.3 Codex (xhigh)
+    First seen: 2026-04-01
+    Matches: Artificial Analysis: 'GPT-5.3 Codex (xhigh)' (Rank 3), Artificial Analysis: 'GPT-5.2 Codex (xhigh)' (Rank 11), Artificial Analysis: 'GPT-5 Codex (high)' (Rank 22), Artificial Analysis: 'GPT-5.1 Codex (high)' (Rank 26), LiveBench: 'GPT-5.3 Codex High' (Rank 10)
+
+[NEW] MiMo-V2-Pro
+    First seen: 2026-04-01
+    Matches: Artificial Analysis: 'MiMo-V2-Pro' (Rank 10)
+
+[NEW] GPT-5.2 (medium)
+    First seen: 2026-04-01
+    Matches: Artificial Analysis: 'GPT-5.2 (medium)' (Rank 18)
+
+[NEW] GPT-5.4 nano (xhigh)
+    First seen: 2026-04-01
+    Matches: Artificial Analysis: 'GPT-5.4 nano (xhigh)' (Rank 25), LiveBench: 'GPT-5.4 Nano xHigh' (Rank 14)
+
+[NEW] Claude Sonnet 4.6 (Non-reasoning, Low Effort)
+    First seen: 2026-04-01
+    Matches: Artificial Analysis: 'Claude Sonnet 4.6 (Non-reasoning, Low Effort)' (Rank 29)
+
+[NEW] MiMo-V2-Omni
+    First seen: 2026-04-01
+    Matches: Artificial Analysis: 'MiMo-V2-Omni' (Rank 30)
+
+[NEW] GPT-5.2 Codex
+    First seen: 2026-04-01
+    Matches: LiveBench: 'GPT-5.2 Codex' (Rank 7), LiveBench: 'GPT-5.1 Codex' (Rank 17)
+
+[NEW] GPT-5.1 Codex Max High
+    First seen: 2026-04-01
+    Matches: LiveBench: 'GPT-5.1 Codex Max High' (Rank 8)
+
+[NEW] Minimax M2.7
+    First seen: 2026-04-01
+    Matches: LiveBench: 'Minimax M2.7' (Rank 22)
+
+[NEW] Gemini 3.1 Flash Lite Preview High
+    First seen: 2026-04-01
+    Matches: LiveBench: 'Gemini 3.1 Flash Lite Preview High' (Rank 26)
+
+[NEW] Claude 4 Sonnet Thinking
+    First seen: 2026-04-01
+    Matches: LiveBench: 'Claude 4 Sonnet Thinking' (Rank 29)
+
+[NEW] GPT-5.1 Codex Mini
+    First seen: 2026-04-01
+    Matches: LiveBench: 'GPT-5.1 Codex Mini' (Rank 30)

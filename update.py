@@ -14,6 +14,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from rapidfuzz import process, fuzz
 
 BASE_DIR = Path(__file__).parent.absolute()
 STRIP_SELECTORS = "svg,img,picture,source,use,i,[aria-hidden='true'],*[hidden],.sr-only,.sr_only,.srOnly,.visually-hidden,[class*='icon'],i[class*='fa-']"
@@ -27,6 +28,13 @@ def print_step(message, level="INFO"):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S");
     prefix = ">>>" if level == "INFO" else "***";
     print(f"\n{prefix} [{timestamp}] {message}")
+
+def normalize_model_name(name):
+    norm = str(name).lower();
+    norm = re.sub(r'^(meta|google|anthropic|mistral|openai)[-\s/]+', '', norm);
+    norm = re.sub(r'[-_\s\(]+(instruct|chat|hf|v\.?\d+)\)?$', '', norm);
+    norm = re.sub(r'[\s\.\-_]+', '', norm);
+    return norm
 
 def extract_numeric_score(score_value):
     if pd.isna(score_value):
@@ -118,66 +126,10 @@ def check_tracking_status(model_name, fixed_df, lookup_col):
                 return True, row['name'];
     return False, None
 
-def parse_previous_alerts(file_path):
-    if not file_path.exists():
-        return {}
-
-    previous_data = {};
-    current_section = None;
-
-    try:
-        with open(file_path, "r", encoding='utf-8') as f:
-            lines = f.readlines();
-
-        for line in lines:
-            line = line.strip();
-            if not line:
-                continue;
-
-            if line.startswith("[") and "TOP" in line:
-                if "LMArena" in line:
-                    current_section = "LMArena";
-                elif "Artificial Analysis" in line:
-                    current_section = "Artificial Analysis";
-                elif "LiveBench" in line:
-                    current_section = "LiveBench";
-                else:
-                    current_section = None;
-
-                if current_section and current_section not in previous_data:
-                    previous_data[current_section] = set();
-                continue;
-
-            if not current_section:
-                continue;
-            if "RANK" in line or "---" in line:
-                continue;
-
-            model_name = None;
-            if "[YES]" in line:
-                parts = line.split("[YES]");
-                if len(parts) > 1:
-                    raw = parts[1];
-                    raw = raw.replace("[NEW]", "").strip();
-                    model_name = raw;
-            elif "[NO]" in line:
-                parts = line.split("[NO]");
-                if len(parts) > 1:
-                    raw = parts[1];
-                    raw = raw.replace("!!!", "").replace("[NEW]", "").strip();
-                    model_name = raw;
-
-            if model_name:
-                previous_data[current_section].add(model_name);
-
-    except Exception as e:
-        print_step(f"Warning: Could not parse previous alerts: {e}", "WARNING");
-
-    return previous_data
-
-def analyze_top_models(df, source_name, score_keywords, fixed_df, lookup_col, top_n=30, previous_models=None):
+def get_untracked_models(df, source_name, score_keywords, fixed_df, lookup_col, top_n=30):
+    untracked = [];
     if df is None or df.empty:
-        return f"\n[{source_name}] - NO DATA AVAILABLE\n"
+        return untracked
 
     model_col = None;
     for col in df.columns:
@@ -194,34 +146,27 @@ def analyze_top_models(df, source_name, score_keywords, fixed_df, lookup_col, to
             break;
 
     if not score_col:
-        return f"\n[{source_name}] - COULD NOT IDENTIFY SCORE COLUMN\n"
+        return untracked
 
     df = df.copy();
     df['__numeric_score'] = df[score_col].apply(lambda x: float(extract_numeric_score(x) or 0));
 
     top_models = df.sort_values('__numeric_score', ascending=False).head(top_n);
 
-    report = [f"\n[{source_name} - TOP {top_n}]"];
-    report.append(f"{'RANK':<5} {'SCORE':<8} {'TRACKED?':<20} {'MODEL NAME'}");
-    report.append("-" * 70);
-
     for rank, (idx, row) in enumerate(top_models.iterrows(), 1):
         raw_name = str(row[model_col]).strip();
-        score = row['__numeric_score'];
-        is_tracked, tracked_name = check_tracking_status(raw_name, fixed_df, lookup_col);
+        is_tracked, _ = check_tracking_status(raw_name, fixed_df, lookup_col);
 
-        if is_tracked:
-            status = "[YES]";
-        else:
-            status = "[NO] !!!";
+        if not is_tracked:
+            untracked.append({
+                "source": source_name,
+                "raw_name": raw_name,
+                "norm_name": normalize_model_name(raw_name),
+                "rank": rank,
+                "score": row['__numeric_score']
+            });
 
-        if previous_models is not None:
-            if raw_name not in previous_models:
-                status += " [NEW]";
-
-        report.append(f"{rank:<5} {score:<8} {status:<20} {raw_name}");
-
-    return "\n".join(report)
+    return untracked
 
 def append_history(result, history_file):
     today = datetime.now().strftime("%Y-%m-%d");
@@ -456,30 +401,93 @@ print("\n" + "=" * 80)
 print_step("GENERATING NEW MODEL ALERTS", "START")
 print("=" * 80)
 
-print_step("Reading previous alerts to detect new models...")
-previous_alerts_file = BASE_DIR / "alerts.txt";
-previous_models_map = parse_previous_alerts(previous_alerts_file);
+print_step("Collecting untracked models across sources...")
+untracked_list = [];
+untracked_list.extend(get_untracked_models(lma_df, "LMArena", ['arena', 'elo', 'score', 'rating'], fixed_df, 'lma_lookup', top_n=30));
+untracked_list.extend(get_untracked_models(aa_df, "Artificial Analysis", ['quality', 'score', 'index'], fixed_df, 'aa_lookup', top_n=30));
+untracked_list.extend(get_untracked_models(lb_df, "LiveBench", ['average', 'overall', 'total', 'score'], fixed_df, 'lb_lookup', top_n=30));
+
+print_step("Grouping untracked models using fuzzy matching...")
+grouped_models = [];
+for model in untracked_list:
+    found_group = False;
+    for group in grouped_models:
+        if fuzz.token_sort_ratio(model["norm_name"], group["norm_name"]) > 85:
+            group["instances"].append(model);
+            found_group = True;
+            break;
+    if not found_group:
+        grouped_models.append({
+            "norm_name": model["norm_name"],
+            "instances": [model]
+        });
+
+print_step("Filtering out weaker versions of tracked models...");
+filtered_groups = [];
+for group in grouped_models:
+    untracked_norm = group["norm_name"];
+    is_weaker_version = False;
+    for idx, row in fixed_df.iterrows():
+        tracked_name = str(row['name']).lower();
+        if "thinking" in tracked_name or "reasoning" in tracked_name:
+            tracked_base = tracked_name.replace("(thinking)", "").replace("thinking", "").replace("(reasoning)", "").replace("reasoning", "").strip();
+            tracked_base_norm = normalize_model_name(tracked_base);
+            if fuzz.token_sort_ratio(untracked_norm, tracked_base_norm) > 85:
+                is_weaker_version = True;
+                break;
+    if not is_weaker_version:
+        filtered_groups.append(group);
+
+grouped_models = filtered_groups;
+
+untracked_file = BASE_DIR / "data/untracked_models.json";
+if untracked_file.exists():
+    with open(untracked_file, "r") as f:
+        history_untracked = json.load(f);
+else:
+    history_untracked = {};
+
+today_str = datetime.now().strftime("%Y-%m-%d");
+today_date = datetime.strptime(today_str, "%Y-%m-%d");
 
 alerts_output = [];
 alerts_output.append("NEW MODEL ALERTS REPORT");
 alerts_output.append(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}");
 alerts_output.append("=" * 70);
+alerts_output.append("");
 
-print_step("Analyzing LMArena Top 30...");
-prev_lma = previous_models_map.get("LMArena", set());
-alerts_output.append(analyze_top_models(lma_df, "LMArena", ['arena', 'elo', 'score', 'rating'], fixed_df, 'lma_lookup', top_n=30, previous_models=prev_lma));
+new_models_count = 0;
 
-print_step("Analyzing Artificial Analysis Top 30...");
-prev_aa = previous_models_map.get("Artificial Analysis", set());
-alerts_output.append(analyze_top_models(aa_df, "Artificial Analysis", ['quality', 'score', 'index'], fixed_df, 'aa_lookup', top_n=30, previous_models=prev_aa));
+for group in grouped_models:
+    norm_name = group["norm_name"];
+    if norm_name not in history_untracked:
+        history_untracked[norm_name] = today_str;
+    
+    first_seen_str = history_untracked[norm_name];
+    first_seen_date = datetime.strptime(first_seen_str, "%Y-%m-%d");
+    days_since = (today_date - first_seen_date).days;
+    
+    tag = "[NEW]" if days_since <= 7 else "[   ]";
+    if days_since <= 7:
+        new_models_count += 1;
+        
+    display_name = group["instances"][0]["raw_name"];
+    sources_info = ", ".join([f"{inst['source']}: '{inst['raw_name']}' (Rank {inst['rank']})" for inst in group["instances"]]);
+    
+    alerts_output.append(f"{tag} {display_name}");
+    alerts_output.append(f"    First seen: {first_seen_str}");
+    alerts_output.append(f"    Matches: {sources_info}");
+    alerts_output.append("");
 
-print_step("Analyzing LiveBench Top 30...");
-prev_lb = previous_models_map.get("LiveBench", set());
-alerts_output.append(analyze_top_models(lb_df, "LiveBench", ['average', 'overall', 'total', 'score'], fixed_df, 'lb_lookup', top_n=30, previous_models=prev_lb));
+if not grouped_models:
+    alerts_output.append("No untracked models found in the top 30 of any leaderboard.\n");
 
 alert_file = BASE_DIR / "alerts.txt";
 with open(alert_file, "w") as f:
     f.write("\n".join(alerts_output));
+
+with open(untracked_file, "w") as f:
+    json.dump(history_untracked, f, indent=4);
 
 print_step(f"✓ Alerts saved to: {alert_file.absolute()}", "SUCCESS")
 
@@ -502,7 +510,7 @@ metadata = {
         }
     },
     "alerts_summary": {
-        "new_models_detected": alerts_output[-1].count("[NO] !!!") if alerts_output else 0
+        "new_models_detected": new_models_count
     },
     "history_changes": changes_count
 };

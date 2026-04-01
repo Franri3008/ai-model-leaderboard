@@ -6,6 +6,7 @@
   <title>Leaderboards Ranking</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     html,
     body {
@@ -423,7 +424,7 @@
     <div id="container2" class="container control-container">
       <div style="flex: 1;"></div>
       <div class="tabs-container">
-        <div class="tab active" data-question="ALL">AIW Overall</div>
+        <div class="tab active" data-question="ALL">Overall</div>
         <div class="tab-separator"></div>
         <div class="tab" data-question="LMArena">LMArena</div>
         <div class="tab" data-question="Artificial Analysis">Artificial Analysis</div>
@@ -501,9 +502,9 @@
 
       const dataPromise = snapshotParam
         ? d3.dsv(";", `${DATA_BASE}/data/history.csv`).then(history => {
-            const snapshotDate = snapshotParam.replace(/_/g, '-').replace(/^(\d{4})-(\d{1,2})-(\d{1,2})$/, (m, y, mo, d) => `${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`);
-            return reconstructSnapshot(history, snapshotDate);
-          })
+          const snapshotDate = snapshotParam.replace(/_/g, '-').replace(/^(\d{4})-(\d{1,2})-(\d{1,2})$/, (m, y, mo, d) => `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}`);
+          return reconstructSnapshot(history, snapshotDate);
+        })
         : d3.dsv(";", `${DATA_BASE}/data/processed.csv`);
 
       Promise.all([
@@ -846,7 +847,7 @@
 
       if (active.question === 'ALL') {
         const gpt5 = rawData.find(d => d.model === 'gpt-5-high' || d.name === 'GPT-5 (Thinking)');
-        
+
         if (!gpt5) {
           alert("CRITICAL ERROR: GPT-5 baseline data is missing from the scraping results!");
         }
@@ -1021,21 +1022,70 @@
       return path;
     }
     function truncateAxisLabels(maxWidth) {
-      if (!chartState.yAxisGroup) { return; } chartState.yAxisGroup.selectAll('text').each(function (d) {
-        const text = d3.select(this);
-        const full = d;
-        let shown = full;
-        text.text(shown);
-        if (this.getComputedTextLength() <= maxWidth) { text.attr('data-full', full); return; }
-        let low = 0;
-        let high = full.length;
-        while (low < high) {
-          const mid = Math.floor((low + high) / 2);
-          text.text(full.slice(0, mid) + '…');
-          if (this.getComputedTextLength() <= maxWidth) { low = mid + 1; }
-          else { high = mid; }
+      if (!chartState.yAxisGroup) { return; }
+      chartState.yAxisGroup.selectAll('.tick').each(function (d) {
+        const tick = d3.select(this);
+        const text = tick.select('text');
+        const full = String(d);
+        const isThinking = full.includes('(Thinking)');
+        const isPreview = full.includes('(Preview)') || full.includes('(Beta)');
+
+        let baseText = full;
+        if (isThinking) baseText = baseText.replace('(Thinking)', '');
+        if (isPreview) baseText = baseText.replace('(Preview)', '').replace('(Beta)', '');
+        baseText = baseText.trim();
+
+        text.text(baseText);
+        // Reset dx
+        text.attr('dx', 0);
+        let currentWidth = text.node().getComputedTextLength();
+
+        let icons = [];
+        if (isPreview) icons.push('<i class="fa-solid fa-flask fa-lg" style="color: rgb(84, 90, 160);" title="Preview model"></i>');
+
+        let iconSpace = icons.length * 20;
+
+        if (currentWidth + iconSpace > maxWidth) {
+          let low = 0;
+          let high = baseText.length;
+          while (low < high) {
+            const mid = Math.floor((low + high) / 2);
+            text.text(baseText.slice(0, mid) + '…');
+            if (text.node().getComputedTextLength() + iconSpace <= maxWidth) { low = mid + 1; }
+            else { high = mid; }
+          }
+          const cut = Math.max(1, low - 1);
+          baseText = baseText.slice(0, cut) + '…';
+          text.text(baseText);
         }
-        const cut = Math.max(1, low - 1); text.text(full.slice(0, cut) + '…'); let title = text.select('title'); if (title.empty()) { text.append('title').text(full); } else { title.text(full); }
+
+        text.attr('data-full', full);
+        let title = text.select('title');
+        if (title.empty()) {
+          text.append('title').text(full);
+        } else {
+          title.text(full);
+        }
+
+        tick.selectAll('foreignObject').remove();
+        if (icons.length > 0) {
+          text.attr('dx', -iconSpace - 4);
+          tick.append('foreignObject')
+            .attr('x', -9 - iconSpace)
+            .attr('y', -8)
+            .attr('width', iconSpace)
+            .attr('height', 16)
+            .style('pointer-events', 'none')
+            .append('xhtml:div')
+            .style('display', 'flex')
+            .style('align-items', 'center')
+            .style('justify-content', 'flex-start')
+            .style('gap', '4px')
+            .style('width', '100%')
+            .style('height', '100%')
+            .style('pointer-events', 'auto')
+            .html(icons.join(''));
+        }
       });
     }
     function getBarHeight(scaleBand, sizeFactor) { const bw = scaleBand.bandwidth(); const k = .95 + .03 * (sizeFactor || 1); return Math.max(10, bw * k); }
@@ -1134,10 +1184,13 @@
       const padGap = (step - y.bandwidth()) / 2;
       const rowIdx = d3.range(yDomain.length);
       chartState.rowBG = bgLayer.selectAll('rect.row-bg').data(rowIdx, d => d).enter().append('rect').attr('class', 'row-bg').attr('x', -margin.left).attr('y', i => y(yDomain[i]) - padGap).attr('width', width + margin.left + margin.right).attr('height', step).attr('fill', (d, i) => i % 2 ? "#f8fafc" : "#ffffff").attr('pointer-events', 'none').lower();
-      chartState.yAxisGroup = g.append('g').attr('class', 'axis axis-y').call(d3.axisLeft(y));
+      const xAxis = active.question === 'ALL' ? d3.axisBottom(x).ticks(5).tickFormat(d => d.toFixed(3)) : active.question === 'LiveBench' ? d3.axisBottom(x).tickFormat(d => d.toFixed(1)) : d3.axisBottom(x).tickFormat(d => Math.round(d));
+      
+      const yAxisGen = d3.axisLeft(y).tickFormat(d => String(d).replace('(Thinking)', '').replace('(Preview)', '').replace('(Beta)', '').trim());
+      chartState.yAxisGroup = g.append('g').attr('class', 'axis axis-y').call(yAxisGen);
       chartState.yAxisGroup.selectAll('text').style('font-size', axisFS + 'px');
       truncateAxisLabels(margin.left - logoWidth - padding - 8);
-      const xAxis = active.question === 'ALL' ? d3.axisBottom(x).ticks(5).tickFormat(d => d.toFixed(3)) : active.question === 'LiveBench' ? d3.axisBottom(x).tickFormat(d => d.toFixed(1)) : d3.axisBottom(x).tickFormat(d => Math.round(d));
+      
       chartState.xAxisGroup = g.append('g').attr('class', 'axis axis-x').attr('transform', `translate(0,${height})`).call(xAxis);
       chartState.xAxisGroup.selectAll('text').style('font-size', axisFS + 'px');
       const barH = getBarHeight(y, sizeFactor);
@@ -1296,7 +1349,11 @@
       }
       y.domain(newDomain);
       y.padding(Math.max(.2, Math.min(.45, .55 - .25 * (chartState.sizeFactor || 1))));
-      chartState.yAxisGroup.transition().duration(700).call(d3.axisLeft(y)).on('end', function () { truncateAxisLabels(chartState.margin.left - (chartState.logoWidth || 24) - (chartState.padding || 16) - 8); }).selection().selectAll('text').style('font-size', chartState.axisFS + 'px');
+      
+      const yAxisGen = d3.axisLeft(y).tickFormat(d => String(d).replace('(Thinking)', '').replace('(Preview)', '').replace('(Beta)', '').trim());
+      chartState.yAxisGroup.transition().duration(700).call(yAxisGen).on('end', function () { truncateAxisLabels(chartState.margin.left - (chartState.logoWidth || 24) - (chartState.padding || 16) - 8); }).selection().selectAll('text').style('font-size', chartState.axisFS + 'px');
+      truncateAxisLabels(chartState.margin.left - (chartState.logoWidth || 24) - (chartState.padding || 16) - 8);
+      
       const idx = d3.range(newDomain.length);
       const bg = chartState.bgLayer.selectAll('rect.row-bg').data(idx, d => d);
       bg.join(
