@@ -1,5 +1,5 @@
 NEW MODEL ALERTS REPORT
-Generated on: 2026-04-01 23:35:09
+Generated on: 2026-04-02 23:33:40
 ======================================================================
 
 [NEW] grok-4.20-beta-0309-reasoning
@@ -12,7 +12,7 @@ Generated on: 2026-04-01 23:35:09
 
 [NEW] grok-4.20-multi-agent-beta-0309
     First seen: 2026-04-01
-    Matches: LMArena: 'grok-4.20-multi-agent-beta-0309' (Rank 11)
+    Matches: LMArena: 'grok-4.20-multi-agent-beta-0309' (Rank 10)
 
 [NEW] claude-opus-4-5-20251101
     First seen: 2026-04-01
@@ -22,9 +22,9 @@ Generated on: 2026-04-01 23:35:09
     First seen: 2026-04-01
     Matches: LMArena: 'qwen3.5-max-preview' (Rank 14)
 
-[NEW] dola-seed-2.0-preview
-    First seen: 2026-04-01
-    Matches: LMArena: 'dola-seed-2.0-preview' (Rank 17)
+[NEW] dola-seed-2.0-pro
+    First seen: 2026-04-02
+    Matches: LMArena: 'dola-seed-2.0-pro' (Rank 15)
 
 [NEW] gpt-5.3-chat-latest
     First seen: 2026-04-01
@@ -37,6 +37,10 @@ Generated on: 2026-04-01 23:35:09
 [NEW] claude-sonnet-4-5-20250929
     First seen: 2026-04-01
     Matches: LMArena: 'claude-sonnet-4-5-20250929' (Rank 25)
+
+[NEW] gemma-4-31b
+    First seen: 2026-04-02
+    Matches: LMArena: 'gemma-4-31b' (Rank 27)
 
 [NEW] ernie-5.0-preview-1203
     First seen: 2026-04-01
@@ -62,9 +66,9 @@ Generated on: 2026-04-01 23:35:09
     First seen: 2026-04-01
     Matches: Artificial Analysis: 'MiMo-V2-Omni' (Rank 26)
 
-[NEW] Claude Sonnet 4.6 (Non-reasoning, Low Effort)
-    First seen: 2026-04-01
-    Matches: Artificial Analysis: 'Claude Sonnet 4.6 (Non-reasoning, Low Effort)' (Rank 30)
+[NEW] GLM 5V Turbo
+    First seen: 2026-04-02
+    Matches: Artificial Analysis: 'GLM 5V Turbo' (Rank 30)
 
 [NEW] GPT-5.2 Codex
     First seen: 2026-04-01
