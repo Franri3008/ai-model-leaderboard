@@ -1,5 +1,5 @@
 NEW MODEL ALERTS REPORT
-Generated on: 2026-04-02 23:33:40
+Generated on: 2026-04-03 23:32:58
 ======================================================================
 
 [NEW] grok-4.20-beta-0309-reasoning
@@ -23,7 +23,7 @@ Generated on: 2026-04-02 23:33:40
     Matches: LMArena: 'qwen3.5-max-preview' (Rank 14)
 
 [NEW] dola-seed-2.0-pro
-    First seen: 2026-04-02
+    First seen: 2026-04-03
     Matches: LMArena: 'dola-seed-2.0-pro' (Rank 15)
 
 [NEW] gpt-5.3-chat-latest
@@ -37,10 +37,6 @@ Generated on: 2026-04-02 23:33:40
 [NEW] claude-sonnet-4-5-20250929
     First seen: 2026-04-01
     Matches: LMArena: 'claude-sonnet-4-5-20250929' (Rank 25)
-
-[NEW] gemma-4-31b
-    First seen: 2026-04-02
-    Matches: LMArena: 'gemma-4-31b' (Rank 27)
 
 [NEW] ernie-5.0-preview-1203
     First seen: 2026-04-01
@@ -67,7 +63,7 @@ Generated on: 2026-04-02 23:33:40
     Matches: Artificial Analysis: 'MiMo-V2-Omni' (Rank 26)
 
 [NEW] GLM 5V Turbo
-    First seen: 2026-04-02
+    First seen: 2026-04-03
     Matches: Artificial Analysis: 'GLM 5V Turbo' (Rank 30)
 
 [NEW] GPT-5.2 Codex
