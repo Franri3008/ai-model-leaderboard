@@ -6,8 +6,8 @@
         "geo": "US",
         "os": 1,
         "lma_lookup": "gemma-4-31b",
-        "aa_lookup": null,
-        "lb_lookup": null
+        "aa_lookup": "Gemma 4 31B",
+        "lb_lookup": "Gemma 4 31B"
     },
     {
         "model": "gemini-3-1-pro",
