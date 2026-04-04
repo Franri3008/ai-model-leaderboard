@@ -387,7 +387,7 @@
         "os": 1,
         "lma_lookup": "minimax-m2.7",
         "aa_lookup": "MiniMax-M2.7",
-        "lb_lookup": null
+        "lb_lookup": "Minimax M2.7"
     },
     {
         "model": "minimax-m2-5",

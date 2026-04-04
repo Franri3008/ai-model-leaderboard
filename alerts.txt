@@ -1,5 +1,5 @@
 NEW MODEL ALERTS REPORT
-Generated on: 2026-04-04 19:52:19
+Generated on: 2026-04-04 19:58:22
 ======================================================================
 
 [NEW] grok-4.20-beta-0309-reasoning
@@ -77,10 +77,6 @@ Generated on: 2026-04-04 19:52:19
 [NEW] GPT-5.1 Codex Max High
     First seen: 2026-04-01
     Matches: LiveBench: 'GPT-5.1 Codex Max High' (Rank 8)
-
-[NEW] Minimax M2.7
-    First seen: 2026-04-01
-    Matches: LiveBench: 'Minimax M2.7' (Rank 22)
 
 [NEW] Gemini 3.1 Flash Lite Preview High
     First seen: 2026-04-01
