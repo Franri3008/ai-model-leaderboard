@@ -1333,6 +1333,12 @@
       resizeTimeout = setTimeout(() => { createChart(); }, 250);
     });
     load();
+    window.addEventListener('wheel', (e) => {
+      window.parent.postMessage(
+        { type: 'iframe-wheel', deltaY: e.deltaY, deltaX: e.deltaX },
+        '*'
+      );
+    }, { passive: true });
   </script>
 </body>
 
