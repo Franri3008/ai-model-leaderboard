@@ -107,17 +107,33 @@
 
     @media (max-width:900px) {
       #container2 {
-        flex-direction: column;
-        gap: 12px;
+        flex-wrap: wrap;
+        row-gap: 8px;
+        column-gap: 0;
+        justify-content: space-between;
         height: auto;
       }
 
-      #container2>div:first-child {
-        display: none;
+      /* Tabs: full-width first row, centered */
+      #container2 .tabs-container {
+        order: 1;
+        width: 100%;
+        justify-content: center;
       }
 
+      /* BOP buttons: second row, left */
+      #container2>div:first-child {
+        order: 2;
+        flex: 1;
+        display: flex;
+        justify-content: flex-start;
+      }
+
+      /* Color buttons: second row, right */
       #container2>div:last-child {
-        justify-content: center !important;
+        order: 3;
+        flex: 1;
+        justify-content: flex-end !important;
         flex: 1 1 auto !important;
       }
     }
@@ -148,6 +164,42 @@
       #footnote-container {
         grid-row: 3;
         grid-column: 1;
+      }
+
+      /* Source + logo: own row at bottom, side by side */
+      .viz-grid.with-logo {
+        grid-template-rows: auto 1fr auto auto;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .viz-grid.with-logo #container2 {
+        grid-column: 1 / span 2;
+      }
+
+      .viz-grid.with-logo #container1 {
+        grid-column: 1 / span 2;
+      }
+
+      .viz-grid.with-logo #footnote-container {
+        grid-row: 3;
+        grid-column: 1 / span 2;
+      }
+
+      .viz-grid.with-logo #container3 {
+        display: flex;
+        grid-row: 4;
+        grid-column: 1;
+        align-items: center;
+        padding: 4px 16px;
+      }
+
+      .viz-grid.with-logo #container4 {
+        display: flex;
+        grid-row: 4;
+        grid-column: 2;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 4px 16px 4px 0;
       }
     }
 
@@ -1339,6 +1391,14 @@
         '*'
       );
     }, { passive: true });
+    const reportHeight = () => {
+      window.parent.postMessage(
+        { type: 'iframe-height', height: document.documentElement.scrollHeight },
+        '*'
+      );
+    };
+    reportHeight();
+    new ResizeObserver(reportHeight).observe(document.documentElement);
   </script>
 </body>
 
