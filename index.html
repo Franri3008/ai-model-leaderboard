@@ -1391,6 +1391,14 @@
         '*'
       );
     }, { passive: true });
+    const reportHeight = () => {
+      const h = document.documentElement.scrollHeight;
+      window.parent.postMessage({ type: 'iframe-height', height: h }, '*');
+    };
+    window.addEventListener('load', () => {
+      setTimeout(reportHeight, 300);
+    });
+    new ResizeObserver(reportHeight).observe(document.documentElement);
   </script>
 </body>
 
