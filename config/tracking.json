@@ -428,5 +428,15 @@
         "lma_lookup": "kimi-k2-thinking-turbo",
         "aa_lookup": "Kimi K2 Thinking",
         "lb_lookup": "Kimi K2 Thinking"
+    },
+    {
+        "model": "mimo-v2-pro",
+        "name": "MiMo v2 Pro (Thinking)",
+        "logo": "xiaomi",
+        "geo": "China",
+        "os": 0,
+        "lma_lookup": "mimo-v2-pro",
+        "aa_lookup": "MiMo-V2-Pro",
+        "lb_lookup": "MiMo V2 Pro"
     }
 ]

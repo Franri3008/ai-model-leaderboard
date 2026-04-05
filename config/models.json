@@ -76,5 +76,11 @@
         "name": "ERNIE",
         "org": "Baidu",
         "color": "#2a32e3"
+    },
+    {
+        "id": "xiaomi",
+        "name": "MiMo",
+        "org": "Huawei",
+        "color": "#ff6900"
     }
 ]

@@ -7,21 +7,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="styles/common.css">
   <style>
-    html,
-    body {
-      height: 100%;
-    }
-
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: #f9fafc;
-      color: #111;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Helvetica, Arial, sans-serif;
-      height: 100vh;
-    }
-
     .viz-grid {
       display: grid;
       grid-template-rows: auto 19fr 1fr;
@@ -96,231 +83,6 @@
       display: none;
     }
 
-    .tabs-container {
-      display: flex;
-      align-items: center;
-      gap: clamp(24px, 3vw, 40px);
-      position: relative;
-    }
-
-    .tab {
-      font-size: clamp(13px, 1.6vw, 16px);
-      font-weight: 600;
-      color: #999;
-      white-space: nowrap;
-      cursor: pointer;
-      padding: 8px 0;
-      transition: color 0.2s ease;
-      user-select: none;
-      position: relative;
-    }
-
-    .tab:hover {
-      color: #666;
-    }
-
-    .tab.active {
-      color: #2756d3;
-    }
-
-    .tab-indicator {
-      position: absolute;
-      bottom: 0;
-      height: 3px;
-      background: #2756d3;
-      transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      opacity: 0;
-    }
-
-    .tab-indicator.active {
-      opacity: 1;
-    }
-
-    .tab-separator {
-      width: 1px;
-      height: 20px;
-      background: #d0d0d7;
-      margin: 0 clamp(16px, 2vw, 24px);
-    }
-
-    .answer-section {
-      display: flex;
-      align-items: center;
-      gap: clamp(8px, 1vw, 12px);
-      opacity: 1;
-      max-width: 500px;
-      transition: opacity 0.3s ease, max-width 0.3s ease, margin 0.3s ease;
-      overflow: hidden;
-    }
-
-    .answer-section.hidden {
-      opacity: 0;
-      max-width: 0;
-      margin: 0;
-    }
-
-    .answer-text {
-      font-size: clamp(12px, 1.6vw, 16px);
-      font-weight: 700;
-      color: #1a73e8;
-      white-space: nowrap;
-      padding: clamp(6px, 1vw, 10px) clamp(12px, 1.5vw, 16px);
-      background: #e8f3ff;
-      border-radius: 1px;
-    }
-
-    .selector-group {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: clamp(2px, 0.5vw, 6px);
-      padding: clamp(2px, 0.4vw, 4px);
-      border-radius: 6px;
-      border: 1px solid rgba(17, 24, 39, 0.15);
-      background: #f8fafc;
-      max-width: 100%;
-      flex-shrink: 1;
-      min-width: 0;
-    }
-
-    .selector-button {
-      border: none;
-      background: transparent;
-      padding: clamp(4px, 0.8vh, 8px) clamp(8px, 1.5vw, 14px);
-      border-radius: 6px;
-      font-size: clamp(9px, 1.4vw, 13px);
-      font-weight: 600;
-      color: #475569;
-      cursor: pointer;
-      transition: background 0.2s ease, color 0.2s ease;
-      white-space: nowrap;
-      flex-shrink: 1;
-      min-width: 0;
-    }
-
-    .selector-button.active {
-      background: #2756d3;
-      color: #fff;
-    }
-
-    .source-text {
-      font-size: clamp(10px, 1.6vw, 16px);
-      font-weight: 600;
-      color: #333;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-      font-style: normal;
-    }
-
-    .source-text a {
-      color: #2756d3;
-      text-decoration: underline;
-      cursor: pointer;
-      font-style: normal;
-    }
-
-    .source-text a:visited {
-      color: #2756d3;
-    }
-
-    .logo-container .logo {
-      height: 100%;
-      width: auto;
-      max-height: 100%;
-      max-width: clamp(80px, 15vw, 200px);
-      pointer-events: auto;
-      object-fit: contain;
-      flex-shrink: 0;
-    }
-
-    #tooltip {
-      position: absolute;
-      padding: 8px 12px;
-      background: rgba(0, 0, 0, 0.85);
-      color: #fff;
-      border-radius: 6px;
-      font-size: 13px;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s;
-      z-index: 1000;
-    }
-
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
-      gap: clamp(6px, 1vw, 14px);
-      background: transparent;
-      padding: clamp(4px, 1vh, 10px) 0;
-      border-radius: 0;
-      max-width: 100%;
-      max-height: 100%;
-      font-size: clamp(0.625rem, 1.4vw, 1rem);
-      font-style: normal;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: clamp(4px, 1vw, 8px);
-      cursor: pointer;
-      transition: opacity 0.2s ease;
-      font-weight: 600;
-      color: #333;
-      font-size: inherit;
-      padding: 2px 6px;
-    }
-
-    .legend-item.dim {
-      opacity: 0.35;
-    }
-
-    .legend-item:focus-visible {
-      outline: 2px solid rgba(0, 0, 0, 0.5);
-      outline-offset: 2px;
-    }
-
-    .legend-square {
-      width: clamp(10px, 1vw, 14px);
-      height: clamp(10px, 1vw, 14px);
-      border-radius: 0;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid #111;
-      transition: background 0.7s ease, border-color 0.7s ease;
-    }
-
-    .legend-square svg {
-      width: 75%;
-      height: 75%;
-      fill: none;
-      stroke-width: 3;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .legend-square[data-palette="0"] svg {
-      stroke: #111;
-    }
-
-    .legend-square[data-palette="1"] svg {
-      stroke: #fff;
-    }
-
-    .legend-square[data-palette="2"] svg {
-      stroke: #fff;
-    }
-
-    .legend-item[data-geo="China"] .legend-square[data-palette="2"] svg {
-      stroke: #111;
-    }
-
     .viz-grid.with-logo #footnote-container {
       grid-column: 1;
     }
@@ -344,19 +106,6 @@
     }
 
     @media (max-width:900px) {
-      .tab {
-        font-size: clamp(11px, 1.4vw, 14px);
-      }
-
-      .tabs-container {
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-
-      .tab-separator {
-        display: none;
-      }
-
       #container2 {
         flex-direction: column;
         gap: 12px;
@@ -422,7 +171,15 @@
 <body>
   <div class="viz-grid">
     <div id="container2" class="container control-container">
-      <div style="flex: 1;"></div>
+      <div style="flex: 1; display: flex; align-items: center;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+          <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Models by Provider</div>
+          <div class="selector-group">
+            <button class="selector-button bop-btn active" data-bop="0">All</button>
+            <button class="selector-button bop-btn" data-bop="1">Best</button>
+          </div>
+        </div>
+      </div>
       <div class="tabs-container">
         <div class="tab active" data-question="ALL">Overall</div>
         <div class="tab-separator"></div>
@@ -471,6 +228,8 @@
     let modelIcons = {};
     let modelColors = {};
     let modelToOs = {};
+    let modelToLogo = {};
+    let modelToOrg = {};
     let activeOsFilter = null;
     let modelToGeo = {};
     let hiddenGeos = [];
@@ -479,6 +238,7 @@
     let displayLimit = 30;
     let styleMode = 0;
     let paletteMode = 0;
+    let modeParam = 0;
     let highlightMode = null;
     let highlightPaused = false;
     let highlightPauseTimeout = null;
@@ -523,15 +283,29 @@
         }
 
         const idToColor = {};
+        const idToOrg = {};
         modelsData.forEach(model => {
           idToColor[model.id] = model.color;
+          idToOrg[model.id] = model.org;
         });
 
         if (trackingData) {
+          const trackingMap = {};
           trackingData.forEach(t => {
             modelToOs[t.model] = t.os;
             if (t.geo) modelToGeo[t.model] = t.geo === 'USA' ? 'US' : t.geo;
+            trackingMap[t.model] = t;
           });
+          if (snapshotParam) {
+            rawData.forEach(d => {
+              const t = trackingMap[String(d.model || '').trim()];
+              if (t) {
+                if (!d.name) d.name = t.name;
+                if (!d.logo) d.logo = t.logo;
+                if (!d.geo) d.geo = t.geo === 'USA' ? 'US' : t.geo;
+              }
+            });
+          }
         }
 
         rawData.forEach(d => {
@@ -541,6 +315,8 @@
           d.displayName = name || model;
           if (logo) {
             modelIcons[model] = `logos/${logo}.png`;
+            modelToLogo[model] = logo;
+            if (idToOrg[logo]) modelToOrg[model] = idToOrg[logo];
           }
           if (paletteMode === 1) {
             const os = modelToOs[model] !== undefined ? modelToOs[model] : 0;
@@ -609,6 +385,9 @@
           if (fn) fn.style.background = bgColor;
         }
 
+        const bopParam = params.get('bop');
+        if (bopParam === '1') modeParam = 1;
+
         const logoParam = params.get('logo');
         if (logoParam === '1') {
           document.querySelector('.viz-grid').classList.add('with-logo');
@@ -623,7 +402,30 @@
 
         setupTabs();
 
-        const paletteButtons = document.querySelectorAll('.selector-button');
+        const bopButtons = document.querySelectorAll('.bop-btn');
+        bopButtons.forEach(btn => {
+          if (parseInt(btn.getAttribute('data-bop'), 10) === modeParam) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+          btn.addEventListener('click', () => {
+            const val = parseInt(btn.getAttribute('data-bop'), 10);
+            if (modeParam !== val) {
+              modeParam = val;
+              bopButtons.forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+              const url = new URL(window.location.href);
+              if (modeParam === 1) url.searchParams.set('bop', '1');
+              else url.searchParams.delete('bop');
+              history.replaceState(null, '', url.toString());
+              updateChart();
+              updateFootnote();
+            }
+          });
+        });
+
+        const paletteButtons = document.querySelectorAll('[data-palette]');
         paletteButtons.forEach(btn => {
           if (parseInt(btn.getAttribute('data-palette'), 10) === paletteMode) {
             btn.classList.add('active');
@@ -849,7 +651,9 @@
         const gpt5 = rawData.find(d => d.model === 'gpt-5-high' || d.name === 'GPT-5 (Thinking)');
 
         if (!gpt5) {
-          alert("CRITICAL ERROR: GPT-5 baseline data is missing from the scraping results!");
+          const chartEl = document.getElementById('chart');
+          if (chartEl) chartEl.innerHTML = '<div style="padding:24px;color:#c00;font-weight:600;">Error: GPT-5 baseline data is missing from the scraping results.</div>';
+          return [];
         }
 
         const maxLma = gpt5 ? parseNum(gpt5.lma) : 1434;
@@ -915,7 +719,7 @@
         }));
       }
 
-      return rows.filter(d => {
+      let result = rows.filter(d => {
         if (d.score <= 0) return false;
         if (hiddenGeos.length > 0) {
           const geo = modelToGeo[d.model] || 'Other';
@@ -939,6 +743,20 @@
         aaSegment: d.aaSegment || 0,
         lbSegment: d.lbSegment || 0
       }));
+
+      if (modeParam === 1) {
+        const bestByLogo = {};
+        result.forEach(d => {
+          const logo = modelToLogo[d.model] || '';
+          if (!logo) return;
+          if (!bestByLogo[logo] || d.total > bestByLogo[logo].total) {
+            bestByLogo[logo] = d;
+          }
+        });
+        result = Object.values(bestByLogo);
+      }
+
+      return result;
     }
     function getTop20() { return getAggregated().slice().sort((a, b) => b.total - a.total).slice(0, displayLimit); }
     function getXDomain() {
@@ -1243,14 +1061,14 @@
           const aaScore = rawEntry ? parseNum(rawEntry.aa) : 0;
           const lbScore = rawEntry ? parseNum(rawEntry.lb) : 0;
 
-          html = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name || d.id}</b>${d.model ? '<br><span style="font-size:0.9em;">' + d.model + '</span>' : ''}</div>`;
+          html = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name || d.id}</b>${modelToOrg[d.model] ? '<br><span style="font-size:0.9em;">' + modelToOrg[d.model] + '</span>' : ''}</div>`;
           html += `<table style="width:100%;margin-top:4px;border-spacing:0;">`;
           html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LMArena</td><td style="text-align:right;padding:2px 0;">${lmaScore > 0 ? Math.round(lmaScore) : '-'}</td></tr>`;
           html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Artificial Analysis</td><td style="text-align:right;padding:2px 0;">${aaScore > 0 ? aaScore.toFixed(1) : '-'}</td></tr>`;
           html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LiveBench</td><td style="text-align:right;padding:2px 0;">${lbScore > 0 ? lbScore.toFixed(1) : '-'}</td></tr>`;
           html += `</table>`;
         } else {
-          html = `<b>${d.name || d.id}</b><br>${d.model ? d.model + '<br>' : ''}Score: ${fmt(d.total)}`;
+          html = `<b>${d.name || d.id}</b><br>${modelToOrg[d.model] ? modelToOrg[d.model] + '<br>' : ''}Score: ${fmt(d.total)}`;
         }
         tooltip.html(html).style('left', (event.pageX + 12) + 'px').style('top', (event.pageY - 28) + 'px').style('opacity', 1);
       }).on('mouseleave', () => { tooltip.style('opacity', 0); });
@@ -1496,14 +1314,14 @@
           const aaScore = rawEntry ? parseNum(rawEntry.aa) : 0;
           const lbScore = rawEntry ? parseNum(rawEntry.lb) : 0;
 
-          html = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name || d.id}</b>${d.model ? '<br><span style="font-size:0.9em;">' + d.model + '</span>' : ''}</div>`;
+          html = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name || d.id}</b>${modelToOrg[d.model] ? '<br><span style="font-size:0.9em;">' + modelToOrg[d.model] + '</span>' : ''}</div>`;
           html += `<table style="width:100%;margin-top:4px;border-spacing:0;">`;
           html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LMArena</td><td style="text-align:right;padding:2px 0;">${lmaScore > 0 ? Math.round(lmaScore) : '-'}</td></tr>`;
           html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Artificial Analysis</td><td style="text-align:right;padding:2px 0;">${aaScore > 0 ? aaScore.toFixed(1) : '-'}</td></tr>`;
           html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LiveBench</td><td style="text-align:right;padding:2px 0;">${lbScore > 0 ? lbScore.toFixed(1) : '-'}</td></tr>`;
           html += `</table>`;
         } else {
-          html = `<b>${d.name || d.id}</b><br>${d.model ? d.model + '<br>' : ''}Score: ${fmt(d.total)}`;
+          html = `<b>${d.name || d.id}</b><br>${modelToOrg[d.model] ? modelToOrg[d.model] + '<br>' : ''}Score: ${fmt(d.total)}`;
         }
         tooltip.html(html).style('left', (event.pageX + 12) + 'px').style('top', (event.pageY - 28) + 'px').style('opacity', 1);
       }).on('mouseleave', () => { tooltip.style('opacity', 0); });
