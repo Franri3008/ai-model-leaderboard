@@ -1385,20 +1385,6 @@
       resizeTimeout = setTimeout(() => { createChart(); }, 250);
     });
     load();
-    window.addEventListener('wheel', (e) => {
-      window.parent.postMessage(
-        { type: 'iframe-wheel', deltaY: e.deltaY, deltaX: e.deltaX },
-        '*'
-      );
-    }, { passive: true });
-    const reportHeight = () => {
-      const h = document.documentElement.scrollHeight;
-      window.parent.postMessage({ type: 'iframe-height', height: h }, '*');
-    };
-    window.addEventListener('load', () => {
-      setTimeout(reportHeight, 300);
-    });
-    new ResizeObserver(reportHeight).observe(document.documentElement);
   </script>
 </body>
 
