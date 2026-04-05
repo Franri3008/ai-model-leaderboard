@@ -1055,12 +1055,12 @@
       const rowIdx = d3.range(yDomain.length);
       chartState.rowBG = bgLayer.selectAll('rect.row-bg').data(rowIdx, d => d).enter().append('rect').attr('class', 'row-bg').attr('x', -margin.left).attr('y', i => y(yDomain[i]) - padGap).attr('width', width + margin.left + margin.right).attr('height', step).attr('fill', (d, i) => i % 2 ? "#f8fafc" : "#ffffff").attr('pointer-events', 'none').lower();
       const xAxis = active.question === 'ALL' ? d3.axisBottom(x).ticks(5).tickFormat(d => d.toFixed(3)) : active.question === 'LiveBench' ? d3.axisBottom(x).tickFormat(d => d.toFixed(1)) : d3.axisBottom(x).tickFormat(d => Math.round(d));
-      
+
       const yAxisGen = d3.axisLeft(y).tickFormat(d => String(d).replace('(Thinking)', '').replace('(Preview)', '').replace('(Beta)', '').trim());
       chartState.yAxisGroup = g.append('g').attr('class', 'axis axis-y').call(yAxisGen);
       chartState.yAxisGroup.selectAll('text').style('font-size', axisFS + 'px');
       truncateAxisLabels(margin.left - logoWidth - padding - 8);
-      
+
       chartState.xAxisGroup = g.append('g').attr('class', 'axis axis-x').attr('transform', `translate(0,${height})`).call(xAxis);
       chartState.xAxisGroup.selectAll('text').style('font-size', axisFS + 'px');
       const barH = getBarHeight(y, sizeFactor);
@@ -1219,11 +1219,11 @@
       }
       y.domain(newDomain);
       y.padding(Math.max(.2, Math.min(.45, .55 - .25 * (chartState.sizeFactor || 1))));
-      
+
       const yAxisGen = d3.axisLeft(y).tickFormat(d => String(d).replace('(Thinking)', '').replace('(Preview)', '').replace('(Beta)', '').trim());
       chartState.yAxisGroup.transition().duration(700).call(yAxisGen).on('end', function () { truncateAxisLabels(chartState.margin.left - (chartState.logoWidth || 24) - (chartState.padding || 16) - 8); }).selection().selectAll('text').style('font-size', chartState.axisFS + 'px');
       truncateAxisLabels(chartState.margin.left - (chartState.logoWidth || 24) - (chartState.padding || 16) - 8);
-      
+
       const idx = d3.range(newDomain.length);
       const bg = chartState.bgLayer.selectAll('rect.row-bg').data(idx, d => d);
       bg.join(
@@ -1391,14 +1391,6 @@
         '*'
       );
     }, { passive: true });
-    const reportHeight = () => {
-      window.parent.postMessage(
-        { type: 'iframe-height', height: document.documentElement.scrollHeight },
-        '*'
-      );
-    };
-    reportHeight();
-    new ResizeObserver(reportHeight).observe(document.documentElement);
   </script>
 </body>
 
