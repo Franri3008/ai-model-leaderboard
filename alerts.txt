@@ -1,5 +1,5 @@
 NEW MODEL ALERTS REPORT
-Generated on: 2026-04-05 19:03:17
+Generated on: 2026-04-05 23:32:50
 ======================================================================
 
 [NEW] grok-4.20-beta-0309-reasoning
@@ -12,7 +12,7 @@ Generated on: 2026-04-05 19:03:17
 
 [NEW] grok-4.20-multi-agent-beta-0309
     First seen: 2026-04-01
-    Matches: LMArena: 'grok-4.20-multi-agent-beta-0309' (Rank 9)
+    Matches: LMArena: 'grok-4.20-multi-agent-beta-0309' (Rank 10)
 
 [NEW] claude-opus-4-5-20251101
     First seen: 2026-04-01
@@ -44,27 +44,23 @@ Generated on: 2026-04-05 19:03:17
 
 [NEW] GPT-5.3 Codex (xhigh)
     First seen: 2026-04-01
-    Matches: Artificial Analysis: 'GPT-5.3 Codex (xhigh)' (Rank 3), Artificial Analysis: 'GPT-5.2 Codex (xhigh)' (Rank 11), Artificial Analysis: 'GPT-5 Codex (high)' (Rank 23), LiveBench: 'GPT-5.3 Codex High' (Rank 10)
+    Matches: Artificial Analysis: 'GPT-5.3 Codex (xhigh)' (Rank 3), Artificial Analysis: 'GPT-5.2 Codex (xhigh)' (Rank 11), Artificial Analysis: 'GPT-5 Codex (high)' (Rank 23), Artificial Analysis: 'GPT-5.1 Codex (high)' (Rank 27), LiveBench: 'GPT-5.3 Codex High' (Rank 10)
 
 [NEW] GPT-5.2 (medium)
     First seen: 2026-04-01
-    Matches: Artificial Analysis: 'GPT-5.2 (medium)' (Rank 16)
+    Matches: Artificial Analysis: 'GPT-5.2 (medium)' (Rank 18)
 
 [NEW] GPT-5.4 nano (xhigh)
     First seen: 2026-04-01
     Matches: Artificial Analysis: 'GPT-5.4 nano (xhigh)' (Rank 24), LiveBench: 'GPT-5.4 Nano xHigh' (Rank 14)
 
-[NEW] Claude Sonnet 4.6 (Non-reasoning, Low Effort)
+[NEW] MiMo-V2-Omni
     First seen: 2026-04-01
-    Matches: Artificial Analysis: 'Claude Sonnet 4.6 (Non-reasoning, Low Effort)' (Rank 27)
+    Matches: Artificial Analysis: 'MiMo-V2-Omni' (Rank 26)
 
 [NEW] GLM 5V Turbo
     First seen: 2026-04-03
-    Matches: Artificial Analysis: 'GLM 5V Turbo' (Rank 28)
-
-[NEW] MiMo-V2-Omni
-    First seen: 2026-04-01
-    Matches: Artificial Analysis: 'MiMo-V2-Omni' (Rank 30)
+    Matches: Artificial Analysis: 'GLM 5V Turbo' (Rank 30)
 
 [NEW] GPT-5.2 Codex
     First seen: 2026-04-01
