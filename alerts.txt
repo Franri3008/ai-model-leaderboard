@@ -1,5 +1,5 @@
 NEW MODEL ALERTS REPORT
-Generated on: 2026-04-07 23:36:07
+Generated on: 2026-04-08 23:37:16
 ======================================================================
 
 [NEW] grok-4.20-beta-0309-reasoning
@@ -28,7 +28,7 @@ Generated on: 2026-04-07 23:36:07
 
 [NEW] gpt-5.4-mini-high
     First seen: 2026-04-01
-    Matches: LMArena: 'gpt-5.4-mini-high' (Rank 21), Artificial Analysis: 'GPT-5.4 mini (xhigh)' (Rank 15), LiveBench: 'GPT-5.4 Mini xHigh' (Rank 21)
+    Matches: LMArena: 'gpt-5.4-mini-high' (Rank 21), Artificial Analysis: 'GPT-5.4 mini (xhigh)' (Rank 13), LiveBench: 'GPT-5.4 Mini xHigh' (Rank 21)
 
 [NEW] gpt-5.3-chat-latest
     First seen: 2026-04-01
@@ -44,19 +44,55 @@ Generated on: 2026-04-07 23:36:07
 
 [NEW] GPT-5.3 Codex (xhigh)
     First seen: 2026-04-01
-    Matches: Artificial Analysis: 'GPT-5.3 Codex (xhigh)' (Rank 3), Artificial Analysis: 'GPT-5.2 Codex (xhigh)' (Rank 12), Artificial Analysis: 'GPT-5 Codex (high)' (Rank 24), Artificial Analysis: 'GPT-5.1 Codex (high)' (Rank 28), LiveBench: 'GPT-5.3 Codex High' (Rank 10)
+    Matches: Artificial Analysis: 'GPT-5.3 Codex (xhigh)' (Rank 3), LiveBench: 'GPT-5.3 Codex High' (Rank 10)
 
-[NEW] GPT-5.2 (medium)
-    First seen: 2026-04-01
-    Matches: Artificial Analysis: 'GPT-5.2 (medium)' (Rank 19)
+[NEW] Muse Spark
+    First seen: 2026-04-08
+    Matches: Artificial Analysis: 'Muse Spark' (Rank 5)
+
+[NEW] Qwen3.6 Plus
+    First seen: 2026-04-08
+    Matches: Artificial Analysis: 'Qwen3.6 Plus' (Rank 8), LiveBench: 'Qwen 3.6 Plus' (Rank 13)
+
+[NEW] Grok 4.20 0309 v2
+    First seen: 2026-04-08
+    Matches: Artificial Analysis: 'Grok 4.20 0309 v2' (Rank 11)
+
+[NEW] MiMo-V2-Omni-0327
+    First seen: 2026-04-08
+    Matches: Artificial Analysis: 'MiMo-V2-Omni-0327' (Rank 19)
 
 [NEW] GPT-5.4 nano (xhigh)
     First seen: 2026-04-01
-    Matches: Artificial Analysis: 'GPT-5.4 nano (xhigh)' (Rank 25), LiveBench: 'GPT-5.4 Nano xHigh' (Rank 15)
+    Matches: Artificial Analysis: 'GPT-5.4 nano (xhigh)' (Rank 20), LiveBench: 'GPT-5.4 Nano xHigh' (Rank 15)
 
 [NEW] MiMo-V2-Omni
     First seen: 2026-04-01
-    Matches: Artificial Analysis: 'MiMo-V2-Omni' (Rank 27)
+    Matches: Artificial Analysis: 'MiMo-V2-Omni' (Rank 22)
+
+[NEW] GLM 5V Turbo
+    First seen: 2026-04-03
+    Matches: Artificial Analysis: 'GLM 5V Turbo' (Rank 23)
+
+[NEW] Claude Sonnet 4.6 (Non-reasoning, Low Effort)
+    First seen: 2026-04-01
+    Matches: Artificial Analysis: 'Claude Sonnet 4.6 (Non-reasoning, Low Effort)' (Rank 24)
+
+[NEW] Qwen3.5 27B
+    First seen: 2026-04-08
+    Matches: Artificial Analysis: 'Qwen3.5 27B' (Rank 25)
+
+[NEW] Qwen3.5 122B A10B
+    First seen: 2026-04-08
+    Matches: Artificial Analysis: 'Qwen3.5 122B A10B' (Rank 27)
+
+[NEW] MiMo-V2-Flash (Feb 2026)
+    First seen: 2026-04-08
+    Matches: Artificial Analysis: 'MiMo-V2-Flash (Feb 2026)' (Rank 28)
+
+[NEW] Gemini 3 Pro Preview (low)
+    First seen: 2026-04-08
+    Matches: Artificial Analysis: 'Gemini 3 Pro Preview (low)' (Rank 29)
 
 [NEW] GPT-5.2 Codex
     First seen: 2026-04-01
@@ -65,10 +101,6 @@ Generated on: 2026-04-07 23:36:07
 [NEW] GPT-5.1 Codex Max High
     First seen: 2026-04-01
     Matches: LiveBench: 'GPT-5.1 Codex Max High' (Rank 8)
-
-[NEW] Qwen 3.6 Plus
-    First seen: 2026-04-07
-    Matches: LiveBench: 'Qwen 3.6 Plus' (Rank 13)
 
 [NEW] Gemini 3.1 Flash Lite Preview High
     First seen: 2026-04-01
