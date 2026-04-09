@@ -1,20 +1,22 @@
 {
-    "last_updated": "2026-04-08 23:37:16",
+    "last_updated": "2026-04-09 13:02:03",
     "stats": {
-        "models_tracked": 44,
+        "models_tracked": 48,
         "matches_found": {
-            "lma": 40,
-            "aa": 23,
-            "lb": 31
+            "lma": 42,
+            "aa": 28,
+            "lb": 34
         },
         "rows_scraped": {
             "lmarena": 338,
-            "artificial_analysis": 193,
-            "livebench": 70
+            "artificial_analysis": 192,
+            "livebench": 71
         }
     },
     "alerts_summary": {
-        "new_models_detected": 26
+        "tracking_issues": 15,
+        "score_changes": 0,
+        "new_untracked_models": 7
     },
-    "history_changes": 17
+    "history_changes": 6
 }
