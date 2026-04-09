@@ -1,5 +1,5 @@
 LEADERBOARD ALERTS REPORT
-Generated on: 2026-04-09 13:02:03
+Generated on: 2026-04-09 23:36:56
 ======================================================================
 
 ──────────────────────────────────────────────────────────────────────
@@ -33,41 +33,41 @@ Generated on: 2026-04-09 13:02:03
 3. NEW UNTRACKED MODELS — top 30 models not in tracking.json
 ──────────────────────────────────────────────────────────────────────
 
+  [NEW] muse-spark
+       First seen: 2026-04-09
+       Matches: LMArena: 'muse-spark' (Rank 4)
+
   [   ] grok-4.20-beta-0309-reasoning
        First seen: 2026-04-01
-       Matches: LMArena: 'grok-4.20-beta-0309-reasoning' (Rank 7)
+       Matches: LMArena: 'grok-4.20-beta-0309-reasoning' (Rank 8)
 
   [   ] gpt-5.2-chat-latest-20260210
        First seen: 2026-04-01
-       Matches: LMArena: 'gpt-5.2-chat-latest-20260210' (Rank 8)
+       Matches: LMArena: 'gpt-5.2-chat-latest-20260210' (Rank 9)
 
   [   ] grok-4.20-multi-agent-beta-0309
        First seen: 2026-04-01
-       Matches: LMArena: 'grok-4.20-multi-agent-beta-0309' (Rank 9)
+       Matches: LMArena: 'grok-4.20-multi-agent-beta-0309' (Rank 10)
 
   [   ] claude-opus-4-5-20251101
        First seen: 2026-04-01
-       Matches: LMArena: 'claude-opus-4-5-20251101' (Rank 13)
+       Matches: LMArena: 'claude-opus-4-5-20251101' (Rank 15)
 
   [   ] qwen3.5-max-preview
        First seen: 2026-04-01
-       Matches: LMArena: 'qwen3.5-max-preview' (Rank 15)
+       Matches: LMArena: 'qwen3.5-max-preview' (Rank 17)
 
   [NEW] dola-seed-2.0-pro
        First seen: 2026-04-03
-       Matches: LMArena: 'dola-seed-2.0-pro' (Rank 18)
+       Matches: LMArena: 'dola-seed-2.0-pro' (Rank 20)
 
   [   ] gpt-5.3-chat-latest
        First seen: 2026-04-01
-       Matches: LMArena: 'gpt-5.3-chat-latest' (Rank 22)
+       Matches: LMArena: 'gpt-5.3-chat-latest' (Rank 23)
 
   [   ] claude-sonnet-4-5-20250929
        First seen: 2026-04-01
-       Matches: LMArena: 'claude-sonnet-4-5-20250929' (Rank 27)
-
-  [   ] ernie-5.0-preview-1203
-       First seen: 2026-04-01
-       Matches: LMArena: 'ernie-5.0-preview-1203' (Rank 30)
+       Matches: LMArena: 'claude-sonnet-4-5-20250929' (Rank 28)
 
   [   ] GPT-5.3 Codex (xhigh)
        First seen: 2026-04-01
