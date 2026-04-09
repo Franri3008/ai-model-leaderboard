@@ -3,6 +3,10 @@ name: Update Leaderboard Data
 on:
   schedule:
     - cron: '0 23 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'config/tracking.json'
   workflow_dispatch:
 
 jobs:
@@ -31,6 +35,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/processed.csv data/history.csv alerts.txt metadata.json
+          git add data/processed.csv data/history.csv data/untracked_models.json alerts.txt metadata.json
           git diff --cached --quiet || git commit -m "Update leaderboard data $(date -u +%Y-%m-%d)"
+          git pull --rebase
           git push

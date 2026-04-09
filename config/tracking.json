@@ -120,6 +120,16 @@
         "lb_lookup": "Claude Haiku 4.5 Thinking"
     },
     {
+        "model": "gpt-5.4-mini",
+        "name": "GPT-5.4 mini (Thinking)",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "gpt-5.4-mini-high",
+        "aa_lookup": "GPT-5.4 mini (xhigh)",
+        "lb_lookup": "GPT-5.4 Mini xHigh"
+    },
+    {
         "model": "gpt-5.4",
         "name": "GPT-5.4 (Thinking)",
         "logo": "gpt",
@@ -200,6 +210,16 @@
         "lb_lookup": "GPT OSS 120b"
     },
     {
+        "model": "glm-5-1",
+        "name": "GLM 5.1",
+        "logo": "zai",
+        "geo": "China",
+        "os": 1,
+        "lma_lookup": "glm-5.1",
+        "aa_lookup": "GLM-5.1",
+        "lb_lookup": "GLM 5.1"
+    },
+    {
         "model": "glm-5",
         "name": "GLM 5",
         "logo": "zai",
@@ -240,6 +260,16 @@
         "lb_lookup": null
     },
     {
+        "model": "qwen3-6",
+        "name": "Qwen 3.6 Plus",
+        "logo": "qwen",
+        "geo": "China",
+        "os": 1,
+        "lma_lookup": null,
+        "aa_lookup": "Qwen3.6 Plus",
+        "lb_lookup": "Qwen 3.6 Plus"
+    },
+    {
         "model": "qwen3-5",
         "name": "Qwen 3.5",
         "logo": "qwen",
@@ -276,7 +306,7 @@
         "geo": "US",
         "os": 0,
         "lma_lookup": "grok-4.20-beta1",
-        "aa_lookup": "Grok 4.20 Beta 0309",
+        "aa_lookup": "Grok 4.20 0309 v2",
         "lb_lookup": "Grok 4.20 Beta"
     },
     {
@@ -327,6 +357,16 @@
         "os": 0,
         "lma_lookup": "magistral-medium-2506",
         "aa_lookup": "Magistral Medium 1.2",
+        "lb_lookup": null
+    },
+    {
+        "model": "muse-spark",
+        "name": "Muse Spark",
+        "logo": "meta",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": null,
+        "aa_lookup": "Muse Spark",
         "lb_lookup": null
     },
     {
