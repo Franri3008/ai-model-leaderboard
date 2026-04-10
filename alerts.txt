@@ -1,5 +1,5 @@
 LEADERBOARD ALERTS REPORT
-Generated on: 2026-04-09 23:36:56
+Generated on: 2026-04-10 10:19:56
 ======================================================================
 
 ──────────────────────────────────────────────────────────────────────
@@ -79,11 +79,7 @@ Generated on: 2026-04-09 23:36:56
 
   [   ] GPT-5.4 nano (xhigh)
        First seen: 2026-04-01
-       Matches: Artificial Analysis: 'GPT-5.4 nano (xhigh)' (Rank 20), LiveBench: 'GPT-5.4 Nano xHigh' (Rank 16)
-
-  [   ] MiMo-V2-Omni
-       First seen: 2026-04-01
-       Matches: Artificial Analysis: 'MiMo-V2-Omni' (Rank 22)
+       Matches: Artificial Analysis: 'GPT-5.4 nano (xhigh)' (Rank 21), LiveBench: 'GPT-5.4 Nano xHigh' (Rank 16)
 
   [NEW] GLM 5V Turbo
        First seen: 2026-04-03
@@ -93,21 +89,25 @@ Generated on: 2026-04-09 23:36:56
        First seen: 2026-04-01
        Matches: Artificial Analysis: 'Claude Sonnet 4.6 (Non-reasoning, Low Effort)' (Rank 24)
 
-  [NEW] Qwen3.5 27B
-       First seen: 2026-04-09
-       Matches: Artificial Analysis: 'Qwen3.5 27B' (Rank 25)
+  [   ] MiMo-V2-Omni
+       First seen: 2026-04-01
+       Matches: Artificial Analysis: 'MiMo-V2-Omni' (Rank 25)
 
   [NEW] Qwen3.5 122B A10B
        First seen: 2026-04-09
        Matches: Artificial Analysis: 'Qwen3.5 122B A10B' (Rank 27)
 
+  [NEW] Qwen3.5 27B
+       First seen: 2026-04-09
+       Matches: Artificial Analysis: 'Qwen3.5 27B' (Rank 28)
+
   [NEW] MiMo-V2-Flash (Feb 2026)
        First seen: 2026-04-09
-       Matches: Artificial Analysis: 'MiMo-V2-Flash (Feb 2026)' (Rank 28)
+       Matches: Artificial Analysis: 'MiMo-V2-Flash (Feb 2026)' (Rank 29)
 
   [NEW] Gemini 3 Pro Preview (low)
        First seen: 2026-04-09
-       Matches: Artificial Analysis: 'Gemini 3 Pro Preview (low)' (Rank 29)
+       Matches: Artificial Analysis: 'Gemini 3 Pro Preview (low)' (Rank 30)
 
   [   ] GPT-5.2 Codex
        First seen: 2026-04-01

@@ -26,7 +26,7 @@
         "geo": "US",
         "os": 0,
         "lma_lookup": "gemini-3-pro",
-        "aa_lookup": "Gemini 3 Pro Preview (high)",
+        "aa_lookup": "Gemini 3 Pro Preview (low)",
         "lb_lookup": "Gemini 3 Pro Preview High"
     },
     {
@@ -365,7 +365,7 @@
         "logo": "meta",
         "geo": "US",
         "os": 0,
-        "lma_lookup": null,
+        "lma_lookup": "muse-spark",
         "aa_lookup": "Muse Spark",
         "lb_lookup": null
     },
