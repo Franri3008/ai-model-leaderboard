@@ -1,5 +1,5 @@
 LEADERBOARD ALERTS REPORT
-Generated on: 2026-04-10 10:19:56
+Generated on: 2026-04-10 08:23:38
 ======================================================================
 
 ──────────────────────────────────────────────────────────────────────
@@ -7,7 +7,6 @@ Generated on: 2026-04-10 10:19:56
 ──────────────────────────────────────────────────────────────────────
 
   ⚠ LIKELY RENAMED/REMOVED (had scores before, now missing):
-    • Gemini 3 Pro — Artificial Analysis lookup "Gemini 3 Pro Preview (high)" returned nothing
     • Gemini 2.5 Flash — Artificial Analysis lookup "Gemini 2.5 Flash (Sep)" returned nothing
     • Claude Opus 4.5 (Thinking) — Artificial Analysis lookup "Claude Opus 4.5" returned nothing
     • Claude Sonnet 4.5 (Thinking) — Artificial Analysis lookup "Claude 4.5 Sonnet" returned nothing
@@ -32,10 +31,6 @@ Generated on: 2026-04-10 10:19:56
 ──────────────────────────────────────────────────────────────────────
 3. NEW UNTRACKED MODELS — top 30 models not in tracking.json
 ──────────────────────────────────────────────────────────────────────
-
-  [NEW] muse-spark
-       First seen: 2026-04-09
-       Matches: LMArena: 'muse-spark' (Rank 4)
 
   [   ] grok-4.20-beta-0309-reasoning
        First seen: 2026-04-01
@@ -81,33 +76,29 @@ Generated on: 2026-04-10 10:19:56
        First seen: 2026-04-01
        Matches: Artificial Analysis: 'GPT-5.4 nano (xhigh)' (Rank 21), LiveBench: 'GPT-5.4 Nano xHigh' (Rank 16)
 
+  [   ] MiMo-V2-Omni
+       First seen: 2026-04-01
+       Matches: Artificial Analysis: 'MiMo-V2-Omni' (Rank 23)
+
   [NEW] GLM 5V Turbo
        First seen: 2026-04-03
-       Matches: Artificial Analysis: 'GLM 5V Turbo' (Rank 23)
+       Matches: Artificial Analysis: 'GLM 5V Turbo' (Rank 24)
 
   [   ] Claude Sonnet 4.6 (Non-reasoning, Low Effort)
        First seen: 2026-04-01
-       Matches: Artificial Analysis: 'Claude Sonnet 4.6 (Non-reasoning, Low Effort)' (Rank 24)
-
-  [   ] MiMo-V2-Omni
-       First seen: 2026-04-01
-       Matches: Artificial Analysis: 'MiMo-V2-Omni' (Rank 25)
-
-  [NEW] Qwen3.5 122B A10B
-       First seen: 2026-04-09
-       Matches: Artificial Analysis: 'Qwen3.5 122B A10B' (Rank 27)
+       Matches: Artificial Analysis: 'Claude Sonnet 4.6 (Non-reasoning, Low Effort)' (Rank 25)
 
   [NEW] Qwen3.5 27B
        First seen: 2026-04-09
-       Matches: Artificial Analysis: 'Qwen3.5 27B' (Rank 28)
+       Matches: Artificial Analysis: 'Qwen3.5 27B' (Rank 26)
+
+  [NEW] Qwen3.5 122B A10B
+       First seen: 2026-04-09
+       Matches: Artificial Analysis: 'Qwen3.5 122B A10B' (Rank 28)
 
   [NEW] MiMo-V2-Flash (Feb 2026)
        First seen: 2026-04-09
        Matches: Artificial Analysis: 'MiMo-V2-Flash (Feb 2026)' (Rank 29)
-
-  [NEW] Gemini 3 Pro Preview (low)
-       First seen: 2026-04-09
-       Matches: Artificial Analysis: 'Gemini 3 Pro Preview (low)' (Rank 30)
 
   [   ] GPT-5.2 Codex
        First seen: 2026-04-01

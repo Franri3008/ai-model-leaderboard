@@ -1,7 +1,7 @@
 model;name;logo;geo;lma;aa;lb
 gemma-4;Gemma 4;gemini;US;1451;39;61.62
 gemini-3-1-pro;Gemini 3.1 Pro (Preview);gemini;US;1492;57;79.93
-gemini-3-pro;Gemini 3 Pro;gemini;US;1486;;73.39
+gemini-3-pro;Gemini 3 Pro;gemini;US;1486;41;73.39
 gemini-3-flash;Gemini 3 Flash;gemini;US;1474;46;72.4
 gemini-2-5-pro;Gemini 2.5 Pro;gemini;US;1448;35;58.33
 gemini-2-5-flash;Gemini 2.5 Flash;gemini;US;1411;;53.09
@@ -11,7 +11,7 @@ claude-opus-4-5-thinking;Claude Opus 4.5 (Thinking);claude;US;1473;;75.96
 claude-sonnet-4-5-thinking;Claude Sonnet 4.5 (Thinking);claude;US;1452;;68.19
 claude-opus-4-1;Claude Opus 4.1;claude;US;1448;;61.81
 claude-haiku-4-5;Claude Haiku 4.5;claude;US;1408;37;61.32
-gpt-5.4-mini;GPT-5.4 mini (Thinking);gpt;US;1458;48;67.54
+gpt-5.4-mini;GPT-5.4 mini (Thinking);gpt;US;1458;49;67.54
 gpt-5.4;GPT-5.4 (Thinking);gpt;US;1484;57;80.28
 gpt-5.2;GPT-5.2 (Thinking);gpt;US;1441;;74.84
 gpt-5-1;GPT-5.1 (Thinking);gpt;US;1454;;72.04
@@ -35,7 +35,7 @@ grok-4-1-fast;Grok 4.1 Fast;grok;US;1431;39;59.99
 grok-4;Grok 4;grok;US;;;
 mistral-medium-2508;Mistral;mistral;France;;;
 magistral-medium;Magistral Medium;mistral;France;1303;27;
-muse-spark;Muse Spark;meta;US;;52;
+muse-spark;Muse Spark;meta;US;1487;52;
 llama-4-maverick-17b-128e-instruct;Llama 4 Maverick;meta;US;;;
 nemotron-3-super;Nemotron 3 Super;nemotron;US;1361;36;
 nemotron-ultra-v1;Nemotron Ultra v1;nemotron;US;1347;15;
