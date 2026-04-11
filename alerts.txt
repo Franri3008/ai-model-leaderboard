@@ -1,5 +1,5 @@
 LEADERBOARD ALERTS REPORT
-Generated on: 2026-04-10 23:34:17
+Generated on: 2026-04-11 23:32:30
 ======================================================================
 
 ──────────────────────────────────────────────────────────────────────
@@ -52,7 +52,7 @@ Generated on: 2026-04-10 23:34:17
        First seen: 2026-04-01
        Matches: LMArena: 'qwen3.5-max-preview' (Rank 16)
 
-  [NEW] dola-seed-2.0-pro
+  [   ] dola-seed-2.0-pro
        First seen: 2026-04-03
        Matches: LMArena: 'dola-seed-2.0-pro' (Rank 20)
 
@@ -80,7 +80,7 @@ Generated on: 2026-04-10 23:34:17
        First seen: 2026-04-01
        Matches: Artificial Analysis: 'MiMo-V2-Omni' (Rank 23)
 
-  [NEW] GLM 5V Turbo
+  [   ] GLM 5V Turbo
        First seen: 2026-04-03
        Matches: Artificial Analysis: 'GLM 5V Turbo' (Rank 24)
 
