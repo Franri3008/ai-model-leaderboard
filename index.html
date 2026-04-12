@@ -708,9 +708,9 @@
           return [];
         }
 
-        const maxLma = gpt5 ? parseNum(gpt5.lma) : 1434;
-        const maxAa = gpt5 ? parseNum(gpt5.aa) : 45;
-        const maxLb = gpt5 ? parseNum(gpt5.lb) : 70.48;
+        const maxLma = parseNum(gpt5.lma) || 1434;
+        const maxAa = parseNum(gpt5.aa) || 45;
+        const maxLb = parseNum(gpt5.lb) || 70.48;
 
         rows = rawData.map(d => {
           const model = String(d.model || '').trim();
