@@ -1,5 +1,5 @@
 LEADERBOARD ALERTS REPORT
-Generated on: 2026-04-13 23:41:27
+Generated on: 2026-04-14 23:40:55
 ======================================================================
 
 ──────────────────────────────────────────────────────────────────────
@@ -50,7 +50,7 @@ Generated on: 2026-04-13 23:41:27
 
   [   ] qwen3.5-max-preview
        First seen: 2026-04-01
-       Matches: LMArena: 'qwen3.5-max-preview' (Rank 16)
+       Matches: LMArena: 'qwen3.5-max-preview' (Rank 17)
 
   [   ] dola-seed-2.0-pro
        First seen: 2026-04-03
@@ -58,11 +58,11 @@ Generated on: 2026-04-13 23:41:27
 
   [   ] gpt-5.3-chat-latest
        First seen: 2026-04-01
-       Matches: LMArena: 'gpt-5.3-chat-latest' (Rank 23)
+       Matches: LMArena: 'gpt-5.3-chat-latest' (Rank 24)
 
   [   ] claude-sonnet-4-5-20250929
        First seen: 2026-04-01
-       Matches: LMArena: 'claude-sonnet-4-5-20250929' (Rank 28)
+       Matches: LMArena: 'claude-sonnet-4-5-20250929' (Rank 27)
 
   [   ] GPT-5.3 Codex (xhigh)
        First seen: 2026-04-01
