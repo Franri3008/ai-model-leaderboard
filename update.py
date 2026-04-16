@@ -406,12 +406,12 @@ today_date = datetime.strptime(today_str, "%Y-%m-%d");
 
 alerts_output = [];
 alerts_output.append("LEADERBOARD ALERTS REPORT");
-alerts_output.append(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}");
 alerts_output.append("=" * 70);
+
+source_labels = {"lma": "LMArena", "aa": "Artificial Analysis", "lb": "LiveBench"};
 
 # --- Section 1: TRACKING ISSUES (disappeared/renamed lookups) ---
 print_step("Checking for tracking issues (disappeared/renamed models)...")
-source_labels = {"lma": "LMArena", "aa": "Artificial Analysis", "lb": "LiveBench"};
 tracking_issues = [];
 
 for idx, row in fixed_df.iterrows():
@@ -422,8 +422,6 @@ for idx, row in fixed_df.iterrows():
             continue;
         current_score = result.at[idx, key];
         if pd.isna(current_score) or current_score is None:
-            # Lookup is set but no score found — model may have been renamed/removed
-            # Check if it ever had a score in history
             had_score_before = False;
             if history_file.exists():
                 hist = pd.read_csv(history_file, sep=";");
@@ -446,7 +444,6 @@ alerts_output.append("1. TRACKING ISSUES — models with lookups that returned n
 alerts_output.append("─" * 70);
 
 if tracking_issues:
-    # Show "had score before" (likely renamed/removed) first, then "never matched"
     renamed = [t for t in tracking_issues if t["had_score_before"]];
     never_matched = [t for t in tracking_issues if not t["had_score_before"]];
 
@@ -464,67 +461,6 @@ if tracking_issues:
 else:
     alerts_output.append("");
     alerts_output.append("  All tracked lookups are matching. No issues detected.");
-
-# --- Section 2: SCORE CHANGES (vs last history entry) ---
-print_step("Detecting score changes vs. last recorded values...")
-alerts_output.append("");
-alerts_output.append("─" * 70);
-alerts_output.append("2. SCORE CHANGES — tracked models with score movements");
-alerts_output.append("─" * 70);
-
-score_changes = [];
-if history_file.exists():
-    hist = pd.read_csv(history_file, sep=";");
-    for idx, row in result.iterrows():
-        model_id = row["model"];
-        model_name = row["name"];
-        model_hist = hist[hist["model"] == model_id];
-        if model_hist.empty:
-            # Brand new model in tracking — check if it has any scores
-            has_any = any(pd.notna(row[k]) and row[k] is not None for k in ["lma", "aa", "lb"]);
-            if has_any:
-                scores_str = ", ".join([f"{source_labels[k]}: {row[k]}" for k in ["lma", "aa", "lb"] if pd.notna(row[k]) and row[k] is not None]);
-                score_changes.append({"model": model_name, "type": "new_tracking", "detail": f"First scores recorded: {scores_str}"});
-            continue;
-
-        last = model_hist.iloc[-1];
-        changes_for_model = [];
-
-        for key in ["lma", "aa", "lb"]:
-            old_val = last[key];
-            new_val = row[key];
-            old_is_na = pd.isna(old_val) or old_val is None;
-            new_is_na = pd.isna(new_val) or new_val is None;
-
-            if old_is_na and new_is_na:
-                continue;
-            if old_is_na and not new_is_na:
-                changes_for_model.append(f"{source_labels[key]}: — → {new_val} (NEW)");
-            elif not old_is_na and new_is_na:
-                changes_for_model.append(f"{source_labels[key]}: {old_val} → — (LOST)");
-            else:
-                try:
-                    diff = float(new_val) - float(old_val);
-                    if abs(diff) >= 1:
-                        sign = "▲" if diff > 0 else "▼";
-                        changes_for_model.append(f"{source_labels[key]}: {old_val} → {new_val} ({sign}{abs(diff):.0f})");
-                except (ValueError, TypeError):
-                    pass;
-
-        if changes_for_model:
-            score_changes.append({"model": model_name, "type": "changed", "detail": " | ".join(changes_for_model)});
-
-if score_changes:
-    alerts_output.append("");
-    for sc in score_changes:
-        if sc["type"] == "new_tracking":
-            alerts_output.append(f"  [NEW] {sc['model']}");
-        else:
-            alerts_output.append(f"    • {sc['model']}");
-        alerts_output.append(f"      {sc['detail']}");
-else:
-    alerts_output.append("");
-    alerts_output.append("  No score changes detected since last update.");
 
 # --- Section 3: NEW UNTRACKED MODELS ---
 print_step("Collecting untracked models across sources...")
@@ -575,7 +511,7 @@ else:
 
 alerts_output.append("");
 alerts_output.append("─" * 70);
-alerts_output.append("3. NEW UNTRACKED MODELS — top 30 models not in tracking.json");
+alerts_output.append("2. UNTRACKED MODELS — top 30 models not in tracking.json");
 alerts_output.append("─" * 70);
 
 new_models_count = 0;
@@ -586,21 +522,14 @@ if grouped_models:
         norm_name = group["norm_name"];
         if norm_name not in history_untracked:
             history_untracked[norm_name] = today_str;
-
-        first_seen_str = history_untracked[norm_name];
-        first_seen_date = datetime.strptime(first_seen_str, "%Y-%m-%d");
-        days_since = (today_date - first_seen_date).days;
-
-        tag = "[NEW]" if days_since <= 7 else "[   ]";
-        if days_since <= 7:
             new_models_count += 1;
 
         display_name = group["instances"][0]["raw_name"];
-        sources_info = ", ".join([f"{inst['source']}: '{inst['raw_name']}' (Rank {inst['rank']})" for inst in group["instances"]]);
+        sources_info = ", ".join([f"{inst['source']}: '{inst['raw_name']}'" for inst in group["instances"]]);
 
-        alerts_output.append(f"  {tag} {display_name}");
-        alerts_output.append(f"       First seen: {first_seen_str}");
-        alerts_output.append(f"       Matches: {sources_info}");
+        alerts_output.append(f"  • {display_name}");
+        alerts_output.append(f"    First seen: {history_untracked[norm_name]}");
+        alerts_output.append(f"    Sources: {sources_info}");
         alerts_output.append("");
 else:
     alerts_output.append("");
@@ -641,7 +570,6 @@ metadata = {
     },
     "alerts_summary": {
         "tracking_issues": len(tracking_issues),
-        "score_changes": len(score_changes),
         "new_untracked_models": new_models_count
     },
     "history_changes": changes_count
