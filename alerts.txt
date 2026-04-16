@@ -1,5 +1,4 @@
 LEADERBOARD ALERTS REPORT
-Generated on: 2026-04-15 23:40:35
 ======================================================================
 
 ──────────────────────────────────────────────────────────────────────
@@ -16,6 +15,7 @@ Generated on: 2026-04-15 23:40:35
     • GPT-5 (Thinking) — Artificial Analysis lookup "GPT-5 (high)" returned nothing
     • GPT-5 Mini — Artificial Analysis lookup "GPT-5 mini (high)" returned nothing
     • GPT-5 Nano — Artificial Analysis lookup "GPT-5 nano (high)" returned nothing
+    • GLM 5.1 — LiveBench lookup "GLM 5.1" returned nothing
     • GLM 4.7 — Artificial Analysis lookup "GLM-4.7" returned nothing
     • GLM 4.6 — Artificial Analysis lookup "GLM-4.6" returned nothing
     • Qwen 3 Max — Artificial Analysis lookup "Qwen3 235B A22B 2507" returned nothing
@@ -23,91 +23,89 @@ Generated on: 2026-04-15 23:40:35
     • Kimi-K2 (Thinking) — Artificial Analysis lookup "Kimi K2 Thinking" returned nothing
 
 ──────────────────────────────────────────────────────────────────────
-2. SCORE CHANGES — tracked models with score movements
+2. UNTRACKED MODELS — top 30 models not in tracking.json
 ──────────────────────────────────────────────────────────────────────
 
-  No score changes detected since last update.
+  • grok-4.20-beta-0309-reasoning
+    First seen: 2026-04-01
+    Sources: LMArena: 'grok-4.20-beta-0309-reasoning'
 
-──────────────────────────────────────────────────────────────────────
-3. NEW UNTRACKED MODELS — top 30 models not in tracking.json
-──────────────────────────────────────────────────────────────────────
+  • gpt-5.2-chat-latest-20260210
+    First seen: 2026-04-01
+    Sources: LMArena: 'gpt-5.2-chat-latest-20260210'
 
-  [   ] grok-4.20-beta-0309-reasoning
-       First seen: 2026-04-01
-       Matches: LMArena: 'grok-4.20-beta-0309-reasoning' (Rank 8)
+  • grok-4.20-multi-agent-beta-0309
+    First seen: 2026-04-01
+    Sources: LMArena: 'grok-4.20-multi-agent-beta-0309'
 
-  [   ] gpt-5.2-chat-latest-20260210
-       First seen: 2026-04-01
-       Matches: LMArena: 'gpt-5.2-chat-latest-20260210' (Rank 9)
+  • claude-opus-4-5-20251101
+    First seen: 2026-04-01
+    Sources: LMArena: 'claude-opus-4-5-20251101'
 
-  [   ] grok-4.20-multi-agent-beta-0309
-       First seen: 2026-04-01
-       Matches: LMArena: 'grok-4.20-multi-agent-beta-0309' (Rank 10)
+  • qwen3.5-max-preview
+    First seen: 2026-04-01
+    Sources: LMArena: 'qwen3.5-max-preview'
 
-  [   ] claude-opus-4-5-20251101
-       First seen: 2026-04-01
-       Matches: LMArena: 'claude-opus-4-5-20251101' (Rank 15)
+  • dola-seed-2.0-pro
+    First seen: 2026-04-03
+    Sources: LMArena: 'dola-seed-2.0-pro'
 
-  [   ] qwen3.5-max-preview
-       First seen: 2026-04-01
-       Matches: LMArena: 'qwen3.5-max-preview' (Rank 17)
+  • gpt-5.3-chat-latest
+    First seen: 2026-04-01
+    Sources: LMArena: 'gpt-5.3-chat-latest'
 
-  [   ] dola-seed-2.0-pro
-       First seen: 2026-04-03
-       Matches: LMArena: 'dola-seed-2.0-pro' (Rank 20)
+  • claude-sonnet-4-5-20250929
+    First seen: 2026-04-01
+    Sources: LMArena: 'claude-sonnet-4-5-20250929'
 
-  [   ] gpt-5.3-chat-latest
-       First seen: 2026-04-01
-       Matches: LMArena: 'gpt-5.3-chat-latest' (Rank 24)
+  • GPT-5.3 Codex (xhigh)
+    First seen: 2026-04-01
+    Sources: Artificial Analysis: 'GPT-5.3 Codex (xhigh)', LiveBench: 'GPT-5.3 Codex High'
 
-  [   ] claude-sonnet-4-5-20250929
-       First seen: 2026-04-01
-       Matches: LMArena: 'claude-sonnet-4-5-20250929' (Rank 27)
+  • MiMo-V2-Omni-0327
+    First seen: 2026-04-09
+    Sources: Artificial Analysis: 'MiMo-V2-Omni-0327'
 
-  [   ] GPT-5.3 Codex (xhigh)
-       First seen: 2026-04-01
-       Matches: Artificial Analysis: 'GPT-5.3 Codex (xhigh)' (Rank 3), LiveBench: 'GPT-5.3 Codex High' (Rank 10)
+  • GPT-5.4 nano (xhigh)
+    First seen: 2026-04-01
+    Sources: Artificial Analysis: 'GPT-5.4 nano (xhigh)', LiveBench: 'GPT-5.4 Nano xHigh'
 
-  [NEW] MiMo-V2-Omni-0327
-       First seen: 2026-04-09
-       Matches: Artificial Analysis: 'MiMo-V2-Omni-0327' (Rank 19)
+  • MiMo-V2-Omni
+    First seen: 2026-04-01
+    Sources: Artificial Analysis: 'MiMo-V2-Omni'
 
-  [   ] GPT-5.4 nano (xhigh)
-       First seen: 2026-04-01
-       Matches: Artificial Analysis: 'GPT-5.4 nano (xhigh)' (Rank 21), LiveBench: 'GPT-5.4 Nano xHigh' (Rank 16)
+  • GLM 5V Turbo
+    First seen: 2026-04-03
+    Sources: Artificial Analysis: 'GLM 5V Turbo'
 
-  [   ] MiMo-V2-Omni
-       First seen: 2026-04-01
-       Matches: Artificial Analysis: 'MiMo-V2-Omni' (Rank 23)
+  • Claude Sonnet 4.6 (Non-reasoning, Low Effort)
+    First seen: 2026-04-01
+    Sources: Artificial Analysis: 'Claude Sonnet 4.6 (Non-reasoning, Low Effort)'
 
-  [   ] GLM 5V Turbo
-       First seen: 2026-04-03
-       Matches: Artificial Analysis: 'GLM 5V Turbo' (Rank 24)
+  • Qwen3.5 27B
+    First seen: 2026-04-09
+    Sources: Artificial Analysis: 'Qwen3.5 27B'
 
-  [   ] Claude Sonnet 4.6 (Non-reasoning, Low Effort)
-       First seen: 2026-04-01
-       Matches: Artificial Analysis: 'Claude Sonnet 4.6 (Non-reasoning, Low Effort)' (Rank 25)
+  • Qwen3.5 122B A10B
+    First seen: 2026-04-09
+    Sources: Artificial Analysis: 'Qwen3.5 122B A10B'
 
-  [NEW] Qwen3.5 27B
-       First seen: 2026-04-09
-       Matches: Artificial Analysis: 'Qwen3.5 27B' (Rank 26)
+  • MiMo-V2-Flash (Feb 2026)
+    First seen: 2026-04-09
+    Sources: Artificial Analysis: 'MiMo-V2-Flash (Feb 2026)'
 
-  [NEW] Qwen3.5 122B A10B
-       First seen: 2026-04-09
-       Matches: Artificial Analysis: 'Qwen3.5 122B A10B' (Rank 28)
+  • Claude 4.7 Opus Thinking xHigh Effort
+    First seen: 2026-04-16
+    Sources: LiveBench: 'Claude 4.7 Opus Thinking xHigh Effort'
 
-  [NEW] MiMo-V2-Flash (Feb 2026)
-       First seen: 2026-04-09
-       Matches: Artificial Analysis: 'MiMo-V2-Flash (Feb 2026)' (Rank 29)
+  • GPT-5.2 Codex
+    First seen: 2026-04-01
+    Sources: LiveBench: 'GPT-5.2 Codex', LiveBench: 'GPT-5.1 Codex'
 
-  [   ] GPT-5.2 Codex
-       First seen: 2026-04-01
-       Matches: LiveBench: 'GPT-5.2 Codex' (Rank 7), LiveBench: 'GPT-5.1 Codex' (Rank 19)
+  • GPT-5.1 Codex Max High
+    First seen: 2026-04-01
+    Sources: LiveBench: 'GPT-5.1 Codex Max High'
 
-  [   ] GPT-5.1 Codex Max High
-       First seen: 2026-04-01
-       Matches: LiveBench: 'GPT-5.1 Codex Max High' (Rank 8)
-
-  [   ] Gemini 3.1 Flash Lite Preview High
-       First seen: 2026-04-01
-       Matches: LiveBench: 'Gemini 3.1 Flash Lite Preview High' (Rank 28)
+  • Gemini 3.1 Flash Lite Preview High
+    First seen: 2026-04-01
+    Sources: LiveBench: 'Gemini 3.1 Flash Lite Preview High'
