@@ -1,27 +1,27 @@
 model;name;logo;geo;lma;aa;lb
-gemma-4;Gemma 4;gemini;US;1450;39;61.62
-gemini-3-1-pro;Gemini 3.1 Pro (Preview);gemini;US;1493;57;79.93
+gemma-4;Gemma 4;gemini;US;1451;39;61.62
+gemini-3-1-pro;Gemini 3.1 Pro (Preview);gemini;US;1492;57;79.93
 gemini-3-pro;Gemini 3 Pro;gemini;US;1486;41;73.39
 gemini-3-flash;Gemini 3 Flash;gemini;US;1474;46;72.4
-gemini-2-5-pro;Gemini 2.5 Pro;gemini;US;1448;35;58.33
+gemini-2-5-pro;Gemini 2.5 Pro;gemini;US;1449;35;58.33
 gemini-2-5-flash;Gemini 2.5 Flash;gemini;US;1411;;53.09
-claude-opus-4-6-thinking;Claude Opus 4.6 (Thinking);claude;US;1502;53;76.33
-claude-sonnet-4-6-thinking;Claude Sonnet 4.6 (Thinking);claude;US;1461;52;75.47
+claude-opus-4-6-thinking;Claude Opus 4.6 (Thinking);claude;US;1503;53;76.33
+claude-sonnet-4-6-thinking;Claude Sonnet 4.6 (Thinking);claude;US;1463;52;75.47
 claude-opus-4-5-thinking;Claude Opus 4.5 (Thinking);claude;US;1473;;75.96
 claude-sonnet-4-5-thinking;Claude Sonnet 4.5 (Thinking);claude;US;1452;;68.19
-claude-opus-4-1;Claude Opus 4.1;claude;US;1448;;61.81
+claude-opus-4-1;Claude Opus 4.1;claude;US;1449;;61.81
 claude-haiku-4-5;Claude Haiku 4.5;claude;US;1408;37;61.32
-gpt-5.4-mini;GPT-5.4 mini (Thinking);gpt;US;1457;49;67.54
-gpt-5.4;GPT-5.4 (Thinking);gpt;US;1481;57;80.28
-gpt-5.2;GPT-5.2 (Thinking);gpt;US;1441;;74.84
-gpt-5-1;GPT-5.1 (Thinking);gpt;US;1454;;72.04
+gpt-5.4-mini;GPT-5.4 mini (Thinking);gpt;US;1458;49;67.54
+gpt-5.4;GPT-5.4 (Thinking);gpt;US;1482;57;80.28
+gpt-5.2;GPT-5.2 (Thinking);gpt;US;1442;;74.84
+gpt-5-1;GPT-5.1 (Thinking);gpt;US;1455;;72.04
 gpt-5-high;GPT-5 (Thinking);gpt;US;1433;;70.48
 o3-2025-04-16;o3;gpt;US;1431;38;
-gpt-5-mini;GPT-5 Mini;gpt;US;1389;;65.91
-gpt-5-nano;GPT-5 Nano;gpt;US;1336;;48.62
-gpt-oss;GPT-OSS;gpt;US;1354;33;46.09
-glm-5-1;GLM 5.1;zai;China;1471;51;
-glm-5;GLM 5;zai;China;1471;51;68.85
+gpt-5-mini;GPT-5 Mini;gpt;US;1390;;65.91
+gpt-5-nano;GPT-5 Nano;gpt;US;1337;;48.62
+gpt-oss;GPT-OSS;gpt;US;1353;33;46.09
+glm-5-1;GLM 5.1;zai;China;1472;51;
+glm-5;GLM 5;zai;China;1472;51;68.85
 glm-4-7;GLM 4.7;zai;China;1443;;58.09
 glm-4-6;GLM 4.6;zai;China;1426;;55.19
 glm-4-5-air;GLM 4.5 Air;zai;China;;;
@@ -35,15 +35,15 @@ grok-4-1-fast;Grok 4.1 Fast;grok;US;1432;39;59.99
 grok-4;Grok 4;grok;US;;;
 mistral-medium-2508;Mistral;mistral;France;;;
 magistral-medium;Magistral Medium;mistral;France;1303;27;
-muse-spark;Muse Spark;meta;US;1495;52;
+muse-spark;Muse Spark;meta;US;1496;52;
 llama-4-maverick-17b-128e-instruct;Llama 4 Maverick;meta;US;;;
 nemotron-3-super;Nemotron 3 Super;nemotron;US;1361;36;
 nemotron-ultra-v1;Nemotron Ultra v1;nemotron;US;1347;15;
 nemotron-super-v1-5;Nemotron Super v1.5;nemotron;US;1343;19;
 nemotron-3-nano;Nemotron 3 Nano;nemotron;US;1317;24;
-minimax-m2-7;MiniMax M2.7;minimax;China;1402;50;63.49
-minimax-m2-5;MiniMax M2.5;minimax;China;1402;;60.14
+minimax-m2-7;MiniMax M2.7;minimax;China;1403;50;63.49
+minimax-m2-5;MiniMax M2.5;minimax;China;1403;;60.14
 ernie-5.0;ERNIE 5.0;baidu;China;1450;29;
 kimi-k2-5-thinking;Kimi K2.5 (Thinking);moonshot;China;1451;47;69.07
 kimi-k2-thinking;Kimi-K2 (Thinking);moonshot;China;1430;;61.59
-mimo-v2-pro;MiMo v2 Pro (Thinking);xiaomi;China;1447;49;58.14
+mimo-v2-pro;MiMo v2 Pro (Thinking);xiaomi;China;1446;49;58.14
