@@ -78,6 +78,10 @@ LEADERBOARD ALERTS REPORT
     First seen: 2026-04-01
     Sources: Artificial Analysis: 'GPT-5.4 nano (xhigh)', LiveBench: 'GPT-5.4 Nano xHigh'
 
+  • Qwen3.6 35B A3B
+    First seen: 2026-04-18
+    Sources: Artificial Analysis: 'Qwen3.6 35B A3B'
+
   • MiMo-V2-Omni
     First seen: 2026-04-01
     Sources: Artificial Analysis: 'MiMo-V2-Omni'
@@ -97,10 +101,6 @@ LEADERBOARD ALERTS REPORT
   • Qwen3.5 122B A10B
     First seen: 2026-04-09
     Sources: Artificial Analysis: 'Qwen3.5 122B A10B'
-
-  • MiMo-V2-Flash (Feb 2026)
-    First seen: 2026-04-09
-    Sources: Artificial Analysis: 'MiMo-V2-Flash (Feb 2026)'
 
   • Claude 4.7 Opus Thinking xHigh Effort
     First seen: 2026-04-16
