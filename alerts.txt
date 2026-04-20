@@ -26,10 +26,6 @@ LEADERBOARD ALERTS REPORT
 2. UNTRACKED MODELS — top 30 models not in tracking.json
 ──────────────────────────────────────────────────────────────────────
 
-  • claude-opus-4-7-thinking
-    First seen: 2026-04-17
-    Sources: LMArena: 'claude-opus-4-7-thinking'
-
   • grok-4.20-beta-0309-reasoning
     First seen: 2026-04-01
     Sources: LMArena: 'grok-4.20-beta-0309-reasoning'
@@ -48,7 +44,7 @@ LEADERBOARD ALERTS REPORT
 
   • qwen3.5-max-preview
     First seen: 2026-04-01
-    Sources: LMArena: 'qwen3.5-max-preview'
+    Sources: LMArena: 'qwen3.5-max-preview', Artificial Analysis: 'Qwen3.6 Max Preview'
 
   • dola-seed-2.0-pro
     First seen: 2026-04-03
@@ -61,10 +57,6 @@ LEADERBOARD ALERTS REPORT
   • claude-sonnet-4-5-20250929
     First seen: 2026-04-01
     Sources: LMArena: 'claude-sonnet-4-5-20250929'
-
-  • Claude Opus 4.7 (max)
-    First seen: 2026-04-17
-    Sources: Artificial Analysis: 'Claude Opus 4.7 (max)'
 
   • GPT-5.3 Codex (xhigh)
     First seen: 2026-04-01
@@ -97,14 +89,6 @@ LEADERBOARD ALERTS REPORT
   • Qwen3.5 27B
     First seen: 2026-04-09
     Sources: Artificial Analysis: 'Qwen3.5 27B'
-
-  • Qwen3.5 122B A10B
-    First seen: 2026-04-09
-    Sources: Artificial Analysis: 'Qwen3.5 122B A10B'
-
-  • Claude 4.7 Opus Thinking xHigh Effort
-    First seen: 2026-04-16
-    Sources: LiveBench: 'Claude 4.7 Opus Thinking xHigh Effort'
 
   • GPT-5.2 Codex
     First seen: 2026-04-01
