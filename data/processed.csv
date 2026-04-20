@@ -5,6 +5,7 @@ gemini-3-pro;Gemini 3 Pro;gemini;US;1486;41;73.39
 gemini-3-flash;Gemini 3 Flash;gemini;US;1474;46;72.4
 gemini-2-5-pro;Gemini 2.5 Pro;gemini;US;1449;35;58.33
 gemini-2-5-flash;Gemini 2.5 Flash;gemini;US;1411;;53.09
+claude-opus-4-7-thinking;Claude Opus 4.7 (Thinking);claude;US;1505;57;76.91
 claude-opus-4-6-thinking;Claude Opus 4.6 (Thinking);claude;US;1503;53;76.33
 claude-sonnet-4-6-thinking;Claude Sonnet 4.6 (Thinking);claude;US;1463;52;75.47
 claude-opus-4-5-thinking;Claude Opus 4.5 (Thinking);claude;US;1473;;75.96
