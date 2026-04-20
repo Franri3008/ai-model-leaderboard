@@ -70,9 +70,15 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      overflow: hidden;
-      padding: 12px 20px;
+      padding: 24px 20px;
       position: relative;
+    }
+
+    .c2-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
     }
 
     #container3 {
@@ -105,40 +111,7 @@
       width: auto;
     }
 
-    @media (max-width:900px) {
-      #container2 {
-        flex-wrap: wrap;
-        row-gap: 8px;
-        column-gap: 0;
-        justify-content: space-between;
-        height: auto;
-      }
-
-      /* Tabs: full-width first row, centered */
-      #container2 .tabs-container {
-        order: 1;
-        width: 100%;
-        justify-content: center;
-      }
-
-      /* BOP buttons: second row, left */
-      #container2>div:first-child {
-        order: 2;
-        flex: 1;
-        display: flex;
-        justify-content: flex-start;
-      }
-
-      /* Color buttons: second row, right */
-      #container2>div:last-child {
-        order: 3;
-        flex: 1;
-        justify-content: flex-end !important;
-        flex: 1 1 auto !important;
-      }
-    }
-
-    @media (max-height:500px),
+@media (max-height:500px),
     (max-width:640px) {
       .viz-grid {
         grid-template-rows: auto 1fr auto;
@@ -223,15 +196,6 @@
 <body>
   <div class="viz-grid">
     <div id="container2" class="container control-container">
-      <div style="flex: 1; display: flex; align-items: center;">
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-          <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Models by Provider</div>
-          <div class="selector-group">
-            <button class="selector-button bop-btn active" data-bop="0">All</button>
-            <button class="selector-button bop-btn" data-bop="1">Best</button>
-          </div>
-        </div>
-      </div>
       <div class="tabs-container">
         <div class="tab active" data-question="ALL">Overall</div>
         <div class="tab-separator"></div>
@@ -240,12 +204,19 @@
         <div class="tab" data-question="LiveBench">LiveBench</div>
         <div class="tab-indicator"></div>
       </div>
-      <div style="flex: 1; display: flex; justify-content: flex-end;">
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+      <div class="c2-controls">
+        <div style="display: flex; flex-direction: row; align-items: center; gap: 8px;">
+          <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Models by Provider</div>
+          <div class="selector-group">
+            <button class="selector-button bop-btn active" data-bop="0">All</button>
+            <button class="selector-button bop-btn" data-bop="1">Best</button>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: row; align-items: center; gap: 8px;">
           <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Color by</div>
           <div class="selector-group">
-            <button class="selector-button" data-palette="0">Organization</button>
-            <button class="selector-button" data-palette="1">Open Source</button>
+            <button class="selector-button" data-palette="0">Org</button>
+            <button class="selector-button" data-palette="1">Licensing</button>
             <button class="selector-button" data-palette="2">Country</button>
           </div>
         </div>

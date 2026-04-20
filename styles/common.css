@@ -18,12 +18,12 @@ body {
 .tabs-container {
   display: flex;
   align-items: center;
-  gap: clamp(24px, 3vw, 40px);
+  gap: clamp(10px, 3vw, 40px);
   position: relative;
 }
 
 .tab {
-  font-size: clamp(13px, 1.6vw, 16px);
+  font-size: clamp(10px, 1.6vw, 16px);
   font-weight: 600;
   color: #999;
   white-space: nowrap;
@@ -59,7 +59,7 @@ body {
   width: 1px;
   height: 20px;
   background: #d0d0d7;
-  margin: 0 clamp(16px, 2vw, 24px);
+  margin: 0 clamp(4px, 2vw, 24px);
 }
 
 /* Answer section */
@@ -246,18 +246,3 @@ body {
   stroke: #111;
 }
 
-/* Responsive: tabs */
-@media (max-width:900px) {
-  .tab {
-    font-size: clamp(11px, 1.4vw, 14px);
-  }
-
-  .tabs-container {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .tab-separator {
-    display: none;
-  }
-}
