@@ -50,10 +50,6 @@ LEADERBOARD ALERTS REPORT
     First seen: 2026-04-03
     Sources: LMArena: 'dola-seed-2.0-pro'
 
-  • gpt-5.3-chat-latest
-    First seen: 2026-04-01
-    Sources: LMArena: 'gpt-5.3-chat-latest'
-
   • claude-sonnet-4-5-20250929
     First seen: 2026-04-01
     Sources: LMArena: 'claude-sonnet-4-5-20250929'
