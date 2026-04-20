@@ -60,6 +60,16 @@
         "lb_lookup": "Gemini 2.5 Flash (Max Thinking) (2025-09-25)"
     },
     {
+        "model": "claude-opus-4-7-thinking",
+        "name": "Claude Opus 4.7 (Thinking)",
+        "logo": "claude",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": "claude-opus-4-7-thinking",
+        "aa_lookup": "Claude Opus 4.7 (max)",
+        "lb_lookup": "Claude 4.7 Opus Thinking xHigh Effort"
+    },
+    {
         "model": "claude-opus-4-6-thinking",
         "name": "Claude Opus 4.6 (Thinking)",
         "logo": "claude",
