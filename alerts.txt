@@ -58,6 +58,10 @@ LEADERBOARD ALERTS REPORT
     First seen: 2026-04-01
     Sources: Artificial Analysis: 'GPT-5.3 Codex (xhigh)', LiveBench: 'GPT-5.3 Codex High'
 
+  • Claude Opus 4.6 (Non-reasoning)
+    First seen: 2026-04-21
+    Sources: Artificial Analysis: 'Claude Opus 4.6 (Non-reasoning)', Artificial Analysis: 'Claude Sonnet 4.6 (Non-reasoning)'
+
   • MiMo-V2-Omni-0327
     First seen: 2026-04-09
     Sources: Artificial Analysis: 'MiMo-V2-Omni-0327'

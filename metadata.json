@@ -1,5 +1,5 @@
 {
-    "last_updated": "2026-04-20 23:41:10",
+    "last_updated": "2026-04-21 23:34:01",
     "stats": {
         "models_tracked": 49,
         "matches_found": {
@@ -9,13 +9,13 @@
         },
         "rows_scraped": {
             "lmarena": 342,
-            "artificial_analysis": 198,
+            "artificial_analysis": 202,
             "livebench": 72
         }
     },
     "alerts_summary": {
         "tracking_issues": 15,
-        "new_untracked_models": 0
+        "new_untracked_models": 1
     },
-    "history_changes": 15
+    "history_changes": 0
 }
