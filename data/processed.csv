@@ -6,7 +6,7 @@ gemini-3-flash;Gemini 3 Flash;gemini;US;1474;46;72.4
 gemini-2-5-pro;Gemini 2.5 Pro;gemini;US;1448;35;58.33
 gemini-2-5-flash;Gemini 2.5 Flash;gemini;US;1411;;53.09
 claude-opus-4-7-thinking;Claude Opus 4.7 (Thinking);claude;US;1503;57;76.91
-claude-opus-4-6-thinking;Claude Opus 4.6 (Thinking);claude;US;1502;53;76.33
+claude-opus-4-6-thinking;Claude Opus 4.6 (Thinking);claude;US;1502;;76.33
 claude-sonnet-4-6-thinking;Claude Sonnet 4.6 (Thinking);claude;US;1462;52;75.47
 claude-opus-4-5-thinking;Claude Opus 4.5 (Thinking);claude;US;1473;;75.96
 claude-sonnet-4-5-thinking;Claude Sonnet 4.5 (Thinking);claude;US;1453;;68.19
@@ -45,6 +45,6 @@ nemotron-3-nano;Nemotron 3 Nano;nemotron;US;1317;24;
 minimax-m2-7;MiniMax M2.7;minimax;China;1403;50;63.49
 minimax-m2-5;MiniMax M2.5;minimax;China;1400;;60.14
 ernie-5.0;ERNIE 5.0;baidu;China;1450;29;
-kimi-k2-5-thinking;Kimi K2.5 (Thinking);moonshot;China;1450;47;69.07
+kimi-k2-5-thinking;Kimi K2.5 (Thinking);moonshot;China;1450;37;69.07
 kimi-k2-thinking;Kimi-K2 (Thinking);moonshot;China;1430;;61.59
 mimo-v2-pro;MiMo v2 Pro (Thinking);xiaomi;China;1446;49;58.14

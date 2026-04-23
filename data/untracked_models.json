@@ -7,16 +7,18 @@
     "claudesonnet4520250929": "2026-04-01",
     "gpt53codex(xhigh)": "2026-04-01",
     "gpt54nano(xhigh)": "2026-04-01",
-    "claudesonnet46(nonreasoning,loweffort)": "2026-04-01",
-    "mimov2omni": "2026-04-01",
     "gpt52codex": "2026-04-01",
     "gpt51codexmaxhigh": "2026-04-01",
     "gemini31flashlitepreviewhigh": "2026-04-01",
     "dolaseed20pro": "2026-04-03",
-    "glm5vturbo": "2026-04-03",
     "mimov2omni0327": "2026-04-09",
     "qwen3635ba3b": "2026-04-18",
-    "claudeopus47(high)": "2026-04-22",
     "claudesonnet46(nonreasoning)": "2026-04-22",
-    "kimik26thinking": "2026-04-22"
+    "kimik26thinking": "2026-04-22",
+    "gpt55(xhigh)": "2026-04-23",
+    "gpt55(medium)": "2026-04-23",
+    "claudeopus47(nonreasoning,high)": "2026-04-23",
+    "gpt55(low)": "2026-04-23",
+    "qwen3627b": "2026-04-23",
+    "gpt55thinkingxhigheffort": "2026-04-23"
 }

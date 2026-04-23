@@ -7,6 +7,7 @@ LEADERBOARD ALERTS REPORT
 
   ⚠ LIKELY RENAMED/REMOVED (had scores before, now missing):
     • Gemini 2.5 Flash — Artificial Analysis lookup "Gemini 2.5 Flash (Sep)" returned nothing
+    • Claude Opus 4.6 (Thinking) — Artificial Analysis lookup "Claude Opus 4.6 (max)" returned nothing
     • Claude Opus 4.5 (Thinking) — Artificial Analysis lookup "Claude Opus 4.5" returned nothing
     • Claude Sonnet 4.5 (Thinking) — Artificial Analysis lookup "Claude 4.5 Sonnet" returned nothing
     • Claude Opus 4.1 — Artificial Analysis lookup "Claude 4.1 Opus" returned nothing
@@ -54,13 +55,29 @@ LEADERBOARD ALERTS REPORT
     First seen: 2026-04-01
     Sources: LMArena: 'claude-sonnet-4-5-20250929'
 
+  • GPT-5.5 (xhigh)
+    First seen: 2026-04-23
+    Sources: Artificial Analysis: 'GPT-5.5 (xhigh)', Artificial Analysis: 'GPT-5.5 (high)'
+
+  • GPT-5.5 (medium)
+    First seen: 2026-04-23
+    Sources: Artificial Analysis: 'GPT-5.5 (medium)'
+
   • GPT-5.3 Codex (xhigh)
     First seen: 2026-04-01
     Sources: Artificial Analysis: 'GPT-5.3 Codex (xhigh)', LiveBench: 'GPT-5.3 Codex High'
 
-  • Claude Opus 4.7 (high)
-    First seen: 2026-04-22
-    Sources: Artificial Analysis: 'Claude Opus 4.7 (high)', Artificial Analysis: 'Claude Opus 4.6 (high)'
+  • Claude Opus 4.7 (Non-reasoning, high)
+    First seen: 2026-04-23
+    Sources: Artificial Analysis: 'Claude Opus 4.7 (Non-reasoning, high)'
+
+  • GPT-5.5 (low)
+    First seen: 2026-04-23
+    Sources: Artificial Analysis: 'GPT-5.5 (low)'
+
+  • Qwen3.6 27B
+    First seen: 2026-04-23
+    Sources: Artificial Analysis: 'Qwen3.6 27B'
 
   • MiMo-V2-Omni-0327
     First seen: 2026-04-09
@@ -78,17 +95,9 @@ LEADERBOARD ALERTS REPORT
     First seen: 2026-04-18
     Sources: Artificial Analysis: 'Qwen3.6 35B A3B'
 
-  • MiMo-V2-Omni
-    First seen: 2026-04-01
-    Sources: Artificial Analysis: 'MiMo-V2-Omni'
-
-  • GLM 5V Turbo
-    First seen: 2026-04-03
-    Sources: Artificial Analysis: 'GLM 5V Turbo'
-
-  • Claude Sonnet 4.6 (Non-reasoning, Low Effort)
-    First seen: 2026-04-01
-    Sources: Artificial Analysis: 'Claude Sonnet 4.6 (Non-reasoning, Low Effort)'
+  • GPT-5.5 Thinking xHigh Effort
+    First seen: 2026-04-23
+    Sources: LiveBench: 'GPT-5.5 Thinking xHigh Effort'
 
   • GPT-5.2 Codex
     First seen: 2026-04-01
