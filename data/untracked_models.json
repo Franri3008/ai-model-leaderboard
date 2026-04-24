@@ -5,13 +5,11 @@
     "claudeopus4520251101": "2026-04-01",
     "qwen35maxpreview": "2026-04-01",
     "gpt53codex(xhigh)": "2026-04-01",
-    "gpt54nano(xhigh)": "2026-04-01",
     "gpt52codex": "2026-04-01",
     "gpt51codexmaxhigh": "2026-04-01",
     "gemini31flashlitepreviewhigh": "2026-04-01",
     "dolaseed20pro": "2026-04-03",
     "mimov2omni0327": "2026-04-09",
-    "claudesonnet46(nonreasoning)": "2026-04-22",
     "kimik26thinking": "2026-04-22",
     "gpt55(medium)": "2026-04-23",
     "claudeopus47(nonreasoning,high)": "2026-04-23",
@@ -20,5 +18,8 @@
     "deepseekv4pro": "2026-04-24",
     "gpt54minihigh": "2026-04-24",
     "gpt55(high)": "2026-04-24",
-    "deepseekv4flash(high)": "2026-04-24"
+    "deepseekv4flash(high)": "2026-04-24",
+    "deepseekv4pro(max)": "2026-04-24",
+    "deepseekv4pro(high)": "2026-04-24",
+    "gpt54nanoxhigh": "2026-04-24"
 }
