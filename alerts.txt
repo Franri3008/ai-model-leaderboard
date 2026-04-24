@@ -47,17 +47,21 @@ LEADERBOARD ALERTS REPORT
     First seen: 2026-04-01
     Sources: LMArena: 'qwen3.5-max-preview', Artificial Analysis: 'Qwen3.6 Max Preview'
 
+  • deepseek-v4-pro
+    First seen: 2026-04-24
+    Sources: LMArena: 'deepseek-v4-pro'
+
   • dola-seed-2.0-pro
     First seen: 2026-04-03
     Sources: LMArena: 'dola-seed-2.0-pro'
 
-  • claude-sonnet-4-5-20250929
-    First seen: 2026-04-01
-    Sources: LMArena: 'claude-sonnet-4-5-20250929'
+  • gpt-5.4-mini-high
+    First seen: 2026-04-24
+    Sources: LMArena: 'gpt-5.4-mini-high'
 
-  • GPT-5.5 (xhigh)
-    First seen: 2026-04-23
-    Sources: Artificial Analysis: 'GPT-5.5 (xhigh)', Artificial Analysis: 'GPT-5.5 (high)'
+  • GPT-5.5 (high)
+    First seen: 2026-04-24
+    Sources: Artificial Analysis: 'GPT-5.5 (high)'
 
   • GPT-5.5 (medium)
     First seen: 2026-04-23
@@ -83,6 +87,10 @@ LEADERBOARD ALERTS REPORT
     First seen: 2026-04-09
     Sources: Artificial Analysis: 'MiMo-V2-Omni-0327'
 
+  • DeepSeek V4 Flash (High)
+    First seen: 2026-04-24
+    Sources: Artificial Analysis: 'DeepSeek V4 Flash (High)'
+
   • Claude Sonnet 4.6 (Non-reasoning)
     First seen: 2026-04-22
     Sources: Artificial Analysis: 'Claude Sonnet 4.6 (Non-reasoning)'
@@ -90,14 +98,6 @@ LEADERBOARD ALERTS REPORT
   • GPT-5.4 nano (xhigh)
     First seen: 2026-04-01
     Sources: Artificial Analysis: 'GPT-5.4 nano (xhigh)', LiveBench: 'GPT-5.4 Nano xHigh'
-
-  • Qwen3.6 35B A3B
-    First seen: 2026-04-18
-    Sources: Artificial Analysis: 'Qwen3.6 35B A3B'
-
-  • GPT-5.5 Thinking xHigh Effort
-    First seen: 2026-04-23
-    Sources: LiveBench: 'GPT-5.5 Thinking xHigh Effort'
 
   • GPT-5.2 Codex
     First seen: 2026-04-01
