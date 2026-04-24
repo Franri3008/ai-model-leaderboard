@@ -130,12 +130,22 @@
         "lb_lookup": "Claude Haiku 4.5 Thinking"
     },
     {
+        "model": "gpt-5.5",
+        "name": "GPT-5.5 (Thinking)",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 0,
+        "lma_lookup": null,
+        "aa_lookup": "GPT-5.5 (xhigh)",
+        "lb_lookup": "GPT-5.5 Thinking xHigh Effort"
+    },
+    {
         "model": "gpt-5.4-mini",
         "name": "GPT-5.4 mini (Thinking)",
         "logo": "gpt",
         "geo": "US",
         "os": 0,
-        "lma_lookup": "gpt-5.4-mini-high",
+        "lma_lookup": null,
         "aa_lookup": "GPT-5.4 mini (xhigh)",
         "lb_lookup": "GPT-5.4 Mini xHigh"
     },
@@ -298,6 +308,26 @@
         "lma_lookup": "qwen3-max-2025-09-23",
         "aa_lookup": "Qwen3 235B A22B 2507",
         "lb_lookup": "Qwen 3 235B A22B Thinking 2507"
+    },
+    {
+        "model": "deepseek-v4-flash",
+        "name": "DeepSeek v4 Flash",
+        "logo": "deepseek",
+        "geo": "China",
+        "os": 1,
+        "lma_lookup": "deepseek-v4-flash-thinking",
+        "aa_lookup": "DeepSeek V4 Flash (Max)",
+        "lb_lookup": null
+    },
+    {
+        "model": "deepseek-v4-pro",
+        "name": "DeepSeek v4 Pro",
+        "logo": "deepseek",
+        "geo": "China",
+        "os": 1,
+        "lma_lookup": "deepseek-v4-pro-thinking",
+        "aa_lookup": null,
+        "lb_lookup": null
     },
     {
         "model": "deepseek-v3-2-exp-thinking",
