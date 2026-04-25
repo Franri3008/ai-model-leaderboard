@@ -75,10 +75,6 @@ LEADERBOARD ALERTS REPORT
     First seen: 2026-04-23
     Sources: Artificial Analysis: 'Claude Opus 4.7 (Non-reasoning, high)'
 
-  • DeepSeek V4 Pro (Max)
-    First seen: 2026-04-24
-    Sources: Artificial Analysis: 'DeepSeek V4 Pro (Max)'
-
   • GPT-5.5 (low)
     First seen: 2026-04-23
     Sources: Artificial Analysis: 'GPT-5.5 (low)'

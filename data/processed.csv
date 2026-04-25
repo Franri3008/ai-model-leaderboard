@@ -31,7 +31,7 @@ qwen3-6;Qwen 3.6 Plus;qwen;China;;50;70.85
 qwen3-5;Qwen 3.5;qwen;China;1446;45;
 qwen3-max;Qwen 3 Max;qwen;China;1424;;52.97
 deepseek-v4-flash;DeepSeek v4 Flash;deepseek;China;1439;47;
-deepseek-v4-pro;DeepSeek v4 Pro;deepseek;China;1462;;
+deepseek-v4-pro;DeepSeek v4 Pro;deepseek;China;1462;52;
 deepseek-v3-2-exp-thinking;DeepSeek v3.2 (Thinking);deepseek;China;1422;42;62.2
 grok-4-20;Grok 4.20 (Beta);grok;US;1482;49;67.96
 grok-4-1-thinking;Grok 4.1 (Thinking);grok;US;1469;;

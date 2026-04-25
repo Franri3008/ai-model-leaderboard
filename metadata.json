@@ -1,10 +1,10 @@
 {
-    "last_updated": "2026-04-24 23:38:25",
+    "last_updated": "2026-04-25 17:40:31",
     "stats": {
         "models_tracked": 52,
         "matches_found": {
             "lma": 45,
-            "aa": 31,
+            "aa": 32,
             "lb": 35
         },
         "rows_scraped": {
@@ -15,7 +15,7 @@
     },
     "alerts_summary": {
         "tracking_issues": 16,
-        "new_untracked_models": 3
+        "new_untracked_models": 0
     },
-    "history_changes": 0
+    "history_changes": 1
 }
