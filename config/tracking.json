@@ -326,7 +326,7 @@
         "geo": "China",
         "os": 1,
         "lma_lookup": "deepseek-v4-pro-thinking",
-        "aa_lookup": null,
+        "aa_lookup": "DeepSeek V4 Pro (Max)",
         "lb_lookup": null
     },
     {
