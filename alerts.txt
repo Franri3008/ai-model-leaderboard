@@ -27,6 +27,10 @@ LEADERBOARD ALERTS REPORT
 2. UNTRACKED MODELS — top 30 models not in tracking.json
 ──────────────────────────────────────────────────────────────────────
 
+  • gpt-5.5-high
+    First seen: 2026-04-27
+    Sources: LMArena: 'gpt-5.5-high', Artificial Analysis: 'GPT-5.5 (high)'
+
   • grok-4.20-beta-0309-reasoning
     First seen: 2026-04-01
     Sources: LMArena: 'grok-4.20-beta-0309-reasoning'
@@ -49,7 +53,7 @@ LEADERBOARD ALERTS REPORT
 
   • deepseek-v4-pro
     First seen: 2026-04-24
-    Sources: LMArena: 'deepseek-v4-pro'
+    Sources: LMArena: 'deepseek-v4-pro', LiveBench: 'DeepSeek V4 Pro'
 
   • dola-seed-2.0-pro
     First seen: 2026-04-03
@@ -58,10 +62,6 @@ LEADERBOARD ALERTS REPORT
   • gpt-5.4-mini-high
     First seen: 2026-04-24
     Sources: LMArena: 'gpt-5.4-mini-high'
-
-  • GPT-5.5 (high)
-    First seen: 2026-04-24
-    Sources: Artificial Analysis: 'GPT-5.5 (high)'
 
   • GPT-5.5 (medium)
     First seen: 2026-04-23
@@ -83,6 +83,10 @@ LEADERBOARD ALERTS REPORT
     First seen: 2026-04-24
     Sources: Artificial Analysis: 'DeepSeek V4 Pro (High)'
 
+  • MiMo-V2.5
+    First seen: 2026-04-27
+    Sources: Artificial Analysis: 'MiMo-V2.5'
+
   • Qwen3.6 27B
     First seen: 2026-04-23
     Sources: Artificial Analysis: 'Qwen3.6 27B'
@@ -90,10 +94,6 @@ LEADERBOARD ALERTS REPORT
   • MiMo-V2-Omni-0327
     First seen: 2026-04-09
     Sources: Artificial Analysis: 'MiMo-V2-Omni-0327'
-
-  • DeepSeek V4 Flash (High)
-    First seen: 2026-04-24
-    Sources: Artificial Analysis: 'DeepSeek V4 Flash (High)'
 
   • GPT-5.2 Codex
     First seen: 2026-04-01
@@ -111,6 +111,6 @@ LEADERBOARD ALERTS REPORT
     First seen: 2026-04-24
     Sources: LiveBench: 'GPT-5.4 Nano xHigh'
 
-  • Gemini 3.1 Flash Lite Preview High
-    First seen: 2026-04-01
-    Sources: LiveBench: 'Gemini 3.1 Flash Lite Preview High'
+  • DeepSeek V4 Flash
+    First seen: 2026-04-27
+    Sources: LiveBench: 'DeepSeek V4 Flash'
