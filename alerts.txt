@@ -16,7 +16,6 @@ LEADERBOARD ALERTS REPORT
     • GPT-5 (Thinking) — Artificial Analysis lookup "GPT-5 (high)" returned nothing
     • GPT-5 Mini — Artificial Analysis lookup "GPT-5 mini (high)" returned nothing
     • GPT-5 Nano — Artificial Analysis lookup "GPT-5 nano (high)" returned nothing
-    • GLM 5.1 — LiveBench lookup "GLM 5.1" returned nothing
     • GLM 4.7 — Artificial Analysis lookup "GLM-4.7" returned nothing
     • GLM 4.6 — Artificial Analysis lookup "GLM-4.6" returned nothing
     • Qwen 3 Max — Artificial Analysis lookup "Qwen3 235B A22B 2507" returned nothing
@@ -26,10 +25,6 @@ LEADERBOARD ALERTS REPORT
 ──────────────────────────────────────────────────────────────────────
 2. UNTRACKED MODELS — top 30 models not in tracking.json
 ──────────────────────────────────────────────────────────────────────
-
-  • gpt-5.5-high
-    First seen: 2026-04-27
-    Sources: LMArena: 'gpt-5.5-high', Artificial Analysis: 'GPT-5.5 (high)'
 
   • grok-4.20-beta-0309-reasoning
     First seen: 2026-04-01
@@ -53,7 +48,7 @@ LEADERBOARD ALERTS REPORT
 
   • deepseek-v4-pro
     First seen: 2026-04-24
-    Sources: LMArena: 'deepseek-v4-pro', LiveBench: 'DeepSeek V4 Pro'
+    Sources: LMArena: 'deepseek-v4-pro'
 
   • dola-seed-2.0-pro
     First seen: 2026-04-03
@@ -62,6 +57,10 @@ LEADERBOARD ALERTS REPORT
   • gpt-5.4-mini-high
     First seen: 2026-04-24
     Sources: LMArena: 'gpt-5.4-mini-high'
+
+  • GPT-5.5 (high)
+    First seen: 2026-04-28
+    Sources: Artificial Analysis: 'GPT-5.5 (high)'
 
   • GPT-5.5 (medium)
     First seen: 2026-04-23
@@ -110,7 +109,3 @@ LEADERBOARD ALERTS REPORT
   • GPT-5.4 Nano xHigh
     First seen: 2026-04-24
     Sources: LiveBench: 'GPT-5.4 Nano xHigh'
-
-  • DeepSeek V4 Flash
-    First seen: 2026-04-27
-    Sources: LiveBench: 'DeepSeek V4 Flash'
