@@ -135,7 +135,7 @@
         "logo": "gpt",
         "geo": "US",
         "os": 0,
-        "lma_lookup": null,
+        "lma_lookup": "gpt-5.5-high",
         "aa_lookup": "GPT-5.5 (xhigh)",
         "lb_lookup": "GPT-5.5 Thinking xHigh Effort"
     },
@@ -317,7 +317,7 @@
         "os": 1,
         "lma_lookup": "deepseek-v4-flash-thinking",
         "aa_lookup": "DeepSeek V4 Flash (Max)",
-        "lb_lookup": null
+        "lb_lookup": "DeepSeek V4 Flash"
     },
     {
         "model": "deepseek-v4-pro",
@@ -327,7 +327,7 @@
         "os": 1,
         "lma_lookup": "deepseek-v4-pro-thinking",
         "aa_lookup": "DeepSeek V4 Pro (Max)",
-        "lb_lookup": null
+        "lb_lookup": "DeepSeek V4 Pro"
     },
     {
         "model": "deepseek-v3-2-exp-thinking",
@@ -508,6 +508,16 @@
         "lma_lookup": "kimi-k2-thinking-turbo",
         "aa_lookup": "Kimi K2 Thinking",
         "lb_lookup": "Kimi K2 Thinking"
+    },
+    {
+        "model": "mimo-v2-5-pro",
+        "name": "MiMo v2.5 Pro (Thinking)",
+        "logo": "xiaomi",
+        "geo": "China",
+        "os": 1,
+        "lma_lookup": null,
+        "aa_lookup": "MiMo-V2.5-Pro",
+        "lb_lookup": null
     },
     {
         "model": "mimo-v2-pro",
