@@ -54,10 +54,6 @@ LEADERBOARD ALERTS REPORT
     First seen: 2026-04-03
     Sources: LMArena: 'dola-seed-2.0-pro'
 
-  • gpt-5.4-mini-high
-    First seen: 2026-04-24
-    Sources: LMArena: 'gpt-5.4-mini-high'
-
   • GPT-5.5 (high)
     First seen: 2026-04-28
     Sources: Artificial Analysis: 'GPT-5.5 (high)'
