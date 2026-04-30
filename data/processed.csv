@@ -12,18 +12,18 @@ claude-opus-4-5-thinking;Claude Opus 4.5 (Thinking);claude;US;1473;;75.96
 claude-sonnet-4-5-thinking;Claude Sonnet 4.5 (Thinking);claude;US;1454;;68.19
 claude-opus-4-1;Claude Opus 4.1;claude;US;1449;;61.81
 claude-haiku-4-5;Claude Haiku 4.5;claude;US;1408;37;61.32
-gpt-5.5;GPT-5.5 (Thinking);gpt;US;1488;60;80.71
+gpt-5.5;GPT-5.5 (Thinking);gpt;US;1489;60;80.71
 gpt-5.4-mini;GPT-5.4 mini (Thinking);gpt;US;;49;67.54
 gpt-5.4;GPT-5.4 (Thinking);gpt;US;1478;57;80.28
-gpt-5.2;GPT-5.2 (Thinking);gpt;US;1439;;74.84
+gpt-5.2;GPT-5.2 (Thinking);gpt;US;1440;;74.84
 gpt-5-1;GPT-5.1 (Thinking);gpt;US;1454;;72.04
 gpt-5-high;GPT-5 (Thinking);gpt;US;1434;;70.48
 o3-2025-04-16;o3;gpt;US;1431;38;
 gpt-5-mini;GPT-5 Mini;gpt;US;1390;;65.91
 gpt-5-nano;GPT-5 Nano;gpt;US;1337;;48.62
 gpt-oss;GPT-OSS;gpt;US;1353;33;46.09
-glm-5-1;GLM 5.1;zai;China;1469;51;70.18
-glm-5;GLM 5;zai;China;1469;51;70.18
+glm-5-1;GLM 5.1;zai;China;1470;51;70.18
+glm-5;GLM 5;zai;China;1470;51;70.18
 glm-4-7;GLM 4.7;zai;China;1443;;58.09
 glm-4-6;GLM 4.6;zai;China;1426;;55.19
 glm-4-5-air;GLM 4.5 Air;zai;China;;;
@@ -33,13 +33,13 @@ qwen3-max;Qwen 3 Max;qwen;China;1424;;52.97
 deepseek-v4-flash;DeepSeek v4 Flash;deepseek;China;1439;47;67.25
 deepseek-v4-pro;DeepSeek v4 Pro;deepseek;China;1462;52;73.58
 deepseek-v3-2-exp-thinking;DeepSeek v3.2 (Thinking);deepseek;China;1422;42;62.2
-grok-4-20;Grok 4.20 (Beta);grok;US;1479;49;67.96
+grok-4-20;Grok 4.20 (Beta);grok;US;1480;29;67.96
 grok-4-1-thinking;Grok 4.1 (Thinking);grok;US;1469;;
-grok-4-1-fast;Grok 4.1 Fast;grok;US;1432;39;59.99
+grok-4-1-fast;Grok 4.1 Fast;grok;US;1431;39;59.99
 grok-4;Grok 4;grok;US;;;
 mistral-medium-2508;Mistral;mistral;France;;;
-magistral-medium;Magistral Medium;mistral;France;1303;27;
-muse-spark;Muse Spark;meta;US;1489;52;
+magistral-medium;Magistral Medium;mistral;France;1304;27;
+muse-spark;Muse Spark;meta;US;1490;52;
 llama-4-maverick-17b-128e-instruct;Llama 4 Maverick;meta;US;;;
 nemotron-3-super;Nemotron 3 Super;nemotron;US;1361;36;
 nemotron-ultra-v1;Nemotron Ultra v1;nemotron;US;1347;15;
@@ -51,4 +51,4 @@ ernie-5.0;ERNIE 5.0;baidu;China;1451;29;
 kimi-k2-5-thinking;Kimi K2.5 (Thinking);moonshot;China;1449;37;69.07
 kimi-k2-thinking;Kimi-K2 (Thinking);moonshot;China;1430;;61.59
 mimo-v2-5-pro;MiMo v2.5 Pro (Thinking);xiaomi;China;;54;
-mimo-v2-pro;MiMo v2 Pro (Thinking);xiaomi;China;1449;49;58.14
+mimo-v2-pro;MiMo v2 Pro (Thinking);xiaomi;China;1448;49;58.14

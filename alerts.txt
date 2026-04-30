@@ -70,13 +70,17 @@ LEADERBOARD ALERTS REPORT
     First seen: 2026-04-01
     Sources: Artificial Analysis: 'GPT-5.3 Codex (xhigh)', LiveBench: 'GPT-5.3 Codex High'
 
+  • Grok 4.3
+    First seen: 2026-04-30
+    Sources: Artificial Analysis: 'Grok 4.3'
+
   • Claude Opus 4.7 (Non-reasoning, high)
     First seen: 2026-04-23
     Sources: Artificial Analysis: 'Claude Opus 4.7 (Non-reasoning, high)'
 
   • GPT-5.5 (low)
     First seen: 2026-04-23
-    Sources: Artificial Analysis: 'GPT-5.5 (low)'
+    Sources: Artificial Analysis: 'GPT-5.5 (low)', Artificial Analysis: 'GPT-5.4 (low)'
 
   • DeepSeek V4 Pro (High)
     First seen: 2026-04-24
@@ -89,10 +93,6 @@ LEADERBOARD ALERTS REPORT
   • Qwen3.6 27B
     First seen: 2026-04-23
     Sources: Artificial Analysis: 'Qwen3.6 27B'
-
-  • MiMo-V2-Omni-0327
-    First seen: 2026-04-09
-    Sources: Artificial Analysis: 'MiMo-V2-Omni-0327'
 
   • GPT-5.2 Codex
     First seen: 2026-04-01
