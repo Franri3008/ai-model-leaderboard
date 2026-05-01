@@ -11,6 +11,7 @@ LEADERBOARD ALERTS REPORT
     • Claude Opus 4.5 (Thinking) — Artificial Analysis lookup "Claude Opus 4.5" returned nothing
     • Claude Sonnet 4.5 (Thinking) — Artificial Analysis lookup "Claude 4.5 Sonnet" returned nothing
     • Claude Opus 4.1 — Artificial Analysis lookup "Claude 4.1 Opus" returned nothing
+    • GPT-5.4 (Thinking) — Artificial Analysis lookup "GPT-5.4 (xhigh)" returned nothing
     • GPT-5.2 (Thinking) — Artificial Analysis lookup "GPT-5.2 (xhigh)" returned nothing
     • GPT-5.1 (Thinking) — Artificial Analysis lookup "GPT-5.1 (high)" returned nothing
     • GPT-5 (Thinking) — Artificial Analysis lookup "GPT-5 (high)" returned nothing
@@ -19,6 +20,7 @@ LEADERBOARD ALERTS REPORT
     • GLM 4.7 — Artificial Analysis lookup "GLM-4.7" returned nothing
     • GLM 4.6 — Artificial Analysis lookup "GLM-4.6" returned nothing
     • Qwen 3 Max — Artificial Analysis lookup "Qwen3 235B A22B 2507" returned nothing
+    • DeepSeek v3.2 (Thinking) — Artificial Analysis lookup "DeepSeek V3.2" returned nothing
     • MiniMax M2.5 — Artificial Analysis lookup "Minimax-M2.5" returned nothing
     • Kimi-K2 (Thinking) — Artificial Analysis lookup "Kimi K2 Thinking" returned nothing
 
@@ -34,13 +36,13 @@ LEADERBOARD ALERTS REPORT
     First seen: 2026-04-01
     Sources: LMArena: 'gpt-5.2-chat-latest-20260210'
 
-  • ernie-5.1-preview
-    First seen: 2026-04-29
-    Sources: LMArena: 'ernie-5.1-preview'
-
   • grok-4.20-multi-agent-beta-0309
     First seen: 2026-04-01
     Sources: LMArena: 'grok-4.20-multi-agent-beta-0309'
+
+  • ernie-5.1-preview
+    First seen: 2026-04-29
+    Sources: LMArena: 'ernie-5.1-preview'
 
   • claude-opus-4-5-20251101
     First seen: 2026-04-01
@@ -93,6 +95,10 @@ LEADERBOARD ALERTS REPORT
   • Qwen3.6 27B
     First seen: 2026-04-23
     Sources: Artificial Analysis: 'Qwen3.6 27B'
+
+  • MiMo-V2-Omni-0327
+    First seen: 2026-05-01
+    Sources: Artificial Analysis: 'MiMo-V2-Omni-0327'
 
   • GPT-5.2 Codex
     First seen: 2026-04-01
