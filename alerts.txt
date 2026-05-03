@@ -74,7 +74,7 @@ LEADERBOARD ALERTS REPORT
 
   • Grok 4.3
     First seen: 2026-04-30
-    Sources: Artificial Analysis: 'Grok 4.3'
+    Sources: Artificial Analysis: 'Grok 4.3', LiveBench: 'Grok 4.3'
 
   • Claude Opus 4.7 (Non-reasoning, high)
     First seen: 2026-04-23
