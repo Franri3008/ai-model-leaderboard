@@ -8,6 +8,7 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="styles/common.css">
+  <script src="components/model-filter.js"></script>
   <style>
     .viz-grid {
       display: grid;
@@ -255,6 +256,7 @@
     let modelToOrg = {};
     let activeOsFilter = null;
     let modelToGeo = {};
+    let modelToReleaseDate = {};
     let hiddenGeos = [];
     let questionAnswers = {};
     let active = { question: 'ALL' };
@@ -317,6 +319,10 @@
           trackingData.forEach(t => {
             modelToOs[t.model] = t.os;
             if (t.geo) modelToGeo[t.model] = t.geo === 'USA' ? 'US' : t.geo;
+            if (t.release_date) {
+              const rd = new Date(t.release_date);
+              if (!isNaN(rd.getTime())) modelToReleaseDate[t.model] = rd;
+            }
             trackingMap[t.model] = t;
           });
           if (snapshotParam) {
@@ -481,11 +487,34 @@
                 }
               });
 
+              if (window.ModelFilter) window.ModelFilter.refresh();
               updateChart();
               updateFootnote();
             }
           });
         });
+
+        if (window.ModelFilter) {
+          window.ModelFilter.init({
+            getModels: () => rawData
+              .map(d => {
+                const m = String(d.model || '').trim();
+                return {
+                  model: m,
+                  name: String(d.name || '').trim(),
+                  color: modelColors[m] || '#2756d3',
+                  _rd: modelToReleaseDate[m] || null
+                };
+              })
+              .sort((a, b) => {
+                if (a._rd && b._rd) return b._rd - a._rd;
+                if (a._rd) return -1;
+                if (b._rd) return 1;
+                return (a.name || a.model).localeCompare(b.name || b.model);
+              }),
+            onChange: () => { updateChart(); updateFootnote(); }
+          });
+        }
 
         createChart();
         updateFootnote();
@@ -744,6 +773,7 @@
 
       let result = rows.filter(d => {
         if (d.score <= 0) return false;
+        if (window.ModelFilter && window.ModelFilter.isHidden(d.model)) return false;
         if (hiddenGeos.length > 0) {
           const geo = modelToGeo[d.model] || 'Other';
           if (hiddenGeos.includes(geo)) return false;

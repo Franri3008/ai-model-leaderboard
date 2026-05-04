@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>AI Capability over Time</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="styles/common.css">
+    <script src="components/model-filter.js"></script>
+    <style>
+        .viz-grid {
+            display: grid;
+            grid-template-rows: auto 19fr 1fr;
+            grid-template-columns: 1fr auto;
+            height: 100vh;
+            width: 100vw;
+            box-sizing: border-box;
+            padding-bottom: 8px;
+        }
+
+        #container1 {
+            grid-row: 2;
+            grid-column: 1 / span 2;
+            display: flex;
+            overflow: hidden;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #footnote-container {
+            grid-row: 3;
+            grid-column: 1 / span 2;
+            background: #f9fafc;
+            padding: 6px 16px;
+            font-size: clamp(10px, 1.4vw, 13px);
+            color: #666;
+            text-align: right;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            min-height: 50px;
+            box-sizing: border-box;
+            display: none;
+        }
+
+        #container1 .chart-wrapper {
+            flex: 1 1 auto;
+            display: flex;
+            min-width: 0;
+            height: 100%;
+        }
+
+        #container1 .chart-wrapper-inner {
+            flex: 1 1 auto;
+            display: flex;
+            min-width: 0;
+            height: 100%;
+        }
+
+        #chart {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #container2 {
+            grid-row: 1;
+            grid-column: 1 / span 2;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 20px;
+            position: relative;
+        }
+
+        .c2-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        #container3 {
+            display: none;
+        }
+
+        #container4 {
+            display: none;
+        }
+
+        .viz-grid.with-logo #footnote-container {
+            grid-column: 1;
+        }
+
+        .viz-grid.with-logo #container4 {
+            display: flex;
+            grid-row: 3;
+            grid-column: 2;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 4px 16px 4px 0;
+            overflow: hidden;
+            min-width: 0;
+            gap: 0;
+        }
+
+        .viz-grid.with-logo #container4 .logo {
+            height: auto;
+            max-height: 100%;
+            width: auto;
+        }
+
+        .scatter-dot {
+            cursor: pointer;
+            transition: r 0.15s ease, stroke-width 0.15s ease;
+        }
+
+        .scatter-label {
+            font-size: clamp(9px, 1.1vw, 12px);
+            font-weight: 600;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .trendline {
+            pointer-events: none;
+            stroke-dasharray: 6 4;
+            stroke-width: 2;
+            fill: none;
+            opacity: 0.85;
+        }
+
+        .axis-grid line {
+            stroke: #e5e7eb;
+            stroke-dasharray: 2 3;
+            shape-rendering: crispEdges;
+        }
+
+        .axis-grid path {
+            stroke: none;
+        }
+
+        .chart-title {
+            font-size: clamp(14px, 2vw, 22px);
+            font-weight: 700;
+            fill: #111;
+        }
+
+        .axis-label {
+            font-size: clamp(10px, 1.2vw, 14px);
+            font-weight: 600;
+            fill: #333;
+        }
+
+        @media (max-height:500px),
+        (max-width:640px) {
+            .viz-grid {
+                grid-template-rows: auto 1fr auto;
+                grid-template-columns: 1fr;
+                padding-bottom: 0px;
+            }
+
+            #container1 {
+                grid-row: 2;
+                grid-column: 1;
+            }
+
+            #container2 {
+                grid-row: 1;
+                grid-column: 1;
+            }
+
+            #footnote-container {
+                grid-row: 3;
+                grid-column: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="viz-grid">
+        <div id="container2" class="container control-container">
+            <div class="tabs-container">
+                <div class="tab active" data-question="ALL">Overall</div>
+                <div class="tab-separator"></div>
+                <div class="tab" data-question="LMArena">LMArena</div>
+                <div class="tab" data-question="Artificial Analysis">Artificial Analysis</div>
+                <div class="tab" data-question="LiveBench">LiveBench</div>
+                <div class="tab-indicator"></div>
+            </div>
+            <div class="c2-controls">
+                <div style="display: flex; flex-direction: row; align-items: center; gap: 8px;">
+                    <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Models by Provider
+                    </div>
+                    <div class="selector-group">
+                        <button class="selector-button bop-btn active" data-bop="0">All</button>
+                        <button class="selector-button bop-btn" data-bop="1">Best</button>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: row; align-items: center; gap: 8px;">
+                    <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Color by</div>
+                    <div class="selector-group">
+                        <button class="selector-button" data-palette="0">Org</button>
+                        <button class="selector-button" data-palette="1">Licensing</button>
+                        <button class="selector-button active" data-palette="2">Country</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="container1" class="container chart-container">
+            <div class="chart-wrapper">
+                <div class="chart-wrapper-inner">
+                    <svg id="chart"></svg>
+                </div>
+            </div>
+        </div>
+        <div id="container3" class="container source-container">
+            <div class="source-text">Source: <a href="https://aiworld.eu" target="_blank">AI World</a></div>
+        </div>
+        <div id="container4" class="container logo-container">
+            <a href="https://aiworld.eu/" target="_blank" rel="noopener">
+                <img src="https://aiworld.eu/logo-transparent.svg" class="logo" alt="AI World logo">
+            </a>
+        </div>
+        <div id="footnote-container"></div>
+    </div>
+    <div id="tooltip"></div>
+    <script>
+        const tooltip = d3.select("#tooltip");
+        const DATA_BASE = ".";
+        let rawData = [];
+        let trackingMap = {};
+        let modelIcons = {};
+        let modelColors = {};
+        let modelToOs = {};
+        let modelToLogo = {};
+        let modelToOrg = {};
+        let modelToGeo = {};
+        let modelToReleaseDate = {};
+        let idToColor = {};
+        let idToOrg = {};
+        let activeOsFilter = null;
+        let hiddenGeos = [];
+        let active = { question: 'ALL' };
+        let modeParam = 0;
+        let paletteMode = 2;
+        let bgColor = '#f9fafc';
+        let skippedNoDate = 0;
+        let resizeTimer = null;
+        let chartLayers = null;
+
+        const TRANSITION_MS = 400;
+        const GEO_TRENDLINE_COLORS = { 'US': '#3b82f6', 'China': '#ef4444', 'France': '#5c5a74' };
+
+        function parseNum(v) {
+            if (v == null) return 0;
+            const s = String(v).replace(/,/g, '.');
+            const n = parseFloat(s);
+            return isNaN(n) ? 0 : n;
+        }
+
+        function displayName(name) {
+            if (!name) return '';
+            return String(name)
+                .replace(/\s*\((Thinking|Preview|Beta)\)\s*/gi, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function parseDate(s) {
+            if (!s) return null;
+            const t = String(s).trim();
+            if (!t) return null;
+            const d = new Date(t);
+            return isNaN(d.getTime()) ? null : d;
+        }
+
+        function load() {
+            const params = new URLSearchParams(window.location.search);
+
+            Promise.all([
+                d3.dsv(";", `${DATA_BASE}/data/processed.csv`),
+                d3.json(`${DATA_BASE}/config/models.json`),
+                d3.json(`${DATA_BASE}/config/tracking.json`),
+                d3.json(`${DATA_BASE}/config/scatter_defaults.json`).catch(() => null)
+            ]).then(([data, modelsData, trackingData, defaultsData]) => {
+                rawData = data;
+
+                modelsData.forEach(m => { idToColor[m.id] = m.color; idToOrg[m.id] = m.org; });
+
+                trackingData.forEach(t => {
+                    trackingMap[t.model] = t;
+                    modelToOs[t.model] = t.os;
+                    if (t.geo) modelToGeo[t.model] = (t.geo === 'USA' ? 'US' : t.geo);
+                    if (t.release_date) modelToReleaseDate[t.model] = parseDate(t.release_date);
+                });
+
+                const paletteParam = params.get('palette');
+                if (paletteParam) {
+                    const p = parseInt(paletteParam, 10);
+                    if (p === 0 || p === 1 || p === 2) paletteMode = p;
+                }
+
+                rawData.forEach(d => {
+                    const model = String(d.model || '').trim();
+                    const name = String(d.name || '').trim();
+                    const logo = String(d.logo || '').trim();
+                    d.displayName = name || model;
+                    if (logo) {
+                        modelIcons[model] = `logos/${logo}.png`;
+                        modelToLogo[model] = logo;
+                        if (idToOrg[logo]) modelToOrg[model] = idToOrg[logo];
+                    }
+                    assignColor(d);
+                });
+
+                const sourceParam = params.get('source');
+                if (sourceParam) {
+                    const map = { 'aiw': 'ALL', 'llma': 'LMArena', 'aa': 'Artificial Analysis', 'lb': 'LiveBench' };
+                    const mapped = map[sourceParam.toLowerCase()];
+                    if (mapped) {
+                        active.question = mapped;
+                        document.querySelectorAll('.tab').forEach(t => {
+                            t.classList.toggle('active', t.getAttribute('data-question') === mapped);
+                        });
+                    }
+                }
+
+                const bopParam = params.get('bop');
+                if (bopParam === '1') modeParam = 1;
+
+                const colorParam = params.get('color');
+                if (colorParam === 'white') {
+                    bgColor = '#ffffff';
+                    document.body.style.background = bgColor;
+                    const fn = document.getElementById('footnote-container');
+                    if (fn) fn.style.background = bgColor;
+                }
+
+                const logoParam = params.get('logo');
+                if (logoParam === '1') document.querySelector('.viz-grid').classList.add('with-logo');
+
+                setupTabs();
+                setupBopButtons();
+                setupPaletteButtons();
+                if (window.ModelFilter) {
+                    window.ModelFilter.init({
+                        getModels: () => rawData
+                            .map(d => {
+                                const m = String(d.model || '').trim();
+                                return {
+                                    model: m,
+                                    name: String(d.name || '').trim(),
+                                    color: modelColors[m] || '#2756d3',
+                                    _rd: modelToReleaseDate[m] || null
+                                };
+                            })
+                            .sort((a, b) => {
+                                if (a._rd && b._rd) return b._rd - a._rd;
+                                if (a._rd) return -1;
+                                if (b._rd) return 1;
+                                return (a.name || a.model).localeCompare(b.name || b.model);
+                            }),
+                        onChange: () => updateChart()
+                    });
+
+                    const visibleArr = defaultsData && (defaultsData.visible_models || (Array.isArray(defaultsData) ? defaultsData : null));
+                    if (Array.isArray(visibleArr) && visibleArr.length) {
+                        const visibleSet = new Set(visibleArr);
+                        const toHide = rawData
+                            .map(d => String(d.model || '').trim())
+                            .filter(m => m && !visibleSet.has(m));
+                        window.ModelFilter.setHidden(toHide);
+                    }
+                }
+                renderLegend();
+
+                updateChart();
+                window.addEventListener('resize', () => {
+                    if (resizeTimer) clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(updateChart, 100);
+                });
+            });
+        }
+
+        function assignColor(d) {
+            const model = String(d.model || '').trim();
+            const logo = String(d.logo || '').trim();
+            if (paletteMode === 1) {
+                const os = modelToOs[model] !== undefined ? modelToOs[model] : 0;
+                modelColors[model] = os === 1 ? '#188ab2' : '#ef476f';
+            } else if (paletteMode === 2) {
+                const geo = modelToGeo[model] || 'Other';
+                if (geo === 'US') modelColors[model] = '#3b82f6';
+                else if (geo === 'China') modelColors[model] = '#ef4444';
+                else if (geo === 'France') modelColors[model] = '#5c5a74';
+                else modelColors[model] = '#cccccc';
+            } else if (logo && idToColor[logo]) {
+                modelColors[model] = idToColor[logo];
+            } else {
+                modelColors[model] = '#1a73e8';
+            }
+        }
+
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const indicator = document.querySelector('.tab-indicator');
+            function updateIndicator(activeTab) {
+                const containerRect = activeTab.closest('.tabs-container').getBoundingClientRect();
+                const tabRect = activeTab.getBoundingClientRect();
+                indicator.style.left = (tabRect.left - containerRect.left) + 'px';
+                indicator.style.width = tabRect.width + 'px';
+                indicator.classList.add('active');
+            }
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    active.question = tab.getAttribute('data-question');
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    updateIndicator(tab);
+                    updateChart();
+                });
+            });
+            const activeTab = document.querySelector('.tab.active');
+            if (activeTab) updateIndicator(activeTab);
+            window.addEventListener('resize', () => {
+                const cur = document.querySelector('.tab.active');
+                if (cur) updateIndicator(cur);
+            });
+        }
+
+        function setupBopButtons() {
+            const btns = document.querySelectorAll('.bop-btn');
+            btns.forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.getAttribute('data-bop'), 10) === modeParam);
+                btn.addEventListener('click', () => {
+                    const val = parseInt(btn.getAttribute('data-bop'), 10);
+                    if (modeParam === val) return;
+                    modeParam = val;
+                    btns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    updateChart();
+                });
+            });
+        }
+
+        function setupPaletteButtons() {
+            const btns = document.querySelectorAll('[data-palette]');
+            btns.forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.getAttribute('data-palette'), 10) === paletteMode);
+                btn.addEventListener('click', () => {
+                    const val = parseInt(btn.getAttribute('data-palette'), 10);
+                    if (paletteMode === val) return;
+                    paletteMode = val;
+                    btns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    rawData.forEach(d => assignColor(d));
+                    if (window.ModelFilter) window.ModelFilter.refresh();
+                    updateChart();
+                    renderLegend();
+                });
+            });
+        }
+
+        function getAggregated() {
+            let rows;
+            if (active.question === 'ALL') {
+                const gpt5 = rawData.find(d => d.model === 'gpt-5-high' || d.name === 'GPT-5 (Thinking)');
+                if (!gpt5) return [];
+                const maxLma = parseNum(gpt5.lma) || 1434;
+                const maxAa = parseNum(gpt5.aa) || 45;
+                const maxLb = parseNum(gpt5.lb) || 70.48;
+                rows = rawData.map(d => {
+                    const model = String(d.model || '').trim();
+                    const name = String(d.name || '').trim();
+                    let lma = parseNum(d.lma);
+                    let aa = parseNum(d.aa);
+                    let lb = parseNum(d.lb);
+                    const hasLma = lma > 0, hasAa = aa > 0, hasLb = lb > 0;
+                    const missing = (hasLma ? 0 : 1) + (hasAa ? 0 : 1) + (hasLb ? 0 : 1);
+                    let nLma = hasLma ? (lma / (2 * maxLma)) : 0;
+                    let nAa = hasAa ? (aa / (2 * maxAa)) : 0;
+                    let nLb = hasLb ? (lb / (2 * maxLb)) : 0;
+                    if (missing === 1) {
+                        if (!hasLma && hasAa && hasLb) nLma = (nAa + nLb) / 2;
+                        else if (!hasAa && hasLma && hasLb) nAa = (nLma + nLb) / 2;
+                        else if (!hasLb && hasLma && hasAa) nLb = (nLma + nAa) / 2;
+                    }
+                    return { model, name, score: (nLma + nAa + nLb) / 3 };
+                });
+            } else {
+                const key = active.question === 'LMArena' ? 'lma' : active.question === 'Artificial Analysis' ? 'aa' : 'lb';
+                rows = rawData.map(d => ({
+                    model: String(d.model || '').trim(),
+                    name: String(d.name || '').trim(),
+                    score: parseNum(d[key])
+                }));
+            }
+
+            let result = rows.filter(d => {
+                if (d.score <= 0) return false;
+                if (window.ModelFilter && window.ModelFilter.isHidden(d.model)) return false;
+                if (hiddenGeos.length > 0) {
+                    const geo = modelToGeo[d.model] || 'Other';
+                    if (hiddenGeos.includes(geo)) return false;
+                }
+                if (activeOsFilter !== null) {
+                    const os = modelToOs[d.model] !== undefined ? modelToOs[d.model] : 0;
+                    if (os !== activeOsFilter) return false;
+                }
+                return true;
+            });
+
+            if (modeParam === 1) {
+                const bestByLogo = {};
+                result.forEach(d => {
+                    const logo = modelToLogo[d.model] || '';
+                    if (!logo) return;
+                    if (!bestByLogo[logo] || d.score > bestByLogo[logo].score) bestByLogo[logo] = d;
+                });
+                result = Object.values(bestByLogo);
+            }
+            return result;
+        }
+
+        function getPlotData() {
+            const agg = getAggregated();
+            let withoutDate = 0;
+            const data = agg.map(d => {
+                const release = modelToReleaseDate[d.model];
+                if (!release) { withoutDate++; return null; }
+                return {
+                    model: d.model,
+                    name: d.name || d.model,
+                    score: d.score,
+                    date: release,
+                    geo: modelToGeo[d.model] || 'Other',
+                    color: modelColors[d.model] || '#1a73e8',
+                    logo: modelToLogo[d.model] || '',
+                    os: modelToOs[d.model] !== undefined ? modelToOs[d.model] : 0
+                };
+            }).filter(Boolean);
+            skippedNoDate = withoutDate;
+            return data;
+        }
+
+        function trendlineGroupKey(d) {
+            if (paletteMode === 0) return d.logo || 'other';
+            if (paletteMode === 1) return d.os === 1 ? 'os' : 'prop';
+            return d.geo;
+        }
+
+        function trendlineGroupColor(key) {
+            if (paletteMode === 0) return idToColor[key] || '#9ca3af';
+            if (paletteMode === 1) return key === 'os' ? '#188ab2' : '#ef476f';
+            return GEO_TRENDLINE_COLORS[key] || '#9ca3af';
+        }
+
+        function linearRegression(points) {
+            const n = points.length;
+            if (n < 2) return null;
+            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+            points.forEach(p => {
+                const x = p.date.getTime();
+                sumX += x; sumY += p.score; sumXY += x * p.score; sumXX += x * x;
+            });
+            const denom = (n * sumXX - sumX * sumX);
+            if (denom === 0) return null;
+            const slope = (n * sumXY - sumX * sumY) / denom;
+            const intercept = (sumY - slope * sumX) / n;
+            return { slope, intercept };
+        }
+
+        function getValueFormatter() {
+            if (active.question === 'ALL') return d3.format('.3f');
+            if (active.question === 'LiveBench') return d3.format('.1f');
+            return d3.format('.0f');
+        }
+
+        function getYAxisTitle() {
+            if (active.question === 'ALL') return 'Capability Score (normalized)';
+            if (active.question === 'LMArena') return 'LMArena Elo';
+            if (active.question === 'Artificial Analysis') return 'Artificial Analysis Index';
+            if (active.question === 'LiveBench') return 'LiveBench Score';
+            return 'Score';
+        }
+
+        function getChartTitle() {
+            if (active.question === 'ALL') return 'AI Capability over Time';
+            return `${active.question} over Time`;
+        }
+
+        function updateChart() {
+            const svg = d3.select('#chart');
+            svg.selectAll('*').remove();
+            const container = document.getElementById('container1');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            if (width <= 0 || height <= 0) return;
+
+            svg.attr('width', width).attr('height', height).attr('viewBox', `0 0 ${width} ${height}`);
+
+            const data = getPlotData();
+            if (data.length === 0) {
+                svg.append('text')
+                    .attr('x', width / 2).attr('y', height / 2)
+                    .attr('text-anchor', 'middle').attr('fill', '#666')
+                    .attr('font-size', 14)
+                    .text(skippedNoDate > 0 ? `No models have a release_date set in tracking.json (${skippedNoDate} skipped)` : 'No data');
+                return;
+            }
+
+            const margin = { top: 28, right: 110, bottom: 60, left: 80 };
+            const innerW = Math.max(50, width - margin.left - margin.right);
+            const innerH = Math.max(50, height - margin.top - margin.bottom);
+
+            const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const xExtent = d3.extent(data, d => d.date);
+            const xPad = Math.max(15 * 86400000, (xExtent[1] - xExtent[0]) * 0.05);
+            const xDomain = [new Date(xExtent[0].getTime() - xPad), new Date(xExtent[1].getTime() + xPad)];
+            const x = d3.scaleTime().domain(xDomain).range([0, innerW]);
+
+            const yExtent = d3.extent(data, d => d.score);
+            const yRange = yExtent[1] - yExtent[0];
+            const initialPad = Math.max(yRange * 0.10, yRange === 0 ? 1 : 0);
+            const niceScale = d3.scaleLinear().domain([yExtent[0] - initialPad, yExtent[1] + initialPad]).nice();
+            const niceLower = niceScale.domain()[0];
+            const bottomPad = yExtent[0] - niceLower;
+            const upperBound = yExtent[1] + bottomPad;
+            const y = d3.scaleLinear().domain([niceLower, upperBound]).range([innerH, 0]);
+
+            const fmt = getValueFormatter();
+
+            g.append('g').attr('class', 'axis-grid')
+                .call(d3.axisLeft(y).tickSize(-innerW).tickFormat(''))
+                .selectAll('line').attr('stroke', '#e5e7eb');
+            g.append('g').attr('class', 'axis-grid')
+                .attr('transform', `translate(0,${innerH})`)
+                .call(d3.axisBottom(x).tickSize(-innerH).tickFormat(''))
+                .selectAll('line').attr('stroke', '#e5e7eb');
+
+            g.append('g')
+                .attr('transform', `translate(0,${innerH})`)
+                .call(d3.axisBottom(x).ticks(Math.max(4, Math.floor(innerW / 110))).tickFormat(d3.timeFormat('%b %Y')))
+                .call(s => s.select('.domain').attr('stroke', '#9ca3af'))
+                .selectAll('text').attr('font-size', 11).attr('fill', '#374151');
+
+            g.append('g')
+                .call(d3.axisLeft(y).ticks(8).tickFormat(fmt))
+                .call(s => s.select('.domain').attr('stroke', '#9ca3af'))
+                .selectAll('text').attr('font-size', 11).attr('fill', '#374151');
+
+            svg.append('text')
+                .attr('class', 'axis-label')
+                .attr('x', margin.left + innerW / 2)
+                .attr('y', height - 18)
+                .attr('text-anchor', 'middle')
+                .text('Released');
+
+            svg.append('text')
+                .attr('class', 'axis-label')
+                .attr('transform', `translate(${20},${margin.top + innerH / 2}) rotate(-90)`)
+                .attr('text-anchor', 'middle')
+                .text('Score');
+
+            const groups = d3.group(data, d => trendlineGroupKey(d));
+            groups.forEach((pts, key) => {
+                if (pts.length < 2) return;
+                const reg = linearRegression(pts);
+                if (!reg) return;
+                const xMin = d3.min(pts, p => p.date.getTime());
+                const xMax = d3.max(pts, p => p.date.getTime());
+                const y1 = reg.slope * xMin + reg.intercept;
+                const y2 = reg.slope * xMax + reg.intercept;
+                const color = trendlineGroupColor(key);
+                g.append('line')
+                    .attr('class', 'trendline')
+                    .attr('x1', x(new Date(xMin))).attr('y1', y(y1))
+                    .attr('x2', x(new Date(xMax))).attr('y2', y(y2))
+                    .attr('stroke', color);
+            });
+
+            const labelObjs = data.map(d => ({
+                ...d,
+                x0: x(d.date),
+                y0: y(d.score),
+                lx: x(d.date) + 8,
+                ly: y(d.score)
+            }));
+            resolveLabelCollisions(labelObjs, innerH);
+
+            const dotR = Math.max(3.5, Math.min(6, innerW / 200));
+
+            g.selectAll('.label-line')
+                .data(labelObjs.filter(d => Math.abs(d.ly - d.y0) > 6))
+                .enter().append('line')
+                .attr('class', 'label-line')
+                .attr('x1', d => d.x0).attr('y1', d => d.y0)
+                .attr('x2', d => d.lx - 2).attr('y2', d => d.ly)
+                .attr('stroke', d => d.color)
+                .attr('stroke-width', 0.8)
+                .attr('opacity', 0.5);
+
+            g.selectAll('.scatter-dot')
+                .data(data)
+                .enter().append('circle')
+                .attr('class', 'scatter-dot')
+                .attr('cx', d => x(d.date))
+                .attr('cy', d => y(d.score))
+                .attr('r', dotR)
+                .attr('fill', d => d.color)
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 1.2)
+                .on('mouseover', function (event, d) {
+                    d3.select(this).attr('r', dotR + 2);
+                    const org = modelToOrg[d.model];
+                    const head = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name}</b>${org ? '<br><span style="font-size:0.9em;">' + org + '</span>' : ''}</div>`;
+                    const rows = `<table style="width:100%;margin-top:4px;border-spacing:0;">`
+                        + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Score</td><td style="text-align:right;padding:2px 0;">${fmt(d.score)}</td></tr>`
+                        + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Released</td><td style="text-align:right;padding:2px 0;">${d3.timeFormat('%b %d, %Y')(d.date)}</td></tr>`
+                        + `</table>`;
+                    tooltip.style('opacity', 1).html(head + rows);
+                })
+                .on('mousemove', function (event) {
+                    tooltip.style('left', (event.pageX + 12) + 'px').style('top', (event.pageY - 8) + 'px');
+                })
+                .on('mouseout', function () {
+                    d3.select(this).attr('r', dotR);
+                    tooltip.style('opacity', 0);
+                });
+
+            g.selectAll('.scatter-label')
+                .data(labelObjs)
+                .enter().append('text')
+                .attr('class', 'scatter-label')
+                .attr('x', d => d.lx)
+                .attr('y', d => d.ly)
+                .attr('dy', '0.32em')
+                .attr('fill', d => d.color)
+                .text(d => displayName(d.name));
+
+            if (skippedNoDate > 0) {
+                svg.append('text')
+                    .attr('x', width - margin.right)
+                    .attr('y', margin.top - 8)
+                    .attr('text-anchor', 'end')
+                    .attr('font-size', 10)
+                    .attr('font-style', 'italic')
+                    .attr('fill', '#888')
+                    .text(`${skippedNoDate} models hidden — no release_date in tracking.json`);
+            }
+        }
+
+        function resolveLabelCollisions(labels, height) {
+            const minDy = 13;
+            const xWindow = 70;
+            labels.sort((a, b) => a.y0 - b.y0);
+            for (let pass = 0; pass < 30; pass++) {
+                let moved = false;
+                for (let i = 0; i < labels.length; i++) {
+                    for (let j = i + 1; j < labels.length; j++) {
+                        const a = labels[i], b = labels[j];
+                        if (Math.abs(a.lx - b.lx) > xWindow) continue;
+                        const dy = b.ly - a.ly;
+                        if (Math.abs(dy) < minDy) {
+                            const need = (minDy - Math.abs(dy)) / 2 + 0.1;
+                            if (dy >= 0) { a.ly -= need; b.ly += need; }
+                            else { a.ly += need; b.ly -= need; }
+                            moved = true;
+                        }
+                    }
+                }
+                if (!moved) break;
+            }
+            labels.forEach(d => { d.ly = Math.max(6, Math.min(height - 6, d.ly)); });
+        }
+
+        function renderLegend() {
+            const footnote = document.getElementById('footnote-container');
+            if (!footnote) return;
+            footnote.style.display = 'flex';
+            footnote.style.justifyContent = 'center';
+
+            let container = footnote.querySelector('.legend-wrapper-inner');
+            if (!container) {
+                footnote.innerHTML = `
+          <div class="legend-wrapper-inner" style="display: flex; gap: clamp(16px, 4vw, 48px); justify-content: center; align-items: flex-start; flex-wrap: wrap;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+              <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Licensing</div>
+              <div class="legend" style="margin: 0; padding: 0;">
+                <div class="legend-item" tabindex="0" data-os="1"><div class="legend-square"></div><span>Open Source</span></div>
+                <div class="legend-item" tabindex="0" data-os="0"><div class="legend-square"></div><span>Proprietary</span></div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+              <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Country</div>
+              <div class="legend" style="margin: 0; padding: 0;">
+                <div class="legend-item" tabindex="0" data-geo="US"><div class="legend-square"></div><span>US</span></div>
+                <div class="legend-item" tabindex="0" data-geo="China"><div class="legend-square"></div><span>China</span></div>
+                <div class="legend-item" tabindex="0" data-geo="France"><div class="legend-square"></div><span>France</span></div>
+              </div>
+            </div>
+          </div>
+        `;
+                footnote.querySelectorAll('.legend-item[data-os]').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const v = parseInt(item.getAttribute('data-os'), 10);
+                        if (activeOsFilter === null) activeOsFilter = (v === 1) ? 0 : 1;
+                        else if (activeOsFilter === v) return;
+                        else activeOsFilter = null;
+                        updateChart(); renderLegend();
+                    });
+                });
+                footnote.querySelectorAll('.legend-item[data-geo]').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const g = item.getAttribute('data-geo');
+                        if (hiddenGeos.includes(g)) hiddenGeos = hiddenGeos.filter(h => h !== g);
+                        else { if (hiddenGeos.length >= 2) return; hiddenGeos.push(g); }
+                        updateChart(); renderLegend();
+                    });
+                });
+            }
+
+            const osBg = paletteMode === 1 ? '#188ab2' : '#ffffff';
+            const propBg = paletteMode === 1 ? '#ef476f' : '#ffffff';
+            const check = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+            const itOs = footnote.querySelector('.legend-item[data-os="1"]');
+            itOs.classList.toggle('dim', activeOsFilter === 0);
+            const sqOs = itOs.querySelector('.legend-square');
+            sqOs.style.background = osBg;
+            sqOs.setAttribute('data-palette', paletteMode === 1 ? 1 : 0);
+            sqOs.innerHTML = (activeOsFilter === null || activeOsFilter === 1) ? check : '';
+
+            const itProp = footnote.querySelector('.legend-item[data-os="0"]');
+            itProp.classList.toggle('dim', activeOsFilter === 1);
+            const sqProp = itProp.querySelector('.legend-square');
+            sqProp.style.background = propBg;
+            sqProp.setAttribute('data-palette', paletteMode === 1 ? 1 : 0);
+            sqProp.innerHTML = (activeOsFilter === null || activeOsFilter === 0) ? check : '';
+
+            const usBg = paletteMode === 2 ? '#3b82f6' : '#ffffff';
+            const cnBg = paletteMode === 2 ? '#ef4444' : '#ffffff';
+            const frBg = paletteMode === 2 ? '#5c5a74' : '#ffffff';
+            const setGeo = (geo, bg) => {
+                const it = footnote.querySelector(`.legend-item[data-geo="${geo}"]`);
+                it.classList.toggle('dim', hiddenGeos.includes(geo));
+                const sq = it.querySelector('.legend-square');
+                sq.style.background = bg;
+                sq.style.borderColor = paletteMode === 2 ? bg : '#111';
+                sq.setAttribute('data-palette', paletteMode === 2 ? 2 : 0);
+                sq.innerHTML = !hiddenGeos.includes(geo) ? check : '';
+            };
+            setGeo('US', usBg); setGeo('China', cnBg); setGeo('France', frBg);
+        }
+
+        load();
+    </script>
+</body>
+
+</html>
