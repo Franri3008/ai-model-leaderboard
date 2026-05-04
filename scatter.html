@@ -247,7 +247,7 @@
         let active = { question: 'ALL' };
         let modeParam = 0;
         let paletteMode = 2;
-        let bgColor = '#f9fafc';
+        let bgColor = '#ffffff';
         let skippedNoDate = 0;
         let resizeTimer = null;
         let chartLayers = null;
@@ -333,9 +333,13 @@
                 if (bopParam === '1') modeParam = 1;
 
                 const colorParam = params.get('color');
-                if (colorParam === 'white') {
+                if (colorParam === 'gray' || colorParam === 'grey') {
+                    bgColor = '#f9fafc';
+                } else if (colorParam === 'white') {
                     bgColor = '#ffffff';
-                    document.body.style.background = bgColor;
+                }
+                document.body.style.background = bgColor;
+                {
                     const fn = document.getElementById('footnote-container');
                     if (fn) fn.style.background = bgColor;
                 }
@@ -593,31 +597,77 @@
             return `${active.question} over Time`;
         }
 
-        function updateChart() {
+        function ensureLayers() {
             const svg = d3.select('#chart');
+            if (chartLayers && chartLayers.svgNode === svg.node()) return chartLayers;
             svg.selectAll('*').remove();
+            const root = svg.append('g').attr('class', 'plot-area');
+            chartLayers = {
+                svgNode: svg.node(),
+                svg: svg,
+                root,
+                gridY: root.append('g').attr('class', 'axis-grid grid-y'),
+                gridX: root.append('g').attr('class', 'axis-grid grid-x'),
+                axisX: root.append('g').attr('class', 'axis axis-x'),
+                axisY: root.append('g').attr('class', 'axis axis-y'),
+                trendlines: root.append('g').attr('class', 'trendlines'),
+                labelLines: root.append('g').attr('class', 'label-lines'),
+                dots: root.append('g').attr('class', 'dots'),
+                labels: root.append('g').attr('class', 'labels'),
+                xLabel: svg.append('text').attr('class', 'axis-label x-label').attr('text-anchor', 'middle'),
+                yLabel: svg.append('text').attr('class', 'axis-label y-label').attr('text-anchor', 'middle'),
+                notice: svg.append('text').attr('class', 'notice')
+                    .attr('font-size', 10).attr('font-style', 'italic').attr('fill', '#888')
+                    .attr('text-anchor', 'end').style('opacity', 0),
+                empty: svg.append('text').attr('class', 'empty-state')
+                    .attr('text-anchor', 'middle').attr('fill', '#666').attr('font-size', 14)
+                    .style('opacity', 0)
+            };
+            return chartLayers;
+        }
+
+        function updateChart() {
             const container = document.getElementById('container1');
             const width = container.clientWidth;
             const height = container.clientHeight;
             if (width <= 0 || height <= 0) return;
 
+            const layers = ensureLayers();
+            const svg = layers.svg;
             svg.attr('width', width).attr('height', height).attr('viewBox', `0 0 ${width} ${height}`);
 
+            const t = d3.transition('chart').duration(TRANSITION_MS).ease(d3.easeCubicOut);
             const data = getPlotData();
+
             if (data.length === 0) {
-                svg.append('text')
+                const msg = skippedNoDate > 0
+                    ? `No models have a release_date set in tracking.json (${skippedNoDate} skipped)`
+                    : 'No data';
+                layers.empty
                     .attr('x', width / 2).attr('y', height / 2)
-                    .attr('text-anchor', 'middle').attr('fill', '#666')
-                    .attr('font-size', 14)
-                    .text(skippedNoDate > 0 ? `No models have a release_date set in tracking.json (${skippedNoDate} skipped)` : 'No data');
+                    .text(msg)
+                    .transition(t).style('opacity', 1);
+                layers.root.transition(t).style('opacity', 0);
+                layers.notice.transition(t).style('opacity', 0);
                 return;
             }
+            layers.empty.transition(t).style('opacity', 0);
+            layers.root.transition(t).style('opacity', 1);
 
             const margin = { top: 28, right: 110, bottom: 60, left: 80 };
             const innerW = Math.max(50, width - margin.left - margin.right);
             const innerH = Math.max(50, height - margin.top - margin.bottom);
 
-            const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+            layers.root.attr('transform', `translate(${margin.left},${margin.top})`);
+            layers.gridX.attr('transform', `translate(0,${innerH})`);
+            layers.axisX.attr('transform', `translate(0,${innerH})`);
+
+            layers.xLabel
+                .attr('x', margin.left + innerW / 2).attr('y', height - 18)
+                .text('Released');
+            layers.yLabel
+                .attr('transform', `translate(20,${margin.top + innerH / 2}) rotate(-90)`)
+                .text('Score');
 
             const xExtent = d3.extent(data, d => d.date);
             const xPad = Math.max(15 * 86400000, (xExtent[1] - xExtent[0]) * 0.05);
@@ -635,54 +685,55 @@
 
             const fmt = getValueFormatter();
 
-            g.append('g').attr('class', 'axis-grid')
-                .call(d3.axisLeft(y).tickSize(-innerW).tickFormat(''))
-                .selectAll('line').attr('stroke', '#e5e7eb');
-            g.append('g').attr('class', 'axis-grid')
-                .attr('transform', `translate(0,${innerH})`)
-                .call(d3.axisBottom(x).tickSize(-innerH).tickFormat(''))
-                .selectAll('line').attr('stroke', '#e5e7eb');
+            layers.gridY.transition(t).call(d3.axisLeft(y).tickSize(-innerW).tickFormat(''));
+            layers.gridY.selectAll('line').attr('stroke', '#e5e7eb');
+            layers.gridY.select('.domain').attr('stroke', 'none');
 
-            g.append('g')
-                .attr('transform', `translate(0,${innerH})`)
-                .call(d3.axisBottom(x).ticks(Math.max(4, Math.floor(innerW / 110))).tickFormat(d3.timeFormat('%b %Y')))
-                .call(s => s.select('.domain').attr('stroke', '#9ca3af'))
-                .selectAll('text').attr('font-size', 11).attr('fill', '#374151');
+            layers.gridX.transition(t).call(d3.axisBottom(x).tickSize(-innerH).tickFormat(''));
+            layers.gridX.selectAll('line').attr('stroke', '#e5e7eb');
+            layers.gridX.select('.domain').attr('stroke', 'none');
 
-            g.append('g')
-                .call(d3.axisLeft(y).ticks(8).tickFormat(fmt))
-                .call(s => s.select('.domain').attr('stroke', '#9ca3af'))
-                .selectAll('text').attr('font-size', 11).attr('fill', '#374151');
+            layers.axisX.transition(t).call(
+                d3.axisBottom(x).ticks(Math.max(4, Math.floor(innerW / 110))).tickFormat(d3.timeFormat('%b %Y'))
+            );
+            layers.axisX.selectAll('text').attr('font-size', 11).attr('fill', '#374151');
+            layers.axisX.select('.domain').attr('stroke', '#9ca3af');
 
-            svg.append('text')
-                .attr('class', 'axis-label')
-                .attr('x', margin.left + innerW / 2)
-                .attr('y', height - 18)
-                .attr('text-anchor', 'middle')
-                .text('Released');
-
-            svg.append('text')
-                .attr('class', 'axis-label')
-                .attr('transform', `translate(${20},${margin.top + innerH / 2}) rotate(-90)`)
-                .attr('text-anchor', 'middle')
-                .text('Score');
+            layers.axisY.transition(t).call(d3.axisLeft(y).ticks(8).tickFormat(fmt));
+            layers.axisY.selectAll('text').attr('font-size', 11).attr('fill', '#374151');
+            layers.axisY.select('.domain').attr('stroke', '#9ca3af');
 
             const groups = d3.group(data, d => trendlineGroupKey(d));
+            const trendData = [];
             groups.forEach((pts, key) => {
                 if (pts.length < 2) return;
                 const reg = linearRegression(pts);
                 if (!reg) return;
                 const xMin = d3.min(pts, p => p.date.getTime());
                 const xMax = d3.max(pts, p => p.date.getTime());
-                const y1 = reg.slope * xMin + reg.intercept;
-                const y2 = reg.slope * xMax + reg.intercept;
-                const color = trendlineGroupColor(key);
-                g.append('line')
-                    .attr('class', 'trendline')
-                    .attr('x1', x(new Date(xMin))).attr('y1', y(y1))
-                    .attr('x2', x(new Date(xMax))).attr('y2', y(y2))
-                    .attr('stroke', color);
+                trendData.push({
+                    key,
+                    color: trendlineGroupColor(key),
+                    x1: x(new Date(xMin)),
+                    y1: y(reg.slope * xMin + reg.intercept),
+                    x2: x(new Date(xMax)),
+                    y2: y(reg.slope * xMax + reg.intercept)
+                });
             });
+
+            const trendSel = layers.trendlines.selectAll('line').data(trendData, d => d.key);
+            trendSel.exit().transition(t).style('opacity', 0).remove();
+            const trendEnter = trendSel.enter().append('line').attr('class', 'trendline')
+                .attr('x1', d => d.x1).attr('y1', d => d.y1)
+                .attr('x2', d => d.x2).attr('y2', d => d.y2)
+                .attr('stroke', d => d.color)
+                .style('opacity', 0);
+            trendEnter.merge(trendSel)
+                .transition(t)
+                .attr('x1', d => d.x1).attr('y1', d => d.y1)
+                .attr('x2', d => d.x2).attr('y2', d => d.y2)
+                .attr('stroke', d => d.color)
+                .style('opacity', 0.85);
 
             const labelObjs = data.map(d => ({
                 ...d,
@@ -695,28 +746,44 @@
 
             const dotR = Math.max(3.5, Math.min(6, innerW / 200));
 
-            g.selectAll('.label-line')
-                .data(labelObjs.filter(d => Math.abs(d.ly - d.y0) > 6))
-                .enter().append('line')
-                .attr('class', 'label-line')
+            const labelLineData = labelObjs.filter(d => Math.abs(d.ly - d.y0) > 6);
+            const llSel = layers.labelLines.selectAll('line').data(labelLineData, d => d.model);
+            llSel.exit().transition(t).style('opacity', 0).remove();
+            const llEnter = llSel.enter().append('line').attr('class', 'label-line')
                 .attr('x1', d => d.x0).attr('y1', d => d.y0)
                 .attr('x2', d => d.lx - 2).attr('y2', d => d.ly)
                 .attr('stroke', d => d.color)
                 .attr('stroke-width', 0.8)
-                .attr('opacity', 0.5);
+                .style('opacity', 0);
+            llEnter.merge(llSel)
+                .transition(t)
+                .attr('x1', d => d.x0).attr('y1', d => d.y0)
+                .attr('x2', d => d.lx - 2).attr('y2', d => d.ly)
+                .attr('stroke', d => d.color)
+                .style('opacity', 0.5);
 
-            g.selectAll('.scatter-dot')
-                .data(data)
-                .enter().append('circle')
+            const dotSel = layers.dots.selectAll('circle').data(data, d => d.model);
+            dotSel.exit().transition(t).attr('r', 0).style('opacity', 0).remove();
+            const dotEnter = dotSel.enter().append('circle')
                 .attr('class', 'scatter-dot')
                 .attr('cx', d => x(d.date))
                 .attr('cy', d => y(d.score))
-                .attr('r', dotR)
+                .attr('r', 0)
                 .attr('fill', d => d.color)
                 .attr('stroke', '#fff')
                 .attr('stroke-width', 1.2)
+                .style('opacity', 0);
+            dotEnter.merge(dotSel)
+                .transition(t)
+                .attr('cx', d => x(d.date))
+                .attr('cy', d => y(d.score))
+                .attr('fill', d => d.color)
+                .attr('r', dotR)
+                .style('opacity', 1);
+
+            layers.dots.selectAll('circle')
                 .on('mouseover', function (event, d) {
-                    d3.select(this).attr('r', dotR + 2);
+                    d3.select(this).interrupt().attr('r', dotR + 2);
                     const org = modelToOrg[d.model];
                     const head = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name}</b>${org ? '<br><span style="font-size:0.9em;">' + org + '</span>' : ''}</div>`;
                     const rows = `<table style="width:100%;margin-top:4px;border-spacing:0;">`
@@ -729,29 +796,34 @@
                     tooltip.style('left', (event.pageX + 12) + 'px').style('top', (event.pageY - 8) + 'px');
                 })
                 .on('mouseout', function () {
-                    d3.select(this).attr('r', dotR);
+                    d3.select(this).interrupt().attr('r', dotR);
                     tooltip.style('opacity', 0);
                 });
 
-            g.selectAll('.scatter-label')
-                .data(labelObjs)
-                .enter().append('text')
+            const labelSel = layers.labels.selectAll('text').data(labelObjs, d => d.model);
+            labelSel.exit().transition(t).style('opacity', 0).remove();
+            const labelEnter = labelSel.enter().append('text')
                 .attr('class', 'scatter-label')
-                .attr('x', d => d.lx)
-                .attr('y', d => d.ly)
+                .attr('x', d => d.lx).attr('y', d => d.ly)
                 .attr('dy', '0.32em')
                 .attr('fill', d => d.color)
+                .style('opacity', 0)
                 .text(d => displayName(d.name));
+            labelEnter.merge(labelSel)
+                .text(d => displayName(d.name))
+                .transition(t)
+                .attr('x', d => d.lx).attr('y', d => d.ly)
+                .attr('fill', d => d.color)
+                .style('opacity', 1);
 
             if (skippedNoDate > 0) {
-                svg.append('text')
+                layers.notice
                     .attr('x', width - margin.right)
                     .attr('y', margin.top - 8)
-                    .attr('text-anchor', 'end')
-                    .attr('font-size', 10)
-                    .attr('font-style', 'italic')
-                    .attr('fill', '#888')
-                    .text(`${skippedNoDate} models hidden — no release_date in tracking.json`);
+                    .text(`${skippedNoDate} models hidden — no release_date in tracking.json`)
+                    .transition(t).style('opacity', 1);
+            } else {
+                layers.notice.transition(t).style('opacity', 0);
             }
         }
 
