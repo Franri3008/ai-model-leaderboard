@@ -23,6 +23,7 @@ LEADERBOARD ALERTS REPORT
     • DeepSeek v3.2 (Thinking) — Artificial Analysis lookup "DeepSeek V3.2" returned nothing
     • MiniMax M2.5 — Artificial Analysis lookup "Minimax-M2.5" returned nothing
     • Kimi-K2 (Thinking) — Artificial Analysis lookup "Kimi K2 Thinking" returned nothing
+    • MiMo v2 Pro (Thinking) — Artificial Analysis lookup "MiMo-V2-Pro" returned nothing
 
 ──────────────────────────────────────────────────────────────────────
 2. UNTRACKED MODELS — top 30 models not in tracking.json
@@ -95,6 +96,10 @@ LEADERBOARD ALERTS REPORT
   • MiMo-V2-Omni-0327
     First seen: 2026-05-01
     Sources: Artificial Analysis: 'MiMo-V2-Omni-0327'
+
+  • DeepSeek V4 Flash (High)
+    First seen: 2026-05-05
+    Sources: Artificial Analysis: 'DeepSeek V4 Flash (High)'
 
   • GPT-5.2 Codex
     First seen: 2026-04-01

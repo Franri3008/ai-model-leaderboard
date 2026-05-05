@@ -1,21 +1,21 @@
 {
-    "last_updated": "2026-05-04 23:53:09",
+    "last_updated": "2026-05-05 23:45:53",
     "stats": {
         "models_tracked": 54,
         "matches_found": {
             "lma": 47,
-            "aa": 32,
+            "aa": 31,
             "lb": 39
         },
         "rows_scraped": {
             "lmarena": 356,
-            "artificial_analysis": 216,
+            "artificial_analysis": 215,
             "livebench": 78
         }
     },
     "alerts_summary": {
-        "tracking_issues": 17,
-        "new_untracked_models": 0
+        "tracking_issues": 18,
+        "new_untracked_models": 1
     },
-    "history_changes": 0
+    "history_changes": 1
 }
