@@ -232,6 +232,7 @@
         const tooltip = d3.select("#tooltip");
         const DATA_BASE = ".";
         let rawData = [];
+        let lastTrackedScores = {};
         let trackingMap = {};
         let modelIcons = {};
         let modelColors = {};
@@ -285,9 +286,29 @@
                 d3.dsv(";", `${DATA_BASE}/data/processed.csv`),
                 d3.json(`${DATA_BASE}/config/models.json`),
                 d3.json(`${DATA_BASE}/config/tracking.json`),
-                d3.json(`${DATA_BASE}/config/scatter_defaults.json`).catch(() => null)
-            ]).then(([data, modelsData, trackingData, defaultsData]) => {
+                d3.json(`${DATA_BASE}/config/scatter_defaults.json`).catch(() => null),
+                d3.dsv(";", `${DATA_BASE}/data/history.csv`)
+            ]).then(([data, modelsData, trackingData, defaultsData, historyData]) => {
                 rawData = data;
+
+                lastTrackedScores = {};
+                if (Array.isArray(historyData)) {
+                    historyData.forEach(row => {
+                        const m = String(row.model || '').trim();
+                        if (!m) return;
+                        if (!lastTrackedScores[m]) lastTrackedScores[m] = {};
+                        ['lma', 'aa', 'lb'].forEach(k => {
+                            const raw = row[k];
+                            if (raw == null || String(raw).trim() === '') return;
+                            const v = parseNum(raw);
+                            if (v <= 0) return;
+                            const existing = lastTrackedScores[m][k];
+                            if (!existing || row.date >= existing.date) {
+                                lastTrackedScores[m][k] = { value: v, date: row.date };
+                            }
+                        });
+                    });
+                }
 
                 modelsData.forEach(m => { idToColor[m.id] = m.color; idToOrg[m.id] = m.org; });
 
@@ -493,15 +514,33 @@
                         else if (!hasAa && hasLma && hasLb) nAa = (nLma + nLb) / 2;
                         else if (!hasLb && hasLma && hasAa) nLb = (nLma + nAa) / 2;
                     }
-                    return { model, name, score: (nLma + nAa + nLb) / 3 };
+                    const last = lastTrackedScores[model] || {};
+                    const untracked = (!hasLma && last.lma && last.lma.value > 0)
+                        || (!hasAa && last.aa && last.aa.value > 0)
+                        || (!hasLb && last.lb && last.lb.value > 0);
+                    return { model, name, score: (nLma + nAa + nLb) / 3, untracked };
                 });
             } else {
                 const key = active.question === 'LMArena' ? 'lma' : active.question === 'Artificial Analysis' ? 'aa' : 'lb';
-                rows = rawData.map(d => ({
-                    model: String(d.model || '').trim(),
-                    name: String(d.name || '').trim(),
-                    score: parseNum(d[key])
-                }));
+                rows = rawData.map(d => {
+                    const model = String(d.model || '').trim();
+                    const cur = parseNum(d[key]);
+                    let score = cur;
+                    let untracked = false;
+                    if (cur <= 0) {
+                        const last = lastTrackedScores[model] && lastTrackedScores[model][key];
+                        if (last && last.value > 0) {
+                            score = last.value;
+                            untracked = true;
+                        }
+                    }
+                    return {
+                        model,
+                        name: String(d.name || '').trim(),
+                        score,
+                        untracked
+                    };
+                });
             }
 
             let result = rows.filter(d => {
@@ -544,7 +583,8 @@
                     geo: modelToGeo[d.model] || 'Other',
                     color: modelColors[d.model] || '#1a73e8',
                     logo: modelToLogo[d.model] || '',
-                    os: modelToOs[d.model] !== undefined ? modelToOs[d.model] : 0
+                    os: modelToOs[d.model] !== undefined ? modelToOs[d.model] : 0,
+                    untracked: !!d.untracked
                 };
             }).filter(Boolean);
             skippedNoDate = withoutDate;
@@ -613,6 +653,7 @@
                 trendlines: root.append('g').attr('class', 'trendlines'),
                 labelLines: root.append('g').attr('class', 'label-lines'),
                 dots: root.append('g').attr('class', 'dots'),
+                untrackedMarks: root.append('g').attr('class', 'untracked-marks'),
                 labels: root.append('g').attr('class', 'labels'),
                 xLabel: svg.append('text').attr('class', 'axis-label x-label').attr('text-anchor', 'middle'),
                 yLabel: svg.append('text').attr('class', 'axis-label y-label').attr('text-anchor', 'middle'),
@@ -762,6 +803,10 @@
                 .attr('stroke', d => d.color)
                 .style('opacity', 0.5);
 
+            const isAll = active.question === 'ALL';
+            const untrackedR = dotR + 2;
+            const radiusFor = d => (d.untracked && !isAll) ? untrackedR : dotR;
+
             const dotSel = layers.dots.selectAll('circle').data(data, d => d.model);
             dotSel.exit().transition(t).attr('r', 0).style('opacity', 0).remove();
             const dotEnter = dotSel.enter().append('circle')
@@ -778,25 +823,86 @@
                 .attr('cx', d => x(d.date))
                 .attr('cy', d => y(d.score))
                 .attr('fill', d => d.color)
-                .attr('r', dotR)
+                .attr('r', radiusFor)
                 .style('opacity', 1);
+
+            const markData = isAll ? [] : data.filter(d => d.untracked);
+            const markSel = layers.untrackedMarks.selectAll('text').data(markData, d => d.model);
+            markSel.exit().transition(t).style('opacity', 0).remove();
+            const markEnter = markSel.enter().append('text')
+                .attr('class', 'untracked-mark')
+                .attr('text-anchor', 'middle')
+                .attr('dominant-baseline', 'central')
+                .attr('fill', '#fff')
+                .attr('font-weight', '700')
+                .attr('pointer-events', 'none')
+                .attr('x', d => x(d.date))
+                .attr('y', d => y(d.score))
+                .style('opacity', 0)
+                .text('!');
+            markEnter.merge(markSel)
+                .attr('font-size', Math.round(untrackedR * 1.6) + 'px')
+                .text('!')
+                .transition(t)
+                .attr('x', d => x(d.date))
+                .attr('y', d => y(d.score))
+                .style('opacity', 1);
+
+            const renderProviderCell = (model, key, currentScore, formatter) => {
+                if (currentScore > 0) return { html: formatter(currentScore), untracked: false };
+                const last = lastTrackedScores[model] && lastTrackedScores[model][key];
+                if (last && last.value > 0) {
+                    return {
+                        html: `<span style="color:#888;">${formatter(last.value)}</span> <span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#888;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;vertical-align:middle;">!</span>`,
+                        untracked: true
+                    };
+                }
+                return { html: '-', untracked: false };
+            };
 
             layers.dots.selectAll('circle')
                 .on('mouseover', function (event, d) {
-                    d3.select(this).interrupt().attr('r', dotR + 2);
+                    d3.select(this).interrupt().attr('r', radiusFor(d) + 2);
                     const org = modelToOrg[d.model];
                     const head = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name}</b>${org ? '<br><span style="font-size:0.9em;">' + org + '</span>' : ''}</div>`;
-                    const rows = `<table style="width:100%;margin-top:4px;border-spacing:0;">`
-                        + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Score</td><td style="text-align:right;padding:2px 0;">${fmt(d.score)}</td></tr>`
-                        + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Released</td><td style="text-align:right;padding:2px 0;">${d3.timeFormat('%b %d, %Y')(d.date)}</td></tr>`
-                        + `</table>`;
-                    tooltip.style('opacity', 1).html(head + rows);
+                    let body;
+                    let anyUntracked = false;
+                    if (isAll) {
+                        const rawEntry = rawData.find(r => String(r.model || '').trim() === d.model);
+                        const lmaScore = rawEntry ? parseNum(rawEntry.lma) : 0;
+                        const aaScore = rawEntry ? parseNum(rawEntry.aa) : 0;
+                        const lbScore = rawEntry ? parseNum(rawEntry.lb) : 0;
+                        const lmaCell = renderProviderCell(d.model, 'lma', lmaScore, v => Math.round(v));
+                        const aaCell = renderProviderCell(d.model, 'aa', aaScore, v => v.toFixed(1));
+                        const lbCell = renderProviderCell(d.model, 'lb', lbScore, v => v.toFixed(1));
+                        anyUntracked = lmaCell.untracked || aaCell.untracked || lbCell.untracked;
+                        body = `<table style="width:100%;margin-top:4px;border-spacing:0;">`
+                            + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Score</td><td style="text-align:right;padding:2px 0;">${fmt(d.score)}</td></tr>`
+                            + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LMArena</td><td style="text-align:right;padding:2px 0;">${lmaCell.html}</td></tr>`
+                            + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Artificial Analysis</td><td style="text-align:right;padding:2px 0;">${aaCell.html}</td></tr>`
+                            + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LiveBench</td><td style="text-align:right;padding:2px 0;">${lbCell.html}</td></tr>`
+                            + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Released</td><td style="text-align:right;padding:2px 0;">${d3.timeFormat('%b %d, %Y')(d.date)}</td></tr>`
+                            + `</table>`;
+                    } else {
+                        const scoreCell = d.untracked
+                            ? `<span style="color:#888;">${fmt(d.score)}</span> <span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#888;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;vertical-align:middle;">!</span>`
+                            : fmt(d.score);
+                        anyUntracked = !!d.untracked;
+                        body = `<table style="width:100%;margin-top:4px;border-spacing:0;">`
+                            + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Score</td><td style="text-align:right;padding:2px 0;">${scoreCell}</td></tr>`
+                            + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Released</td><td style="text-align:right;padding:2px 0;">${d3.timeFormat('%b %d, %Y')(d.date)}</td></tr>`
+                            + `</table>`;
+                    }
+                    const note = anyUntracked
+                        ? `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>`
+                        : '';
+                    tooltip.style('opacity', 1).html(head + body + note);
                 })
                 .on('mousemove', function (event) {
                     tooltip.style('left', (event.pageX + 12) + 'px').style('top', (event.pageY - 8) + 'px');
                 })
-                .on('mouseout', function () {
-                    d3.select(this).interrupt().attr('r', dotR);
+                .on('mouseout', function (event, d) {
+                    d3.select(this).interrupt().attr('r', radiusFor(d));
                     tooltip.style('opacity', 0);
                 });
 

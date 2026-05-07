@@ -160,7 +160,7 @@
         "geo": "US",
         "os": 0,
         "release_date": "2026-03-18",
-        "lma_lookup": null,
+        "lma_lookup": "gpt-5.4-mini-high",
         "aa_lookup": "GPT-5.4 mini (xhigh)",
         "lb_lookup": "GPT-5.4 Mini xHigh"
     },

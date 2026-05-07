@@ -248,6 +248,7 @@
     const tooltip = d3.select("#tooltip");
     const DATA_BASE = ".";
     let rawData = [];
+    let lastTrackedScores = {};
     let questions = [];
     let modelIcons = {};
     let modelColors = {};
@@ -269,6 +270,33 @@
     let highlightPauseTimeout = null;
     let bgColor = '#f9fafc';
     function parseNum(v) { if (v == null) { return 0; } const s = String(v).replace(/,/g, '.'); const n = parseFloat(s); return isNaN(n) ? 0 : n; }
+    function renderUntrackedMarks(g, data, x, y, clampValue, logoSize, animate) {
+      const markData = active.question === 'ALL' ? [] : data.filter(d => d.untracked);
+      const markSize = Math.max(11, Math.round(logoSize * 0.55));
+      const offsetX = d => x(clampValue(d.total)) + 6 + logoSize + 4 + markSize / 2;
+      const offsetY = d => y(d.id) + y.bandwidth() / 2;
+      const sel = g.selectAll('g.untracked-mark').data(markData, d => d.id);
+      sel.exit().transition().duration(animate ? 500 : 0).attr('opacity', 0).remove();
+      const enter = sel.enter().append('g').attr('class', 'untracked-mark')
+        .attr('transform', d => `translate(${offsetX(d)},${offsetY(d)})`)
+        .attr('opacity', 0);
+      enter.append('circle').attr('r', markSize / 2).attr('fill', '#888').attr('stroke', '#fff').attr('stroke-width', 1);
+      enter.append('text').attr('text-anchor', 'middle').attr('dominant-baseline', 'central').attr('fill', '#fff').attr('font-weight', '700').attr('font-size', Math.round(markSize * 0.75) + 'px').attr('pointer-events', 'none').text('!');
+      enter.transition().duration(animate ? 700 : 0).attr('opacity', 1);
+      sel.transition().duration(animate ? 700 : 0)
+        .attr('transform', d => `translate(${offsetX(d)},${offsetY(d)})`)
+        .attr('opacity', 1);
+    }
+    function renderScoreCell(model, key, currentScore, formatter) {
+      if (currentScore > 0) return { html: formatter(currentScore), untracked: false };
+      const last = lastTrackedScores[model] && lastTrackedScores[model][key];
+      if (last && last.value > 0) {
+        const html = `<span style="color:#888;">${formatter(last.value)}</span>` +
+          ` <span class="untracked-mark" style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#888;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;vertical-align:middle;">!</span>`;
+        return { html, untracked: true };
+      }
+      return { html: '-', untracked: false };
+    }
     function hexToRgb(hex) { const s = hex.replace('#', ''); const v = s.length === 3 ? s.split('').map(ch => ch + ch).join('') : s; const n = parseInt(v, 16); return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 }; }
     function rgbToHex(r, g, b) { const toHex = x => x.toString(16).padStart(2, '0'); return '#' + toHex(r) + toHex(g) + toHex(b); }
     function lighten(hex, amt) { if (!hex) { return null; } const { r, g, b } = hexToRgb(hex); const lr = Math.min(255, Math.round(r + (255 - r) * amt)); const lg = Math.min(255, Math.round(g + (255 - g) * amt)); const lb = Math.min(255, Math.round(b + (255 - b) * amt)); return rgbToHex(lr, lg, lb); }
@@ -295,9 +323,29 @@
       Promise.all([
         dataPromise,
         d3.json(`${DATA_BASE}/config/models.json`),
-        d3.json(`${DATA_BASE}/config/tracking.json`)
-      ]).then(([data, modelsData, trackingData]) => {
+        d3.json(`${DATA_BASE}/config/tracking.json`),
+        d3.dsv(";", `${DATA_BASE}/data/history.csv`)
+      ]).then(([data, modelsData, trackingData, historyData]) => {
         rawData = data;
+
+        lastTrackedScores = {};
+        if (Array.isArray(historyData)) {
+          historyData.forEach(row => {
+            const m = String(row.model || '').trim();
+            if (!m) return;
+            if (!lastTrackedScores[m]) lastTrackedScores[m] = {};
+            ['lma', 'aa', 'lb'].forEach(k => {
+              const raw = row[k];
+              if (raw == null || String(raw).trim() === '') return;
+              const v = parseNum(raw);
+              if (v <= 0) return;
+              const existing = lastTrackedScores[m][k];
+              if (!existing || row.date >= existing.date) {
+                lastTrackedScores[m][k] = { value: v, date: row.date };
+              }
+            });
+          });
+        }
 
         const params = new URLSearchParams(window.location.search);
         const paletteParam = params.get('palette');
@@ -743,26 +791,33 @@
 
           // Ranking score is the average of the three normalized scores
           const rankingScore = (normalizedLma + normalizedAa + normalizedLb) / 3;
-          return { model: model, name: name, score: rankingScore, lmaSegment: normalizedLma, aaSegment: normalizedAa, lbSegment: normalizedLb };
+          const last = lastTrackedScores[model] || {};
+          const untracked = (!hasLma && last.lma && last.lma.value > 0)
+            || (!hasAa && last.aa && last.aa.value > 0)
+            || (!hasLb && last.lb && last.lb.value > 0);
+          return { model: model, name: name, score: rankingScore, lmaSegment: normalizedLma, aaSegment: normalizedAa, lbSegment: normalizedLb, untracked };
         });
-      } else if (active.question === 'LMArena') {
-        rows = rawData.map(d => ({
-          model: String(d.model || '').trim(),
-          name: String(d.name || '').trim(),
-          score: parseNum(d.lma)
-        }));
-      } else if (active.question === 'Artificial Analysis') {
-        rows = rawData.map(d => ({
-          model: String(d.model || '').trim(),
-          name: String(d.name || '').trim(),
-          score: parseNum(d.aa)
-        }));
-      } else if (active.question === 'LiveBench') {
-        rows = rawData.map(d => ({
-          model: String(d.model || '').trim(),
-          name: String(d.name || '').trim(),
-          score: parseNum(d.lb)
-        }));
+      } else if (active.question === 'LMArena' || active.question === 'Artificial Analysis' || active.question === 'LiveBench') {
+        const key = active.question === 'LMArena' ? 'lma' : active.question === 'Artificial Analysis' ? 'aa' : 'lb';
+        rows = rawData.map(d => {
+          const model = String(d.model || '').trim();
+          const cur = parseNum(d[key]);
+          let score = cur;
+          let untracked = false;
+          if (cur <= 0) {
+            const last = lastTrackedScores[model] && lastTrackedScores[model][key];
+            if (last && last.value > 0) {
+              score = last.value;
+              untracked = true;
+            }
+          }
+          return {
+            model,
+            name: String(d.name || '').trim(),
+            score,
+            untracked
+          };
+        });
       } else {
         rows = rawData.map(d => ({
           model: String(d.model || '').trim(),
@@ -794,7 +849,8 @@
         color: modelColors[d.model] || '#1a73e8',
         lmaSegment: d.lmaSegment || 0,
         aaSegment: d.aaSegment || 0,
-        lbSegment: d.lbSegment || 0
+        lbSegment: d.lbSegment || 0,
+        untracked: !!d.untracked
       }));
 
       if (modeParam === 1) {
@@ -1087,6 +1143,7 @@
       g.selectAll('text.value').data(data, d => d.id).enter().append('text').attr('class', 'value').attr('x', d => x(clampValue(d.total)) - 12).attr('y', d => y(d.id) + y.bandwidth() / 2 + Math.round(4 * sizeFactor)).attr('text-anchor', 'end').attr('font-size', chartState.valueFS + 'px').attr('font-weight', '600').attr('fill', '#ffffff').text(d => fmt(d.total));
       g.selectAll('image.logo').data(data, d => d.id).enter().append('image').attr('class', 'logo').attr('x', d => x(clampValue(d.total)) + 6).attr('y', d => y(d.id) + (y.bandwidth() - logoSize) / 2).attr('width', logoSize).attr('height', logoSize).attr('href', d => d.logo).attr('xlink:href', d => d.logo);
       chartState.logos = g.selectAll('image.logo');
+      renderUntrackedMarks(g, data, x, y, clampValue, logoSize, false);
 
       const overlay = g.append('rect').attr('class', 'highlight-overlay')
         .attr('x', -margin.left)
@@ -1114,14 +1171,31 @@
           const aaScore = rawEntry ? parseNum(rawEntry.aa) : 0;
           const lbScore = rawEntry ? parseNum(rawEntry.lb) : 0;
 
+          const lmaCell = renderScoreCell(d.model, 'lma', lmaScore, v => Math.round(v));
+          const aaCell = renderScoreCell(d.model, 'aa', aaScore, v => v.toFixed(1));
+          const lbCell = renderScoreCell(d.model, 'lb', lbScore, v => v.toFixed(1));
+          const anyUntracked = lmaCell.untracked || aaCell.untracked || lbCell.untracked;
+
           html = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name || d.id}</b>${modelToOrg[d.model] ? '<br><span style="font-size:0.9em;">' + modelToOrg[d.model] + '</span>' : ''}</div>`;
           html += `<table style="width:100%;margin-top:4px;border-spacing:0;">`;
-          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LMArena</td><td style="text-align:right;padding:2px 0;">${lmaScore > 0 ? Math.round(lmaScore) : '-'}</td></tr>`;
-          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Artificial Analysis</td><td style="text-align:right;padding:2px 0;">${aaScore > 0 ? aaScore.toFixed(1) : '-'}</td></tr>`;
-          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LiveBench</td><td style="text-align:right;padding:2px 0;">${lbScore > 0 ? lbScore.toFixed(1) : '-'}</td></tr>`;
+          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LMArena</td><td style="text-align:right;padding:2px 0;">${lmaCell.html}</td></tr>`;
+          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Artificial Analysis</td><td style="text-align:right;padding:2px 0;">${aaCell.html}</td></tr>`;
+          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LiveBench</td><td style="text-align:right;padding:2px 0;">${lbCell.html}</td></tr>`;
           html += `</table>`;
+          if (anyUntracked) {
+            html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>`;
+          }
         } else {
-          html = `<b>${d.name || d.id}</b><br>${modelToOrg[d.model] ? modelToOrg[d.model] + '<br>' : ''}Score: ${fmt(d.total)}`;
+          const scoreHtml = d.untracked
+            ? `<span style="color:#888;">${fmt(d.total)}</span> <span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#888;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;vertical-align:middle;">!</span>`
+            : fmt(d.total);
+          html = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name || d.id}</b>${modelToOrg[d.model] ? '<br><span style="font-size:0.9em;">' + modelToOrg[d.model] + '</span>' : ''}</div>`;
+          html += `<table style="width:100%;margin-top:4px;border-spacing:0;">`;
+          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">${active.question}</td><td style="text-align:right;padding:2px 0;">${scoreHtml}</td></tr>`;
+          html += `</table>`;
+          if (d.untracked) {
+            html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>`;
+          }
         }
         tooltip.html(html).style('left', (event.pageX + 12) + 'px').style('top', (event.pageY - 28) + 'px').style('opacity', 1);
       }).on('mouseleave', () => { tooltip.style('opacity', 0); });
@@ -1351,6 +1425,7 @@
         exit => exit.transition().duration(500).attr('opacity', 0).remove()
       );
       chartState.logos = chartState.svg.select('g').selectAll('image.logo');
+      renderUntrackedMarks(chartState.svg.select('g'), data, x, y, clampValue, logoSize, true);
 
       const overlay = chartState.svg.select('.highlight-overlay');
       if (overlay.node()) overlay.raise();
@@ -1367,14 +1442,31 @@
           const aaScore = rawEntry ? parseNum(rawEntry.aa) : 0;
           const lbScore = rawEntry ? parseNum(rawEntry.lb) : 0;
 
+          const lmaCell = renderScoreCell(d.model, 'lma', lmaScore, v => Math.round(v));
+          const aaCell = renderScoreCell(d.model, 'aa', aaScore, v => v.toFixed(1));
+          const lbCell = renderScoreCell(d.model, 'lb', lbScore, v => v.toFixed(1));
+          const anyUntracked = lmaCell.untracked || aaCell.untracked || lbCell.untracked;
+
           html = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name || d.id}</b>${modelToOrg[d.model] ? '<br><span style="font-size:0.9em;">' + modelToOrg[d.model] + '</span>' : ''}</div>`;
           html += `<table style="width:100%;margin-top:4px;border-spacing:0;">`;
-          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LMArena</td><td style="text-align:right;padding:2px 0;">${lmaScore > 0 ? Math.round(lmaScore) : '-'}</td></tr>`;
-          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Artificial Analysis</td><td style="text-align:right;padding:2px 0;">${aaScore > 0 ? aaScore.toFixed(1) : '-'}</td></tr>`;
-          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LiveBench</td><td style="text-align:right;padding:2px 0;">${lbScore > 0 ? lbScore.toFixed(1) : '-'}</td></tr>`;
+          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LMArena</td><td style="text-align:right;padding:2px 0;">${lmaCell.html}</td></tr>`;
+          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Artificial Analysis</td><td style="text-align:right;padding:2px 0;">${aaCell.html}</td></tr>`;
+          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LiveBench</td><td style="text-align:right;padding:2px 0;">${lbCell.html}</td></tr>`;
           html += `</table>`;
+          if (anyUntracked) {
+            html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>`;
+          }
         } else {
-          html = `<b>${d.name || d.id}</b><br>${modelToOrg[d.model] ? modelToOrg[d.model] + '<br>' : ''}Score: ${fmt(d.total)}`;
+          const scoreHtml = d.untracked
+            ? `<span style="color:#888;">${fmt(d.total)}</span> <span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#888;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;vertical-align:middle;">!</span>`
+            : fmt(d.total);
+          html = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name || d.id}</b>${modelToOrg[d.model] ? '<br><span style="font-size:0.9em;">' + modelToOrg[d.model] + '</span>' : ''}</div>`;
+          html += `<table style="width:100%;margin-top:4px;border-spacing:0;">`;
+          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">${active.question}</td><td style="text-align:right;padding:2px 0;">${scoreHtml}</td></tr>`;
+          html += `</table>`;
+          if (d.untracked) {
+            html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>`;
+          }
         }
         tooltip.html(html).style('left', (event.pageX + 12) + 'px').style('top', (event.pageY - 28) + 'px').style('opacity', 1);
       }).on('mouseleave', () => { tooltip.style('opacity', 0); });
