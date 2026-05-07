@@ -7,7 +7,6 @@
     "gpt53codex(xhigh)": "2026-04-01",
     "gpt52codex": "2026-04-01",
     "gpt51codexmaxhigh": "2026-04-01",
-    "dolaseed20pro": "2026-04-03",
     "kimik26thinking": "2026-04-22",
     "gpt55(medium)": "2026-04-23",
     "claudeopus47(nonreasoning,high)": "2026-04-23",
@@ -20,5 +19,6 @@
     "gpt55(high)": "2026-04-28",
     "ernie51preview": "2026-04-29",
     "mimov2omni0327": "2026-05-01",
-    "deepseekv4flash(high)": "2026-05-05"
+    "deepseekv4flash(high)": "2026-05-05",
+    "gpt55instant": "2026-05-07"
 }

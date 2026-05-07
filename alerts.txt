@@ -29,37 +29,37 @@ LEADERBOARD ALERTS REPORT
 2. UNTRACKED MODELS — top 30 models not in tracking.json
 ──────────────────────────────────────────────────────────────────────
 
-  • grok-4.20-beta-0309-reasoning
-    First seen: 2026-04-01
-    Sources: LMArena: 'grok-4.20-beta-0309-reasoning'
-
   • gpt-5.2-chat-latest-20260210
     First seen: 2026-04-01
     Sources: LMArena: 'gpt-5.2-chat-latest-20260210'
 
-  • grok-4.20-multi-agent-beta-0309
+  • grok-4.20-beta-0309-reasoning
     First seen: 2026-04-01
-    Sources: LMArena: 'grok-4.20-multi-agent-beta-0309'
+    Sources: LMArena: 'grok-4.20-beta-0309-reasoning'
 
   • ernie-5.1-preview
     First seen: 2026-04-29
     Sources: LMArena: 'ernie-5.1-preview'
 
+  • grok-4.20-multi-agent-beta-0309
+    First seen: 2026-04-01
+    Sources: LMArena: 'grok-4.20-multi-agent-beta-0309'
+
+  • gpt-5.5-instant
+    First seen: 2026-05-07
+    Sources: LMArena: 'gpt-5.5-instant'
+
   • claude-opus-4-5-20251101
     First seen: 2026-04-01
     Sources: LMArena: 'claude-opus-4-5-20251101'
-
-  • deepseek-v4-pro
-    First seen: 2026-04-24
-    Sources: LMArena: 'deepseek-v4-pro'
 
   • qwen3.5-max-preview
     First seen: 2026-04-01
     Sources: LMArena: 'qwen3.5-max-preview', Artificial Analysis: 'Qwen3.6 Max Preview'
 
-  • dola-seed-2.0-pro
-    First seen: 2026-04-03
-    Sources: LMArena: 'dola-seed-2.0-pro'
+  • deepseek-v4-pro
+    First seen: 2026-04-24
+    Sources: LMArena: 'deepseek-v4-pro'
 
   • GPT-5.5 (high)
     First seen: 2026-04-28
