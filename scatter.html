@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="styles/common.css">
     <script src="components/model-filter.js"></script>
+    <script src="scripts/util.js"></script>
+    <script src="scripts/tooltip.js"></script>
+    <script src="scripts/data-loader.js"></script>
+    <script src="scripts/aggregation.js"></script>
     <style>
         .viz-grid {
             display: grid;
@@ -256,68 +260,27 @@
         const TRANSITION_MS = 400;
         const GEO_TRENDLINE_COLORS = { 'US': '#3b82f6', 'China': '#ef4444', 'France': '#5c5a74' };
 
-        function parseNum(v) {
-            if (v == null) return 0;
-            const s = String(v).replace(/,/g, '.');
-            const n = parseFloat(s);
-            return isNaN(n) ? 0 : n;
-        }
-
-        function displayName(name) {
-            if (!name) return '';
-            return String(name)
-                .replace(/\s*\((Thinking|Preview|Beta)\)\s*/gi, ' ')
-                .replace(/\s+/g, ' ')
-                .trim();
-        }
-
-        function parseDate(s) {
-            if (!s) return null;
-            const t = String(s).trim();
-            if (!t) return null;
-            const d = new Date(t);
-            return isNaN(d.getTime()) ? null : d;
-        }
+        const parseNum = LB.util.parseNum;
+        const displayName = LB.util.displayName;
 
         function load() {
             const params = new URLSearchParams(window.location.search);
 
             Promise.all([
-                d3.dsv(";", `${DATA_BASE}/data/processed.csv`),
-                d3.json(`${DATA_BASE}/config/models.json`),
-                d3.json(`${DATA_BASE}/config/tracking.json`),
-                d3.json(`${DATA_BASE}/config/scatter_defaults.json`).catch(() => null),
-                d3.dsv(";", `${DATA_BASE}/data/history.csv`)
-            ]).then(([data, modelsData, trackingData, defaultsData, historyData]) => {
-                rawData = data;
-
-                lastTrackedScores = {};
-                if (Array.isArray(historyData)) {
-                    historyData.forEach(row => {
-                        const m = String(row.model || '').trim();
-                        if (!m) return;
-                        if (!lastTrackedScores[m]) lastTrackedScores[m] = {};
-                        ['lma', 'aa', 'lb'].forEach(k => {
-                            const raw = row[k];
-                            if (raw == null || String(raw).trim() === '') return;
-                            const v = parseNum(raw);
-                            if (v <= 0) return;
-                            const existing = lastTrackedScores[m][k];
-                            if (!existing || row.date >= existing.date) {
-                                lastTrackedScores[m][k] = { value: v, date: row.date };
-                            }
-                        });
-                    });
-                }
-
-                modelsData.forEach(m => { idToColor[m.id] = m.color; idToOrg[m.id] = m.org; });
-
-                trackingData.forEach(t => {
-                    trackingMap[t.model] = t;
-                    modelToOs[t.model] = t.os;
-                    if (t.geo) modelToGeo[t.model] = (t.geo === 'USA' ? 'US' : t.geo);
-                    if (t.release_date) modelToReleaseDate[t.model] = parseDate(t.release_date);
-                });
+                LB.loadData({ dataBase: DATA_BASE }),
+                d3.json(`${DATA_BASE}/config/scatter_defaults.json`).catch(() => null)
+            ]).then(([state, defaultsData]) => {
+                rawData = state.rawData;
+                lastTrackedScores = state.lastTrackedScores;
+                modelToOs = state.modelToOs;
+                modelToGeo = state.modelToGeo;
+                modelToReleaseDate = state.modelToReleaseDate;
+                modelToLogo = state.modelToLogo;
+                modelToOrg = state.modelToOrg;
+                modelIcons = state.modelIcons;
+                idToColor = state.idToColor;
+                idToOrg = state.idToOrg;
+                trackingMap = state.trackingMap;
 
                 const paletteParam = params.get('palette');
                 if (paletteParam) {
@@ -325,18 +288,7 @@
                     if (p === 0 || p === 1 || p === 2) paletteMode = p;
                 }
 
-                rawData.forEach(d => {
-                    const model = String(d.model || '').trim();
-                    const name = String(d.name || '').trim();
-                    const logo = String(d.logo || '').trim();
-                    d.displayName = name || model;
-                    if (logo) {
-                        modelIcons[model] = `logos/${logo}.png`;
-                        modelToLogo[model] = logo;
-                        if (idToOrg[logo]) modelToOrg[model] = idToOrg[logo];
-                    }
-                    assignColor(d);
-                });
+                rawData.forEach(d => assignColor(d));
 
                 const sourceParam = params.get('source');
                 if (sourceParam) {
@@ -491,82 +443,18 @@
         }
 
         function getAggregated() {
-            let rows;
-            if (active.question === 'ALL') {
-                const gpt5 = rawData.find(d => d.model === 'gpt-5-high' || d.name === 'GPT-5 (Thinking)');
-                if (!gpt5) return [];
-                const maxLma = parseNum(gpt5.lma) || 1434;
-                const maxAa = parseNum(gpt5.aa) || 45;
-                const maxLb = parseNum(gpt5.lb) || 70.48;
-                rows = rawData.map(d => {
-                    const model = String(d.model || '').trim();
-                    const name = String(d.name || '').trim();
-                    let lma = parseNum(d.lma);
-                    let aa = parseNum(d.aa);
-                    let lb = parseNum(d.lb);
-                    const hasLma = lma > 0, hasAa = aa > 0, hasLb = lb > 0;
-                    const missing = (hasLma ? 0 : 1) + (hasAa ? 0 : 1) + (hasLb ? 0 : 1);
-                    let nLma = hasLma ? (lma / (2 * maxLma)) : 0;
-                    let nAa = hasAa ? (aa / (2 * maxAa)) : 0;
-                    let nLb = hasLb ? (lb / (2 * maxLb)) : 0;
-                    if (missing === 1) {
-                        if (!hasLma && hasAa && hasLb) nLma = (nAa + nLb) / 2;
-                        else if (!hasAa && hasLma && hasLb) nAa = (nLma + nLb) / 2;
-                        else if (!hasLb && hasLma && hasAa) nLb = (nLma + nAa) / 2;
-                    }
-                    const last = lastTrackedScores[model] || {};
-                    const untracked = (!hasLma && last.lma && last.lma.value > 0)
-                        || (!hasAa && last.aa && last.aa.value > 0)
-                        || (!hasLb && last.lb && last.lb.value > 0);
-                    return { model, name, score: (nLma + nAa + nLb) / 3, untracked };
-                });
-            } else {
-                const key = active.question === 'LMArena' ? 'lma' : active.question === 'Artificial Analysis' ? 'aa' : 'lb';
-                rows = rawData.map(d => {
-                    const model = String(d.model || '').trim();
-                    const cur = parseNum(d[key]);
-                    let score = cur;
-                    let untracked = false;
-                    if (cur <= 0) {
-                        const last = lastTrackedScores[model] && lastTrackedScores[model][key];
-                        if (last && last.value > 0) {
-                            score = last.value;
-                            untracked = true;
-                        }
-                    }
-                    return {
-                        model,
-                        name: String(d.name || '').trim(),
-                        score,
-                        untracked
-                    };
-                });
-            }
-
-            let result = rows.filter(d => {
-                if (d.score <= 0) return false;
-                if (window.ModelFilter && window.ModelFilter.isHidden(d.model)) return false;
-                if (hiddenGeos.length > 0) {
-                    const geo = modelToGeo[d.model] || 'Other';
-                    if (hiddenGeos.includes(geo)) return false;
-                }
-                if (activeOsFilter !== null) {
-                    const os = modelToOs[d.model] !== undefined ? modelToOs[d.model] : 0;
-                    if (os !== activeOsFilter) return false;
-                }
-                return true;
+            return LB.aggregate({
+                rawData,
+                lastTrackedScores,
+                modelToGeo,
+                modelToOs,
+                modelToLogo,
+                active,
+                hiddenGeos,
+                activeOsFilter,
+                modeParam,
+                includeSegments: false
             });
-
-            if (modeParam === 1) {
-                const bestByLogo = {};
-                result.forEach(d => {
-                    const logo = modelToLogo[d.model] || '';
-                    if (!logo) return;
-                    if (!bestByLogo[logo] || d.score > bestByLogo[logo].score) bestByLogo[logo] = d;
-                });
-                result = Object.values(bestByLogo);
-            }
-            return result;
         }
 
         function getPlotData() {
@@ -848,17 +736,8 @@
                 .attr('y', d => y(d.score))
                 .style('opacity', 1);
 
-            const renderProviderCell = (model, key, currentScore, formatter) => {
-                if (currentScore > 0) return { html: formatter(currentScore), untracked: false };
-                const last = lastTrackedScores[model] && lastTrackedScores[model][key];
-                if (last && last.value > 0) {
-                    return {
-                        html: `<span style="color:#888;">${formatter(last.value)}</span> <span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#888;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;vertical-align:middle;">!</span>`,
-                        untracked: true
-                    };
-                }
-                return { html: '-', untracked: false };
-            };
+            const renderCell = (model, key, currentScore, formatter) =>
+                LB.tooltip.renderScoreCell(model, key, currentScore, formatter, lastTrackedScores);
 
             layers.dots.selectAll('circle')
                 .on('mouseover', function (event, d) {
@@ -872,9 +751,9 @@
                         const lmaScore = rawEntry ? parseNum(rawEntry.lma) : 0;
                         const aaScore = rawEntry ? parseNum(rawEntry.aa) : 0;
                         const lbScore = rawEntry ? parseNum(rawEntry.lb) : 0;
-                        const lmaCell = renderProviderCell(d.model, 'lma', lmaScore, v => Math.round(v));
-                        const aaCell = renderProviderCell(d.model, 'aa', aaScore, v => v.toFixed(1));
-                        const lbCell = renderProviderCell(d.model, 'lb', lbScore, v => v.toFixed(1));
+                        const lmaCell = renderCell(d.model, 'lma', lmaScore, v => Math.round(v));
+                        const aaCell = renderCell(d.model, 'aa', aaScore, v => v.toFixed(1));
+                        const lbCell = renderCell(d.model, 'lb', lbScore, v => v.toFixed(1));
                         anyUntracked = lmaCell.untracked || aaCell.untracked || lbCell.untracked;
                         body = `<table style="width:100%;margin-top:4px;border-spacing:0;">`
                             + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Score</td><td style="text-align:right;padding:2px 0;">${fmt(d.score)}</td></tr>`
@@ -885,7 +764,7 @@
                             + `</table>`;
                     } else {
                         const scoreCell = d.untracked
-                            ? `<span style="color:#888;">${fmt(d.score)}</span> <span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#888;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;vertical-align:middle;">!</span>`
+                            ? `<span style="color:#888;">${fmt(d.score)}</span> ${LB.tooltip.badgeHtml}`
                             : fmt(d.score);
                         anyUntracked = !!d.untracked;
                         body = `<table style="width:100%;margin-top:4px;border-spacing:0;">`
@@ -893,9 +772,7 @@
                             + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Released</td><td style="text-align:right;padding:2px 0;">${d3.timeFormat('%b %d, %Y')(d.date)}</td></tr>`
                             + `</table>`;
                     }
-                    const note = anyUntracked
-                        ? `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>`
-                        : '';
+                    const note = anyUntracked ? LB.tooltip.disclaimerHtml : '';
                     tooltip.style('opacity', 1).html(head + body + note);
                 })
                 .on('mousemove', function (event) {

@@ -9,6 +9,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="styles/common.css">
   <script src="components/model-filter.js"></script>
+  <script src="scripts/util.js"></script>
+  <script src="scripts/tooltip.js"></script>
+  <script src="scripts/data-loader.js"></script>
+  <script src="scripts/aggregation.js"></script>
   <style>
     .viz-grid {
       display: grid;
@@ -269,7 +273,16 @@
     let highlightPaused = false;
     let highlightPauseTimeout = null;
     let bgColor = '#f9fafc';
-    function parseNum(v) { if (v == null) { return 0; } const s = String(v).replace(/,/g, '.'); const n = parseFloat(s); return isNaN(n) ? 0 : n; }
+    let idToColor = {};
+    let idToOrg = {};
+    const parseNum = LB.util.parseNum;
+    const hexToRgb = LB.util.hexToRgb;
+    const rgbToHex = LB.util.rgbToHex;
+    const lighten = LB.util.lighten;
+    const clampToDomain = LB.util.clampToDomain;
+    function renderScoreCell(model, key, currentScore, formatter) {
+      return LB.tooltip.renderScoreCell(model, key, currentScore, formatter, lastTrackedScores);
+    }
     function renderUntrackedMarks(g, data, x, y, clampValue, logoSize, animate) {
       const markData = active.question === 'ALL' ? [] : data.filter(d => d.untracked);
       const markSize = Math.max(11, Math.round(logoSize * 0.55));
@@ -287,67 +300,40 @@
         .attr('transform', d => `translate(${offsetX(d)},${offsetY(d)})`)
         .attr('opacity', 1);
     }
-    function renderScoreCell(model, key, currentScore, formatter) {
-      if (currentScore > 0) return { html: formatter(currentScore), untracked: false };
-      const last = lastTrackedScores[model] && lastTrackedScores[model][key];
-      if (last && last.value > 0) {
-        const html = `<span style="color:#888;">${formatter(last.value)}</span>` +
-          ` <span class="untracked-mark" style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#888;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;vertical-align:middle;">!</span>`;
-        return { html, untracked: true };
+    function assignColor(d) {
+      const model = String(d.model || '').trim();
+      const logo = String(d.logo || '').trim();
+      if (paletteMode === 1) {
+        const os = modelToOs[model] !== undefined ? modelToOs[model] : 0;
+        modelColors[model] = os === 1 ? '#188ab2' : '#ef476f';
+      } else if (paletteMode === 2) {
+        const geo = modelToGeo[model] || 'Other';
+        if (geo === 'US') modelColors[model] = '#ec787a';
+        else if (geo === 'China') modelColors[model] = '#fadb56';
+        else if (geo === 'France') modelColors[model] = '#5c5a74';
+        else modelColors[model] = '#cccccc';
+      } else if (logo && idToColor[logo]) {
+        modelColors[model] = idToColor[logo];
+      } else {
+        modelColors[model] = '#1a73e8';
       }
-      return { html: '-', untracked: false };
-    }
-    function hexToRgb(hex) { const s = hex.replace('#', ''); const v = s.length === 3 ? s.split('').map(ch => ch + ch).join('') : s; const n = parseInt(v, 16); return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 }; }
-    function rgbToHex(r, g, b) { const toHex = x => x.toString(16).padStart(2, '0'); return '#' + toHex(r) + toHex(g) + toHex(b); }
-    function lighten(hex, amt) { if (!hex) { return null; } const { r, g, b } = hexToRgb(hex); const lr = Math.min(255, Math.round(r + (255 - r) * amt)); const lg = Math.min(255, Math.round(g + (255 - g) * amt)); const lb = Math.min(255, Math.round(b + (255 - b) * amt)); return rgbToHex(lr, lg, lb); }
-    function reconstructSnapshot(historyData, snapshotDate) {
-      const latest = {};
-      historyData.forEach(row => {
-        if (row.date <= snapshotDate) {
-          latest[row.model] = row;
-        }
-      });
-      return Object.values(latest);
     }
     function load() {
       const params = new URLSearchParams(window.location.search);
       const snapshotParam = params.get('snapshot');
 
-      const dataPromise = snapshotParam
-        ? d3.dsv(";", `${DATA_BASE}/data/history.csv`).then(history => {
-          const snapshotDate = snapshotParam.replace(/_/g, '-').replace(/^(\d{4})-(\d{1,2})-(\d{1,2})$/, (m, y, mo, d) => `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}`);
-          return reconstructSnapshot(history, snapshotDate);
-        })
-        : d3.dsv(";", `${DATA_BASE}/data/processed.csv`);
+      LB.loadData({ dataBase: DATA_BASE, snapshotParam }).then(state => {
+        rawData = state.rawData;
+        lastTrackedScores = state.lastTrackedScores;
+        modelToOs = state.modelToOs;
+        modelToGeo = state.modelToGeo;
+        modelToReleaseDate = state.modelToReleaseDate;
+        modelToLogo = state.modelToLogo;
+        modelToOrg = state.modelToOrg;
+        modelIcons = state.modelIcons;
+        idToColor = state.idToColor;
+        idToOrg = state.idToOrg;
 
-      Promise.all([
-        dataPromise,
-        d3.json(`${DATA_BASE}/config/models.json`),
-        d3.json(`${DATA_BASE}/config/tracking.json`),
-        d3.dsv(";", `${DATA_BASE}/data/history.csv`)
-      ]).then(([data, modelsData, trackingData, historyData]) => {
-        rawData = data;
-
-        lastTrackedScores = {};
-        if (Array.isArray(historyData)) {
-          historyData.forEach(row => {
-            const m = String(row.model || '').trim();
-            if (!m) return;
-            if (!lastTrackedScores[m]) lastTrackedScores[m] = {};
-            ['lma', 'aa', 'lb'].forEach(k => {
-              const raw = row[k];
-              if (raw == null || String(raw).trim() === '') return;
-              const v = parseNum(raw);
-              if (v <= 0) return;
-              const existing = lastTrackedScores[m][k];
-              if (!existing || row.date >= existing.date) {
-                lastTrackedScores[m][k] = { value: v, date: row.date };
-              }
-            });
-          });
-        }
-
-        const params = new URLSearchParams(window.location.search);
         const paletteParam = params.get('palette');
         if (paletteParam) {
           const p = parseInt(paletteParam, 10);
@@ -355,59 +341,7 @@
           if (p === 2) paletteMode = 2;
         }
 
-        const idToColor = {};
-        const idToOrg = {};
-        modelsData.forEach(model => {
-          idToColor[model.id] = model.color;
-          idToOrg[model.id] = model.org;
-        });
-
-        if (trackingData) {
-          const trackingMap = {};
-          trackingData.forEach(t => {
-            modelToOs[t.model] = t.os;
-            if (t.geo) modelToGeo[t.model] = t.geo === 'USA' ? 'US' : t.geo;
-            if (t.release_date) {
-              const rd = new Date(t.release_date);
-              if (!isNaN(rd.getTime())) modelToReleaseDate[t.model] = rd;
-            }
-            trackingMap[t.model] = t;
-          });
-          if (snapshotParam) {
-            rawData.forEach(d => {
-              const t = trackingMap[String(d.model || '').trim()];
-              if (t) {
-                if (!d.name) d.name = t.name;
-                if (!d.logo) d.logo = t.logo;
-                if (!d.geo) d.geo = t.geo === 'USA' ? 'US' : t.geo;
-              }
-            });
-          }
-        }
-
-        rawData.forEach(d => {
-          const model = String(d.model || '').trim();
-          const name = String(d.name || '').trim();
-          const logo = String(d.logo || '').trim();
-          d.displayName = name || model;
-          if (logo) {
-            modelIcons[model] = `logos/${logo}.png`;
-            modelToLogo[model] = logo;
-            if (idToOrg[logo]) modelToOrg[model] = idToOrg[logo];
-          }
-          if (paletteMode === 1) {
-            const os = modelToOs[model] !== undefined ? modelToOs[model] : 0;
-            modelColors[model] = os === 1 ? '#188ab2' : '#ef476f';
-          } else if (paletteMode === 2) {
-            const geo = modelToGeo[model] || 'Other';
-            if (geo === 'US') modelColors[model] = '#ec787a';
-            else if (geo === 'China') modelColors[model] = '#fadb56';
-            else if (geo === 'France') modelColors[model] = '#5c5a74';
-            else modelColors[model] = '#cccccc';
-          } else if (logo && idToColor[logo]) {
-            modelColors[model] = idToColor[logo];
-          }
-        });
+        rawData.forEach(d => assignColor(d));
 
         questions = ['ALL', 'LMArena', 'Artificial Analysis', 'LiveBench'];
         active.question = 'ALL';
@@ -516,24 +450,7 @@
               paletteButtons.forEach(b => b.classList.remove('active'));
               btn.classList.add('active');
 
-              rawData.forEach(d => {
-                const model = String(d.model || '').trim();
-                const logo = String(d.logo || '').trim();
-                if (paletteMode === 1) {
-                  const os = modelToOs[model] !== undefined ? modelToOs[model] : 0;
-                  modelColors[model] = os === 1 ? '#188ab2' : '#ef476f';
-                } else if (paletteMode === 2) {
-                  const geo = modelToGeo[model] || 'Other';
-                  if (geo === 'US') modelColors[model] = '#ec787a';
-                  else if (geo === 'China') modelColors[model] = '#fadb56';
-                  else if (geo === 'France') modelColors[model] = '#5c5a74';
-                  else modelColors[model] = '#cccccc';
-                } else if (logo && idToColor[logo]) {
-                  modelColors[model] = idToColor[logo];
-                } else {
-                  modelColors[model] = '#1a73e8';
-                }
-              });
+              rawData.forEach(d => assignColor(d));
 
               if (window.ModelFilter) window.ModelFilter.refresh();
               updateChart();
@@ -745,100 +662,23 @@
     }
     function updateAnswerDisplay() { const answerEl = document.getElementById('correctAnswer'); const answerSection = document.getElementById('answerSection'); if (!answerEl || !answerSection) { return; } if (active.question === 'ALL') { answerSection.classList.add('hidden'); } else { answerEl.textContent = questionAnswers[active.question] || '-'; answerSection.classList.remove('hidden'); } }
     function getAggregated() {
-      let rows;
-
-      if (active.question === 'ALL') {
-        const gpt5 = rawData.find(d => d.model === 'gpt-5-high' || d.name === 'GPT-5 (Thinking)');
-
-        if (!gpt5) {
+      const aggregated = LB.aggregate({
+        rawData,
+        lastTrackedScores,
+        modelToGeo,
+        modelToOs,
+        modelToLogo,
+        active,
+        hiddenGeos,
+        activeOsFilter,
+        modeParam,
+        includeSegments: true,
+        onMissingBaseline: () => {
           const chartEl = document.getElementById('chart');
           if (chartEl) chartEl.innerHTML = '<div style="padding:24px;color:#c00;font-weight:600;">Error: GPT-5 baseline data is missing from the scraping results.</div>';
-          return [];
         }
-
-        const maxLma = parseNum(gpt5.lma) || 1434;
-        const maxAa = parseNum(gpt5.aa) || 45;
-        const maxLb = parseNum(gpt5.lb) || 70.48;
-
-        rows = rawData.map(d => {
-          const model = String(d.model || '').trim();
-          const name = String(d.name || '').trim();
-          let lma = parseNum(d.lma);
-          let aa = parseNum(d.aa);
-          let lb = parseNum(d.lb);
-
-          // Count how many scores are missing (zero)
-          const hasLma = lma > 0;
-          const hasAa = aa > 0;
-          const hasLb = lb > 0;
-          const missingCount = (hasLma ? 0 : 1) + (hasAa ? 0 : 1) + (hasLb ? 0 : 1);
-
-          // Normalize scores: divide by (2 * max) so best model gets 0.5
-          let normalizedLma = lma > 0 ? (lma / (2 * maxLma)) : 0;
-          let normalizedAa = aa > 0 ? (aa / (2 * maxAa)) : 0;
-          let normalizedLb = lb > 0 ? (lb / (2 * maxLb)) : 0;
-
-          // If exactly one score is missing, compute it as the average of the other two
-          if (missingCount === 1) {
-            if (!hasLma && hasAa && hasLb) {
-              normalizedLma = (normalizedAa + normalizedLb) / 2;
-            } else if (!hasAa && hasLma && hasLb) {
-              normalizedAa = (normalizedLma + normalizedLb) / 2;
-            } else if (!hasLb && hasLma && hasAa) {
-              normalizedLb = (normalizedLma + normalizedAa) / 2;
-            }
-          }
-
-          // Ranking score is the average of the three normalized scores
-          const rankingScore = (normalizedLma + normalizedAa + normalizedLb) / 3;
-          const last = lastTrackedScores[model] || {};
-          const untracked = (!hasLma && last.lma && last.lma.value > 0)
-            || (!hasAa && last.aa && last.aa.value > 0)
-            || (!hasLb && last.lb && last.lb.value > 0);
-          return { model: model, name: name, score: rankingScore, lmaSegment: normalizedLma, aaSegment: normalizedAa, lbSegment: normalizedLb, untracked };
-        });
-      } else if (active.question === 'LMArena' || active.question === 'Artificial Analysis' || active.question === 'LiveBench') {
-        const key = active.question === 'LMArena' ? 'lma' : active.question === 'Artificial Analysis' ? 'aa' : 'lb';
-        rows = rawData.map(d => {
-          const model = String(d.model || '').trim();
-          const cur = parseNum(d[key]);
-          let score = cur;
-          let untracked = false;
-          if (cur <= 0) {
-            const last = lastTrackedScores[model] && lastTrackedScores[model][key];
-            if (last && last.value > 0) {
-              score = last.value;
-              untracked = true;
-            }
-          }
-          return {
-            model,
-            name: String(d.name || '').trim(),
-            score,
-            untracked
-          };
-        });
-      } else {
-        rows = rawData.map(d => ({
-          model: String(d.model || '').trim(),
-          name: String(d.name || '').trim(),
-          score: parseNum(d.lma)
-        }));
-      }
-
-      let result = rows.filter(d => {
-        if (d.score <= 0) return false;
-        if (window.ModelFilter && window.ModelFilter.isHidden(d.model)) return false;
-        if (hiddenGeos.length > 0) {
-          const geo = modelToGeo[d.model] || 'Other';
-          if (hiddenGeos.includes(geo)) return false;
-        }
-        if (activeOsFilter !== null) {
-          const os = modelToOs[d.model] !== undefined ? modelToOs[d.model] : 0;
-          if (os !== activeOsFilter) return false;
-        }
-        return true;
-      }).map(d => ({
+      });
+      return aggregated.map(d => ({
         id: d.name || d.model,
         model: d.model,
         name: d.name,
@@ -852,20 +692,6 @@
         lbSegment: d.lbSegment || 0,
         untracked: !!d.untracked
       }));
-
-      if (modeParam === 1) {
-        const bestByLogo = {};
-        result.forEach(d => {
-          const logo = modelToLogo[d.model] || '';
-          if (!logo) return;
-          if (!bestByLogo[logo] || d.total > bestByLogo[logo].total) {
-            bestByLogo[logo] = d;
-          }
-        });
-        result = Object.values(bestByLogo);
-      }
-
-      return result;
     }
     function getTop20() { return getAggregated().slice().sort((a, b) => b.total - a.total).slice(0, displayLimit); }
     function getXDomain() {
@@ -893,12 +719,6 @@
       const lower = Math.max(0, minScore - padding);
       const upper = maxScore + padding;
       return [lower, upper];
-    }
-    function clampToDomain(value, domain) {
-      if (!domain || domain.length < 2) { return value || 0; }
-      const num = Number(value);
-      const safe = isNaN(num) ? domain[0] : num;
-      return Math.max(domain[0], Math.min(domain[1], safe));
     }
     function getValueFormatter() {
       if (active.question === 'ALL') { return d3.format('.3f'); }
