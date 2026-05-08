@@ -17,8 +17,8 @@
     "gpt54nanoxhigh": "2026-04-24",
     "mimov25": "2026-04-27",
     "gpt55(high)": "2026-04-28",
-    "ernie51preview": "2026-04-29",
     "mimov2omni0327": "2026-05-01",
     "deepseekv4flash(high)": "2026-05-05",
-    "gpt55instant": "2026-05-07"
+    "gpt55instant": "2026-05-07",
+    "ernie51": "2026-05-08"
 }

@@ -37,9 +37,9 @@ LEADERBOARD ALERTS REPORT
     First seen: 2026-04-01
     Sources: LMArena: 'grok-4.20-beta-0309-reasoning'
 
-  • ernie-5.1-preview
-    First seen: 2026-04-29
-    Sources: LMArena: 'ernie-5.1-preview'
+  • ernie-5.1
+    First seen: 2026-05-08
+    Sources: LMArena: 'ernie-5.1'
 
   • grok-4.20-multi-agent-beta-0309
     First seen: 2026-04-01
