@@ -14,7 +14,9 @@
       activeOsFilter,
       modeParam,
       includeSegments,
-      onMissingBaseline
+      onMissingBaseline,
+      sourceData,
+      snapshotMode
     } = input;
 
     let rows;
@@ -59,20 +61,29 @@
       });
     } else if (active.question === 'LMArena' || active.question === 'Artificial Analysis' || active.question === 'LiveBench') {
       const key = active.question === 'LMArena' ? 'lma' : active.question === 'Artificial Analysis' ? 'aa' : 'lb';
-      rows = rawData.map(d => {
-        const model = String(d.model || '').trim();
-        const cur = parseNum(d[key]);
-        let score = cur;
-        let untracked = false;
-        if (cur <= 0) {
-          const last = lastTrackedScores && lastTrackedScores[model] && lastTrackedScores[model][key];
-          if (last && last.value > 0) {
-            score = last.value;
-            untracked = true;
+      if (sourceData && Array.isArray(sourceData[key]) && !snapshotMode) {
+        rows = sourceData[key].map(d => ({
+          model: String(d.id || '').trim(),
+          name: String(d.name || '').trim(),
+          score: parseNum(d.score),
+          untracked: !d.tracked
+        }));
+      } else {
+        rows = rawData.map(d => {
+          const model = String(d.model || '').trim();
+          const cur = parseNum(d[key]);
+          let score = cur;
+          let untracked = false;
+          if (cur <= 0) {
+            const last = lastTrackedScores && lastTrackedScores[model] && lastTrackedScores[model][key];
+            if (last && last.value > 0) {
+              score = last.value;
+              untracked = true;
+            }
           }
-        }
-        return { model, name: String(d.name || '').trim(), score, untracked };
-      });
+          return { model, name: String(d.name || '').trim(), score, untracked };
+        });
+      }
     } else {
       rows = rawData.map(d => ({
         model: String(d.model || '').trim(),

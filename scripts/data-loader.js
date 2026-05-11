@@ -39,22 +39,38 @@
 
   function loadData(options) {
     const opts = options || {};
-    const dataBase = opts.dataBase || '.';
+    const cfg = (LB.config) || {};
+    const dataBase = opts.dataBase || cfg.dataBase || '.';
+    const configBase = opts.configBase || cfg.configBase || '.';
+    const dataMode = opts.dataMode || cfg.dataMode || 'static';
     const snapshotParam = opts.snapshotParam || null;
 
+    // RTDB returns JSON arrays directly under fixed keys; static mode reads
+    // CSVs and lets d3 parse them. The post-fetch row shape is identical.
+    const fetchProcessed = dataMode === 'rtdb'
+      ? () => d3.json(`${dataBase}/processed.json`).then(rows => rows || [])
+      : () => d3.dsv(';', `${dataBase}/data/processed.csv`);
+    const fetchHistory = dataMode === 'rtdb'
+      ? () => d3.json(`${dataBase}/history.json`).then(rows => rows || [])
+      : () => d3.dsv(';', `${dataBase}/data/history.csv`);
+    const fetchSources = dataMode === 'rtdb'
+      ? () => d3.json(`${dataBase}/sources.json`).catch(() => null)
+      : () => d3.json(`${dataBase}/data/sources.json`).catch(() => null);
+
     const dataPromise = snapshotParam
-      ? d3.dsv(';', `${dataBase}/data/history.csv`).then(history => {
+      ? fetchHistory().then(history => {
         const snapshotDate = normalizeSnapshotDate(snapshotParam);
         return reconstructSnapshot(history, snapshotDate);
       })
-      : d3.dsv(';', `${dataBase}/data/processed.csv`);
+      : fetchProcessed();
 
     return Promise.all([
       dataPromise,
-      d3.json(`${dataBase}/config/models.json`),
-      d3.json(`${dataBase}/config/tracking.json`),
-      d3.dsv(';', `${dataBase}/data/history.csv`)
-    ]).then(([rawData, modelsData, trackingData, historyData]) => {
+      d3.json(`${configBase}/config/models.json`),
+      d3.json(`${configBase}/config/tracking.json`),
+      fetchHistory(),
+      fetchSources()
+    ]).then(([rawData, modelsData, trackingData, historyData, sourcesData]) => {
       const lastTrackedScores = buildLastTrackedScores(historyData);
 
       const idToColor = {};
@@ -102,6 +118,23 @@
         }
       });
 
+      const sourceData = (sourcesData && typeof sourcesData === 'object') ? sourcesData : null;
+      if (sourceData) {
+        ['lma', 'aa', 'lb'].forEach(key => {
+          const rows = sourceData[key];
+          if (!Array.isArray(rows)) return;
+          rows.forEach(r => {
+            const id = String(r.id || '').trim();
+            if (!id) return;
+            const logo = r.logo ? String(r.logo).trim() : '';
+            if (logo && !modelIcons[id]) modelIcons[id] = `logos/${logo}.png`;
+            if (logo && !modelToLogo[id]) modelToLogo[id] = logo;
+            if (logo && idToOrg[logo] && !modelToOrg[id]) modelToOrg[id] = idToOrg[logo];
+            if (r.geo && !modelToGeo[id]) modelToGeo[id] = r.geo === 'USA' ? 'US' : r.geo;
+          });
+        });
+      }
+
       return {
         rawData,
         lastTrackedScores,
@@ -113,7 +146,8 @@
         modelIcons,
         idToColor,
         idToOrg,
-        trackingMap
+        trackingMap,
+        sourceData
       };
     });
   }

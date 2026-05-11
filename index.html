@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="styles/common.css">
   <script src="components/model-filter.js"></script>
+  <script src="scripts/lb-config.js"></script>
   <script src="scripts/util.js"></script>
   <script src="scripts/tooltip.js"></script>
   <script src="scripts/data-loader.js"></script>
@@ -250,8 +251,10 @@
   <div id="tooltip"></div>
   <script>
     const tooltip = d3.select("#tooltip");
-    const DATA_BASE = ".";
+    const DATA_BASE = (LB.config && LB.config.dataBase) || ".";
     let rawData = [];
+    let sourceData = null;
+    let snapshotMode = false;
     let lastTrackedScores = {};
     let questions = [];
     let modelIcons = {};
@@ -283,23 +286,6 @@
     function renderScoreCell(model, key, currentScore, formatter) {
       return LB.tooltip.renderScoreCell(model, key, currentScore, formatter, lastTrackedScores);
     }
-    function renderUntrackedMarks(g, data, x, y, clampValue, logoSize, animate) {
-      const markData = active.question === 'ALL' ? [] : data.filter(d => d.untracked);
-      const markSize = Math.max(11, Math.round(logoSize * 0.55));
-      const offsetX = d => x(clampValue(d.total)) + 6 + logoSize + 4 + markSize / 2;
-      const offsetY = d => y(d.id) + y.bandwidth() / 2;
-      const sel = g.selectAll('g.untracked-mark').data(markData, d => d.id);
-      sel.exit().transition().duration(animate ? 500 : 0).attr('opacity', 0).remove();
-      const enter = sel.enter().append('g').attr('class', 'untracked-mark')
-        .attr('transform', d => `translate(${offsetX(d)},${offsetY(d)})`)
-        .attr('opacity', 0);
-      enter.append('circle').attr('r', markSize / 2).attr('fill', '#888').attr('stroke', '#fff').attr('stroke-width', 1);
-      enter.append('text').attr('text-anchor', 'middle').attr('dominant-baseline', 'central').attr('fill', '#fff').attr('font-weight', '700').attr('font-size', Math.round(markSize * 0.75) + 'px').attr('pointer-events', 'none').text('!');
-      enter.transition().duration(animate ? 700 : 0).attr('opacity', 1);
-      sel.transition().duration(animate ? 700 : 0)
-        .attr('transform', d => `translate(${offsetX(d)},${offsetY(d)})`)
-        .attr('opacity', 1);
-    }
     function assignColor(d) {
       const model = String(d.model || '').trim();
       const logo = String(d.logo || '').trim();
@@ -315,7 +301,7 @@
       } else if (logo && idToColor[logo]) {
         modelColors[model] = idToColor[logo];
       } else {
-        modelColors[model] = '#1a73e8';
+        modelColors[model] = '#9ca3af';
       }
     }
     function load() {
@@ -333,6 +319,8 @@
         modelIcons = state.modelIcons;
         idToColor = state.idToColor;
         idToOrg = state.idToOrg;
+        sourceData = state.sourceData || null;
+        snapshotMode = !!snapshotParam;
 
         const paletteParam = params.get('palette');
         if (paletteParam) {
@@ -342,6 +330,17 @@
         }
 
         rawData.forEach(d => assignColor(d));
+        if (sourceData) {
+          ['lma', 'aa', 'lb'].forEach(k => {
+            const rows = sourceData[k];
+            if (!Array.isArray(rows)) return;
+            rows.forEach(r => {
+              const id = String(r.id || '').trim();
+              if (!id || modelColors[id] !== undefined) return;
+              assignColor({ model: id, logo: r.logo || '' });
+            });
+          });
+        }
 
         questions = ['ALL', 'LMArena', 'Artificial Analysis', 'LiveBench'];
         active.question = 'ALL';
@@ -451,6 +450,17 @@
               btn.classList.add('active');
 
               rawData.forEach(d => assignColor(d));
+              if (sourceData) {
+                ['lma', 'aa', 'lb'].forEach(k => {
+                  const rows = sourceData[k];
+                  if (!Array.isArray(rows)) return;
+                  rows.forEach(r => {
+                    const id = String(r.id || '').trim();
+                    if (!id) return;
+                    assignColor({ model: id, logo: r.logo || '' });
+                  });
+                });
+              }
 
               if (window.ModelFilter) window.ModelFilter.refresh();
               updateChart();
@@ -673,6 +683,8 @@
         activeOsFilter,
         modeParam,
         includeSegments: true,
+        sourceData,
+        snapshotMode,
         onMissingBaseline: () => {
           const chartEl = document.getElementById('chart');
           if (chartEl) chartEl.innerHTML = '<div style="padding:24px;color:#c00;font-weight:600;">Error: GPT-5 baseline data is missing from the scraping results.</div>';
@@ -686,7 +698,7 @@
         ties: 0,
         total: d.score,
         logo: modelIcons[d.model] || '',
-        color: modelColors[d.model] || '#1a73e8',
+        color: modelColors[d.model] || '#9ca3af',
         lmaSegment: d.lmaSegment || 0,
         aaSegment: d.aaSegment || 0,
         lbSegment: d.lbSegment || 0,
@@ -770,12 +782,14 @@
     }
     function truncateAxisLabels(maxWidth) {
       if (!chartState.yAxisGroup) { return; }
+      const untrackedSet = chartState.untrackedSet || null;
       chartState.yAxisGroup.selectAll('.tick').each(function (d) {
         const tick = d3.select(this);
         const text = tick.select('text');
         const full = String(d);
         const isThinking = full.includes('(Thinking)');
         const isPreview = full.includes('(Preview)') || full.includes('(Beta)');
+        const isUntracked = !!(untrackedSet && untrackedSet.has(full));
 
         let baseText = full;
         if (isThinking) baseText = baseText.replace('(Thinking)', '');
@@ -783,11 +797,13 @@
         baseText = baseText.trim();
 
         text.text(baseText);
-        // Reset dx
         text.attr('dx', 0);
+        text.style('font-style', isUntracked ? 'italic' : null);
+        text.style('fill', isUntracked ? '#9ca3af' : null);
         let currentWidth = text.node().getComputedTextLength();
 
         let icons = [];
+        if (isUntracked) icons.push('<span title="Untracked model" style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#9ca3af;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;">!</span>');
         if (isPreview) icons.push('<i class="fa-solid fa-flask fa-lg" style="color: rgb(84, 90, 160);" title="Preview model"></i>');
 
         let iconSpace = icons.length * 20;
@@ -936,6 +952,9 @@
       const yAxisGen = d3.axisLeft(y).tickFormat(d => String(d).replace('(Thinking)', '').replace('(Preview)', '').replace('(Beta)', '').trim());
       chartState.yAxisGroup = g.append('g').attr('class', 'axis axis-y').call(yAxisGen);
       chartState.yAxisGroup.selectAll('text').style('font-size', axisFS + 'px');
+      chartState.untrackedSet = active.question === 'ALL'
+        ? new Set()
+        : new Set(data.filter(d => d.untracked).map(d => d.id));
       truncateAxisLabels(margin.left - logoWidth - padding - 8);
 
       chartState.xAxisGroup = g.append('g').attr('class', 'axis axis-x').attr('transform', `translate(0,${height})`).call(xAxis);
@@ -963,7 +982,6 @@
       g.selectAll('text.value').data(data, d => d.id).enter().append('text').attr('class', 'value').attr('x', d => x(clampValue(d.total)) - 12).attr('y', d => y(d.id) + y.bandwidth() / 2 + Math.round(4 * sizeFactor)).attr('text-anchor', 'end').attr('font-size', chartState.valueFS + 'px').attr('font-weight', '600').attr('fill', '#ffffff').text(d => fmt(d.total));
       g.selectAll('image.logo').data(data, d => d.id).enter().append('image').attr('class', 'logo').attr('x', d => x(clampValue(d.total)) + 6).attr('y', d => y(d.id) + (y.bandwidth() - logoSize) / 2).attr('width', logoSize).attr('height', logoSize).attr('href', d => d.logo).attr('xlink:href', d => d.logo);
       chartState.logos = g.selectAll('image.logo');
-      renderUntrackedMarks(g, data, x, y, clampValue, logoSize, false);
 
       const overlay = g.append('rect').attr('class', 'highlight-overlay')
         .attr('x', -margin.left)
@@ -1014,7 +1032,7 @@
           html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">${active.question}</td><td style="text-align:right;padding:2px 0;">${scoreHtml}</td></tr>`;
           html += `</table>`;
           if (d.untracked) {
-            html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>`;
+            html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Untracked model</div>`;
           }
         }
         tooltip.html(html).style('left', (event.pageX + 12) + 'px').style('top', (event.pageY - 28) + 'px').style('opacity', 1);
@@ -1116,6 +1134,9 @@
       y.padding(Math.max(.2, Math.min(.45, .55 - .25 * (chartState.sizeFactor || 1))));
 
       const yAxisGen = d3.axisLeft(y).tickFormat(d => String(d).replace('(Thinking)', '').replace('(Preview)', '').replace('(Beta)', '').trim());
+      chartState.untrackedSet = active.question === 'ALL'
+        ? new Set()
+        : new Set(data.filter(d => d.untracked).map(d => d.id));
       chartState.yAxisGroup.transition().duration(700).call(yAxisGen).on('end', function () { truncateAxisLabels(chartState.margin.left - (chartState.logoWidth || 24) - (chartState.padding || 16) - 8); }).selection().selectAll('text').style('font-size', chartState.axisFS + 'px');
       truncateAxisLabels(chartState.margin.left - (chartState.logoWidth || 24) - (chartState.padding || 16) - 8);
 
@@ -1245,7 +1266,6 @@
         exit => exit.transition().duration(500).attr('opacity', 0).remove()
       );
       chartState.logos = chartState.svg.select('g').selectAll('image.logo');
-      renderUntrackedMarks(chartState.svg.select('g'), data, x, y, clampValue, logoSize, true);
 
       const overlay = chartState.svg.select('.highlight-overlay');
       if (overlay.node()) overlay.raise();
@@ -1285,7 +1305,7 @@
           html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">${active.question}</td><td style="text-align:right;padding:2px 0;">${scoreHtml}</td></tr>`;
           html += `</table>`;
           if (d.untracked) {
-            html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>`;
+            html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Untracked model</div>`;
           }
         }
         tooltip.html(html).style('left', (event.pageX + 12) + 'px').style('top', (event.pageY - 28) + 'px').style('opacity', 1);

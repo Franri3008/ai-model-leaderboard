@@ -168,6 +168,136 @@ def get_untracked_models(df, source_name, score_keywords, fixed_df, lookup_col, 
 
     return untracked
 
+def build_sources_json(lma_df, aa_df, lb_df, fixed_df, models_json_path, output_path):
+    with open(models_json_path) as f:
+        models = json.load(f);
+    alias_to_logo = {};
+    for m in models:
+        for alias in (m.get("aliases") or []):
+            alias_to_logo[str(alias).strip().lower()] = m["id"];
+
+    source_specs = {
+        "lma": {
+            "df": lma_df,
+            "model_kw": ["model"],
+            "score_kw": ["arena", "elo", "score", "rating"],
+            "provider_kw": ["provider", "organization", "creator"],
+            "score_type": "int",
+            "lookup_col": "lma_lookup",
+        },
+        "aa": {
+            "df": aa_df,
+            "model_kw": ["model", "name"],
+            "score_kw": ["quality", "score", "index"],
+            "provider_kw": ["creator", "organization", "provider"],
+            "score_type": "int",
+            "lookup_col": "aa_lookup",
+        },
+        "lb": {
+            "df": lb_df,
+            "model_kw": ["model"],
+            "score_kw": ["average", "overall", "total", "score"],
+            "provider_kw": ["organization", "creator", "provider"],
+            "score_type": "float",
+            "lookup_col": "lb_lookup",
+        },
+    };
+
+    sources = {};
+    for key, spec in source_specs.items():
+        df = spec["df"];
+        if df is None or df.empty:
+            sources[key] = [];
+            continue;
+
+        model_col = next((c for c in df.columns if any(kw in c.lower() for kw in spec["model_kw"])), df.columns[0]);
+        score_col = next((c for c in df.columns if any(kw in c.lower() for kw in spec["score_kw"])), None);
+        provider_col = next((c for c in df.columns if any(kw in c.lower() for kw in spec["provider_kw"])), None);
+        if not score_col:
+            sources[key] = [];
+            continue;
+
+        d = df.copy();
+        d["__score"] = d[score_col].apply(lambda x: float(extract_numeric_score(x) or 0));
+        d = d[d["__score"] > 0].sort_values("__score", ascending=False);
+
+        rows = [];
+        used_tracked_ids = set();
+        for _, r in d.iterrows():
+            raw_name = str(r[model_col]).strip();
+            if not raw_name:
+                continue;
+            numeric = r["__score"];
+            score = int(numeric) if spec["score_type"] == "int" else round(float(numeric), 4);
+            provider_text = "";
+            if provider_col is not None and not pd.isna(r[provider_col]):
+                provider_text = str(r[provider_col]).strip();
+
+            # Pick the most specific (longest-lookup) tracked entry that
+            # substring-matches this row and hasn't already been claimed
+            # by a higher-scoring row in this source. Without the
+            # used-set guard, e.g. both "gemini-3-flash" and
+            # "gemini-3-flash (thinking-minimal)" would both bind to the
+            # tracked Gemini 3 Flash and collide on the same D3 id.
+            raw_lower = raw_name.lower();
+            tracked_match = None;
+            best_len = -1;
+            for _, t in fixed_df.iterrows():
+                model_id = str(t["model"]);
+                if model_id in used_tracked_ids:
+                    continue;
+                lookup = t[spec["lookup_col"]];
+                if not pd.notna(lookup):
+                    continue;
+                lk = str(lookup).strip().lower();
+                if not lk or lk not in raw_lower:
+                    continue;
+                if len(lk) > best_len:
+                    tracked_match = t;
+                    best_len = len(lk);
+
+            if tracked_match is not None:
+                used_tracked_ids.add(str(tracked_match["model"]));
+                rows.append({
+                    "id": str(tracked_match["model"]),
+                    "name": str(tracked_match["name"]),
+                    "score": score,
+                    "logo": str(tracked_match["logo"]) if pd.notna(tracked_match["logo"]) else None,
+                    "geo": str(tracked_match["geo"]) if pd.notna(tracked_match["geo"]) else None,
+                    "provider": provider_text or None,
+                    "tracked": True,
+                });
+            else:
+                logo = None;
+                if provider_text:
+                    pt_lower = provider_text.lower();
+                    logo = alias_to_logo.get(pt_lower);
+                    if not logo:
+                        # Some sources combine fields (e.g. LMArena "Anthropic · Proprietary").
+                        # Split on common separators and try each part.
+                        for part in re.split(r"\s*[·|/,]\s*", provider_text):
+                            cand = part.strip().lower();
+                            if cand and cand in alias_to_logo:
+                                logo = alias_to_logo[cand];
+                                break;
+                synthetic_id = f"{key}:" + re.sub(r"[^a-z0-9]+", "-", raw_name.lower()).strip("-");
+                rows.append({
+                    "id": synthetic_id,
+                    "name": raw_name,
+                    "score": score,
+                    "logo": logo,
+                    "geo": None,
+                    "provider": provider_text or None,
+                    "tracked": False,
+                });
+
+        sources[key] = rows;
+
+    with open(output_path, "w") as f:
+        json.dump(sources, f, indent=2);
+
+    return sources
+
 def append_history(result, history_file):
     today = datetime.now().strftime("%Y-%m-%d");
 
@@ -232,6 +362,31 @@ table = soup.select_one("table.w-full.caption-bottom.text-sm");
 if not table:
     raise ValueError("LMArena table not found")
 lma_df = extract_table_data(table, extra_selectors="span.text-text-secondary");
+# Re-walk tbody to capture the provider, which lives in span.text-text-secondary
+# (currently stripped above to keep model names clean) and is what lmarena.ai
+# shows under each model name (e.g. "Anthropic", "OpenAI").
+lma_tbody = table.find("tbody") or table;
+lma_providers = [];
+for tr in lma_tbody.find_all("tr", recursive=False):
+    cells = tr.find_all(["td", "th"], recursive=False);
+    if not cells:
+        continue;
+    provider_text = "";
+    for cell in cells:
+        for span in cell.select("span.text-text-secondary"):
+            txt = " ".join(span.stripped_strings).strip();
+            # Provider strings contain letters; skip numeric secondaries
+            # like rank-spread "1 4" or score CI "±6".
+            if txt and any(c.isalpha() for c in txt):
+                provider_text = txt;
+                break;
+        if provider_text:
+            break;
+    lma_providers.append(provider_text);
+if len(lma_providers) == len(lma_df):
+    lma_df["Provider"] = lma_providers;
+else:
+    print_step(f"⚠ Provider extraction row count mismatch ({len(lma_providers)} vs {len(lma_df)}); skipping Provider column");
 print_step(f"Extracted {len(lma_df)} rows, {len(lma_df.columns)} columns")
 lma_file = data_dir / "lmarena_text_leaderboard.csv";
 lma_df.to_csv(lma_file, index=False);
@@ -382,6 +537,26 @@ print_step(f"Matches found - LMArena: {matches_found['lma']}, AA: {matches_found
 print_step("Saving...")
 result.to_csv(BASE_DIR / "data/processed.csv", sep=";", index=False);
 print_step(f"✓ Saved data with {len(result)} models", "SUCCESS")
+
+# ============================================================================
+# STEP 2b: BUILD SOURCES.JSON (full per-source top-N for source tabs)
+# ============================================================================
+print("\n" + "=" * 80)
+print_step("BUILDING SOURCES.JSON", "START")
+print("=" * 80)
+
+sources_file = BASE_DIR / "data/sources.json";
+sources_data = build_sources_json(
+    lma_df, aa_df, lb_df, fixed_df,
+    BASE_DIR / "config/models.json",
+    sources_file,
+);
+for k, label in (("lma", "LMArena"), ("aa", "Artificial Analysis"), ("lb", "LiveBench")):
+    rows = sources_data.get(k, []);
+    tracked_n = sum(1 for r in rows if r.get("tracked"));
+    no_logo_n = sum(1 for r in rows if not r.get("logo"));
+    print_step(f"{label}: {len(rows)} rows ({tracked_n} tracked, {no_logo_n} unresolved logo)");
+print_step(f"✓ Saved: {sources_file}", "SUCCESS")
 
 # ============================================================================
 # STEP 3: UPDATE HISTORY
@@ -580,6 +755,27 @@ with open(metadata_file, "w") as f:
     json.dump(metadata, f, indent=4);
 
 print_step(f"✓ Metadata saved to: {metadata_file.absolute()}", "SUCCESS")
+
+# ============================================================================
+# STEP 6: OPTIONAL FIREBASE UPLOAD (no-op unless FIREBASE_DATABASE_URL is set)
+# ============================================================================
+import os as _os
+if _os.environ.get("FIREBASE_DATABASE_URL"):
+    print("\n" + "=" * 80)
+    print_step("PUSHING ARTIFACTS TO FIREBASE REALTIME DATABASE", "START")
+    print("=" * 80)
+    try:
+        import sys as _sys
+        _sys.path.insert(0, str(BASE_DIR))
+        from scripts.firebase_upload import upload_artifacts
+        summary = upload_artifacts(BASE_DIR);
+        if summary:
+            for path, size in summary.items():
+                print_step(f"✓ /{path}  ({size})");
+        else:
+            print_step("Nothing uploaded (FIREBASE_DATABASE_URL unset)");
+    except Exception as exc:
+        print_step(f"⚠ Firebase upload failed: {exc}", "ERROR");
 
 print("\n" + "=" * 80)
 print_step("UPDATE COMPLETED SUCCESSFULLY!", "SUCCESS")

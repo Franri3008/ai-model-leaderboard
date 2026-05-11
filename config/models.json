@@ -3,84 +3,143 @@
         "id": "gpt",
         "name": "GPT",
         "org": "OpenAI",
-        "color": "#11a37f"
+        "color": "#11a37f",
+        "aliases": [
+            "OpenAI"
+        ]
     },
     {
         "id": "claude",
         "name": "Claude",
         "org": "Anthropic",
-        "color": "#ff6b36"
+        "color": "#da7857",
+        "aliases": [
+            "Anthropic"
+        ]
     },
     {
         "id": "deepseek",
         "name": "Deepseek",
         "org": "Deepseek",
-        "color": "#4e6bfe"
+        "color": "#4e6bfe",
+        "aliases": [
+            "DeepSeek",
+            "Deepseek"
+        ]
     },
     {
         "id": "gemini",
         "name": "Gemini",
         "org": "Google",
-        "color": "#4185f4"
+        "color": "#4185f4",
+        "aliases": [
+            "Google",
+            "Google DeepMind"
+        ]
     },
     {
         "id": "grok",
         "name": "Grok",
         "org": "xAI",
-        "color": "#000000"
+        "color": "#000000",
+        "aliases": [
+            "xAI",
+            "X.AI",
+            "xai"
+        ]
     },
     {
         "id": "meta",
         "name": "Meta",
         "org": "Meta",
-        "color": "#0568e2"
+        "color": "#0568e2",
+        "aliases": [
+            "Meta",
+            "Meta AI"
+        ]
     },
     {
         "id": "mistral",
         "name": "Mistral",
         "org": "Mistral AI",
-        "color": "#ffaf00"
+        "color": "#ffaf00",
+        "aliases": [
+            "Mistral",
+            "Mistral AI"
+        ]
     },
     {
         "id": "minimax",
         "name": "MiniMax",
         "org": "MiniMax",
-        "color": "#f13d5c"
+        "color": "#f13d5c",
+        "aliases": [
+            "MiniMax",
+            "Minimax"
+        ]
     },
     {
         "id": "moonshot",
         "name": "Kimi",
         "org": "Moonshot AI",
-        "color": "#01245a"
+        "color": "#01245a",
+        "aliases": [
+            "Moonshot AI",
+            "Moonshot",
+            "Kimi"
+        ]
     },
     {
         "id": "qwen",
         "name": "Qwen",
         "org": "AliBaba",
-        "color": "#8b5cf6"
+        "color": "#8b5cf6",
+        "aliases": [
+            "Alibaba",
+            "AliBaba",
+            "Qwen"
+        ]
     },
     {
         "id": "zai",
         "name": "GLM",
         "org": "Z.ai",
-        "color": "#000000"
+        "color": "#3e025a",
+        "aliases": [
+            "Z.ai",
+            "Zhipu",
+            "Zhipu AI",
+            "GLM"
+        ]
     },
     {
         "id": "nemotron",
         "name": "Nemotron",
         "org": "NVIDIA",
-        "color": "#76b900"
+        "color": "#76b900",
+        "aliases": [
+            "NVIDIA",
+            "Nvidia"
+        ]
     },
     {
         "id": "baidu",
         "name": "ERNIE",
         "org": "Baidu",
-        "color": "#2a32e3"
+        "color": "#2a32e3",
+        "aliases": [
+            "Baidu",
+            "ERNIE"
+        ]
     },
     {
         "id": "xiaomi",
         "name": "MiMo",
         "org": "Huawei",
-        "color": "#ff6900"
+        "color": "#ff6900",
+        "aliases": [
+            "Xiaomi",
+            "MiMo"
+        ]
     }
 ]
