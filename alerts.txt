@@ -57,10 +57,6 @@ LEADERBOARD ALERTS REPORT
     First seen: 2026-04-01
     Sources: LMArena: 'qwen3.5-max-preview', Artificial Analysis: 'Qwen3.6 Max Preview'
 
-  • deepseek-v4-pro
-    First seen: 2026-04-24
-    Sources: LMArena: 'deepseek-v4-pro'
-
   • GPT-5.5 (high)
     First seen: 2026-04-28
     Sources: Artificial Analysis: 'GPT-5.5 (high)'
@@ -91,7 +87,7 @@ LEADERBOARD ALERTS REPORT
 
   • Qwen3.6 27B
     First seen: 2026-04-23
-    Sources: Artificial Analysis: 'Qwen3.6 27B'
+    Sources: Artificial Analysis: 'Qwen3.6 27B', LiveBench: 'Qwen 3.6 27B'
 
   • MiMo-V2-Omni-0327
     First seen: 2026-05-01
@@ -108,10 +104,6 @@ LEADERBOARD ALERTS REPORT
   • GPT-5.1 Codex Max High
     First seen: 2026-04-01
     Sources: LiveBench: 'GPT-5.1 Codex Max High'
-
-  • Kimi K2.6 Thinking
-    First seen: 2026-04-22
-    Sources: LiveBench: 'Kimi K2.6 Thinking'
 
   • GPT-5.4 Nano xHigh
     First seen: 2026-04-24

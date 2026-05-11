@@ -29,13 +29,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run update script
+        env:
+          FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
         run: python update.py
-
-      - name: Commit and push if changed
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/processed.csv data/history.csv data/untracked_models.json alerts.txt metadata.json
-          git diff --cached --quiet || git commit -m "Update leaderboard data $(date -u +%Y-%m-%d)"
-          git pull --rebase
-          git push
