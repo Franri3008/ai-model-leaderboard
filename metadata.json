@@ -1,5 +1,5 @@
 {
-    "last_updated": "2026-05-11 17:31:52",
+    "last_updated": "2026-05-11 16:29:50",
     "stats": {
         "models_tracked": 55,
         "matches_found": {
@@ -17,5 +17,5 @@
         "tracking_issues": 18,
         "new_untracked_models": 0
     },
-    "history_changes": 0
+    "history_changes": 3
 }
