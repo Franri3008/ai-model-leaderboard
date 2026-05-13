@@ -2,7 +2,11 @@ import csv
 import json
 import os
 import tempfile
+from datetime import datetime
 from pathlib import Path
+
+
+ALERTS_RETENTION_DAYS = 7
 
 
 _NUMERIC_COLUMNS = {
@@ -125,4 +129,24 @@ def upload_artifacts(base_dir, database_url=None):
             summary[path] = f"{len(value)} chars"
         else:
             summary[path] = "ok"
+
+    alerts_text = payloads.get("alerts")
+    if alerts_text:
+        kept = _archive_alerts(db, alerts_text, retention_days=ALERTS_RETENTION_DAYS)
+        summary["alerts_history"] = f"{kept} day(s) retained"
+
     return summary
+
+
+def _archive_alerts(db, alerts_text, retention_days):
+    """Write today's alerts under /alerts_history/<YYYY-MM-DD> and trim older entries."""
+    today = datetime.now().strftime("%Y-%m-%d")
+    db.reference(f"alerts_history/{today}").set(alerts_text)
+
+    existing = db.reference("alerts_history").get(shallow=True) or {}
+    if not isinstance(existing, dict):
+        return 1
+    dates_newest_first = sorted(existing.keys(), reverse=True)
+    for stale in dates_newest_first[retention_days:]:
+        db.reference(f"alerts_history/{stale}").delete()
+    return min(len(dates_newest_first), retention_days)

@@ -725,6 +725,13 @@ with open(untracked_file, "w") as f:
 
 print_step(f"✓ Alerts saved to: {alert_file.absolute()}", "SUCCESS")
 
+# Mirror the alerts body into stdout so it shows up in the GH Actions run log.
+print("\n" + "─" * 70)
+print("ALERTS (mirrored to log for daily visibility)")
+print("─" * 70)
+print("\n".join(alerts_output))
+print("─" * 70 + "\n")
+
 # ============================================================================
 # STEP 5: SAVE METADATA
 # ============================================================================
