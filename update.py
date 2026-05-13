@@ -585,8 +585,8 @@ alerts_output.append("=" * 70);
 
 source_labels = {"lma": "LMArena", "aa": "Artificial Analysis", "lb": "LiveBench"};
 
-# --- Section 1: TRACKING ISSUES (disappeared/renamed lookups) ---
-print_step("Checking for tracking issues (disappeared/renamed models)...")
+# --- Section 1: TRACKING ISSUES (lookups that returned no score) ---
+print_step("Checking for tracking issues...")
 tracking_issues = [];
 
 for idx, row in fixed_df.iterrows():
@@ -597,20 +597,11 @@ for idx, row in fixed_df.iterrows():
             continue;
         current_score = result.at[idx, key];
         if pd.isna(current_score) or current_score is None:
-            had_score_before = False;
-            if history_file.exists():
-                hist = pd.read_csv(history_file, sep=";");
-                model_hist = hist[hist["model"] == row["model"]];
-                if not model_hist.empty:
-                    past_scores = model_hist[key].dropna();
-                    if len(past_scores) > 0:
-                        had_score_before = True;
             tracking_issues.append({
                 "model": row["name"],
                 "model_id": row["model"],
                 "source": source_labels[key],
                 "lookup": str(lookup_value).strip(),
-                "had_score_before": had_score_before
             });
 
 alerts_output.append("");
@@ -619,20 +610,9 @@ alerts_output.append("1. TRACKING ISSUES — models with lookups that returned n
 alerts_output.append("─" * 70);
 
 if tracking_issues:
-    renamed = [t for t in tracking_issues if t["had_score_before"]];
-    never_matched = [t for t in tracking_issues if not t["had_score_before"]];
-
-    if renamed:
-        alerts_output.append("");
-        alerts_output.append("  ⚠ LIKELY RENAMED/REMOVED (had scores before, now missing):");
-        for t in renamed:
-            alerts_output.append(f"    • {t['model']} — {t['source']} lookup \"{t['lookup']}\" returned nothing");
-
-    if never_matched:
-        alerts_output.append("");
-        alerts_output.append("  ○ NEVER MATCHED (lookup set but never found a score):");
-        for t in never_matched:
-            alerts_output.append(f"    • {t['model']} — {t['source']} lookup \"{t['lookup']}\" returned nothing");
+    alerts_output.append("");
+    for t in tracking_issues:
+        alerts_output.append(f"  • {t['model']} — {t['source']} lookup \"{t['lookup']}\" returned nothing");
 else:
     alerts_output.append("");
     alerts_output.append("  All tracked lookups are matching. No issues detected.");
