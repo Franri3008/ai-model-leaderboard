@@ -33,3 +33,26 @@ jobs:
           FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
           GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
         run: python update.py
+
+      - name: Build email subject
+        id: subj
+        if: always() && hashFiles('metadata.json') != ''
+        run: |
+          ISSUES=$(python -c "import json; print(json.load(open('metadata.json'))['alerts_summary']['tracking_issues'])")
+          NEW=$(python -c "import json; print(json.load(open('metadata.json'))['alerts_summary']['new_untracked_models'])")
+          CHG=$(python -c "import json; print(json.load(open('metadata.json'))['history_changes'])")
+          echo "subject=Leaderboard $(date -u +%Y-%m-%d) — ${ISSUES} tracking issues, ${NEW} new untracked, ${CHG} score changes" >> "$GITHUB_OUTPUT"
+
+      - name: Email the daily alerts
+        if: always() && hashFiles('alerts.txt') != ''
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          from: AI Leaderboard Bot <${{ secrets.MAIL_USERNAME }}>
+          to: ${{ secrets.ALERT_RECIPIENT }}
+          subject: ${{ steps.subj.outputs.subject || 'Leaderboard daily alerts' }}
+          body: file://alerts.txt
