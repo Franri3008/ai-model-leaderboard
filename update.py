@@ -712,6 +712,110 @@ print("─" * 70)
 print("\n".join(alerts_output))
 print("─" * 70 + "\n")
 
+# --- Build HTML email body with NEW highlights ---
+def _sig(t):
+    return f"{t['model_id']}|{t['source']}|{t['lookup']}"
+
+today_tracking_sigs = [_sig(t) for t in tracking_issues]
+previous_tracking_sigs = set()
+
+# Try to fetch yesterday's tracking signatures from RTDB so we can highlight new ones.
+import os as _os_a
+if _os_a.environ.get("FIREBASE_DATABASE_URL"):
+    try:
+        import sys as _sys_a
+        _sys_a.path.insert(0, str(BASE_DIR))
+        from scripts.firebase_upload import _init_firebase as _init_fb
+        from firebase_admin import db as _db
+        _init_fb(_os_a.environ["FIREBASE_DATABASE_URL"])
+        prev = _db.reference("previous_alerts/tracking_issues").get()
+        if isinstance(prev, list):
+            previous_tracking_sigs = {str(s) for s in prev}
+        elif isinstance(prev, dict):
+            previous_tracking_sigs = {str(s) for s in prev.values()}
+        # Persist today's signatures for tomorrow's diff.
+        _db.reference("previous_alerts/tracking_issues").set(today_tracking_sigs)
+    except Exception as _e:
+        print_step(f"⚠ previous_alerts roundtrip skipped: {_e}", "WARN")
+
+new_tracking_sigs = {sig for sig in today_tracking_sigs if sig not in previous_tracking_sigs}
+
+def _esc(s):
+    return (str(s)
+            .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            .replace('"', "&quot;").replace("'", "&#39;"))
+
+NEW_BG = "#fff3cd"
+NEW_BORDER_L = "4px solid #f59e0b"
+NEW_BADGE = ('<span style="display:inline-block;background:#f59e0b;color:#fff;'
+             'font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;'
+             'margin-left:6px;vertical-align:middle;">NEW</span>')
+
+html = []
+html.append('<!DOCTYPE html><html><body style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;color:#111;max-width:760px;margin:0 auto;padding:8px;">')
+html.append(f'<h2 style="margin:0 0 4px 0;">Leaderboard alerts</h2>')
+html.append(f'<div style="color:#666;font-size:13px;margin-bottom:18px;">{today_str}</div>')
+
+# Section 1: Tracking issues
+html.append('<h3 style="margin:18px 0 6px 0;font-size:15px;color:#444;border-bottom:1px solid #ddd;padding-bottom:4px;">1. Tracking issues — lookups returning no match</h3>')
+if tracking_issues:
+    html.append('<table style="width:100%;border-collapse:collapse;font-size:13px;">')
+    html.append('<thead><tr>'
+                '<th style="text-align:left;padding:6px 8px;background:#f5f5f5;border-bottom:1px solid #ddd;">Model</th>'
+                '<th style="text-align:left;padding:6px 8px;background:#f5f5f5;border-bottom:1px solid #ddd;">Source</th>'
+                '<th style="text-align:left;padding:6px 8px;background:#f5f5f5;border-bottom:1px solid #ddd;">Lookup</th>'
+                '</tr></thead><tbody>')
+    for t in tracking_issues:
+        is_new = _sig(t) in new_tracking_sigs
+        row_style = f'background:{NEW_BG};border-left:{NEW_BORDER_L};' if is_new else ''
+        badge = NEW_BADGE if is_new else ''
+        html.append(
+            f'<tr style="{row_style}">'
+            f'<td style="padding:6px 8px;border-bottom:1px solid #eee;">{_esc(t["model"])}{badge}</td>'
+            f'<td style="padding:6px 8px;border-bottom:1px solid #eee;color:#555;">{_esc(t["source"])}</td>'
+            f'<td style="padding:6px 8px;border-bottom:1px solid #eee;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#333;">{_esc(t["lookup"])}</td>'
+            f'</tr>'
+        )
+    html.append('</tbody></table>')
+else:
+    html.append('<p style="color:#666;font-style:italic;">All tracked lookups are matching.</p>')
+
+# Section 2: Untracked models (top 30 by appearance order)
+top_untracked = grouped_models[:30]
+html.append('<h3 style="margin:24px 0 6px 0;font-size:15px;color:#444;border-bottom:1px solid #ddd;padding-bottom:4px;">2. Untracked models — top 30 not in tracking.json</h3>')
+if top_untracked:
+    html.append('<table style="width:100%;border-collapse:collapse;font-size:13px;">')
+    html.append('<thead><tr>'
+                '<th style="text-align:left;padding:6px 8px;background:#f5f5f5;border-bottom:1px solid #ddd;">Model</th>'
+                '<th style="text-align:left;padding:6px 8px;background:#f5f5f5;border-bottom:1px solid #ddd;">First seen</th>'
+                '<th style="text-align:left;padding:6px 8px;background:#f5f5f5;border-bottom:1px solid #ddd;">Sources</th>'
+                '</tr></thead><tbody>')
+    for group in top_untracked:
+        norm = group["norm_name"]
+        first_seen = history_untracked.get(norm, today_str)
+        is_new = first_seen == today_str
+        row_style = f'background:{NEW_BG};border-left:{NEW_BORDER_L};' if is_new else ''
+        badge = NEW_BADGE if is_new else ''
+        display = group["instances"][0]["raw_name"]
+        srcs = ", ".join(f"{i['source']}: {i['raw_name']}" for i in group["instances"])
+        html.append(
+            f'<tr style="{row_style}">'
+            f'<td style="padding:6px 8px;border-bottom:1px solid #eee;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">{_esc(display)}{badge}</td>'
+            f'<td style="padding:6px 8px;border-bottom:1px solid #eee;color:#555;">{_esc(first_seen)}</td>'
+            f'<td style="padding:6px 8px;border-bottom:1px solid #eee;color:#666;font-size:12px;">{_esc(srcs)}</td>'
+            f'</tr>'
+        )
+    html.append('</tbody></table>')
+else:
+    html.append('<p style="color:#666;font-style:italic;">No untracked models in the top 30 of any leaderboard.</p>')
+
+html.append('</body></html>')
+
+alerts_html_file = BASE_DIR / "alerts.html"
+with open(alerts_html_file, "w") as f:
+    f.write("\n".join(html))
+print_step(f"✓ HTML alerts saved to: {alerts_html_file.absolute()}", "SUCCESS")
+
 # ============================================================================
 # STEP 5: SAVE METADATA
 # ============================================================================

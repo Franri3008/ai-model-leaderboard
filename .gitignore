@@ -6,6 +6,7 @@ data/history.csv
 data/sources.json
 data/untracked_models.json
 alerts.txt
+alerts.html
 metadata.json
 
 __pycache__/

@@ -44,7 +44,7 @@ jobs:
           echo "subject=Leaderboard $(date -u +%Y-%m-%d) — ${ISSUES} tracking issues, ${NEW} new untracked, ${CHG} score changes" >> "$GITHUB_OUTPUT"
 
       - name: Email the daily alerts
-        if: always() && hashFiles('alerts.txt') != ''
+        if: always() && hashFiles('alerts.html') != ''
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.MAIL_SERVER }}
@@ -55,4 +55,6 @@ jobs:
           from: AI Leaderboard Bot <${{ secrets.MAIL_USERNAME }}>
           to: ${{ secrets.ALERT_RECIPIENT }}
           subject: ${{ steps.subj.outputs.subject || 'Leaderboard daily alerts' }}
+          html_body: file://alerts.html
           body: file://alerts.txt
+          convert_markdown: false
