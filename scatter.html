@@ -801,15 +801,7 @@
                 .attr('fill', d => d.color)
                 .style('opacity', 1);
 
-            if (skippedNoDate > 0) {
-                layers.notice
-                    .attr('x', width - margin.right)
-                    .attr('y', margin.top - 8)
-                    .text(`${skippedNoDate} models hidden — no release_date in tracking.json`)
-                    .transition(t).style('opacity', 1);
-            } else {
-                layers.notice.transition(t).style('opacity', 0);
-            }
+            layers.notice.transition(t).style('opacity', 0);
         }
 
         function resolveLabelCollisions(labels, height) {
