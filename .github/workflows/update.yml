@@ -38,10 +38,9 @@ jobs:
         id: subj
         if: always() && hashFiles('metadata.json') != ''
         run: |
-          ISSUES=$(python -c "import json; print(json.load(open('metadata.json'))['alerts_summary']['tracking_issues'])")
           NEW=$(python -c "import json; print(json.load(open('metadata.json'))['alerts_summary']['new_untracked_models'])")
           CHG=$(python -c "import json; print(json.load(open('metadata.json'))['history_changes'])")
-          echo "subject=Leaderboard $(date -u +%Y-%m-%d) — ${ISSUES} tracking issues, ${NEW} new untracked, ${CHG} score changes" >> "$GITHUB_OUTPUT"
+          echo "subject=Leaderboard $(date -u +%Y-%m-%d) — ${NEW} new untracked, ${CHG} score changes" >> "$GITHUB_OUTPUT"
 
       - name: Email the daily alerts
         if: always() && hashFiles('alerts.html') != ''

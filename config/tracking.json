@@ -8,7 +8,7 @@
         "release_date": "2026-05-19",
         "lma_lookup": "gemini-3.5-flash",
         "aa_lookup": "Gemini 3.5 Flash",
-        "lb_lookup": null
+        "lb_lookup": "Gemini 3.5 Flash High"
     },
     {
         "model": "gemma-4",
@@ -326,7 +326,7 @@
         "os": 1,
         "release_date": null,
         "lma_lookup": "qwen3.7-max-preview",
-        "aa_lookup": null,
+        "aa_lookup": "Qwen3.7 Max",
         "lb_lookup": null
     },
     {

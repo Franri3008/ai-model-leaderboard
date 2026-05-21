@@ -233,12 +233,6 @@ def build_sources_json(lma_df, aa_df, lb_df, fixed_df, models_json_path, output_
             if provider_col is not None and not pd.isna(r[provider_col]):
                 provider_text = str(r[provider_col]).strip();
 
-            # Pick the most specific (longest-lookup) tracked entry that
-            # substring-matches this row and hasn't already been claimed
-            # by a higher-scoring row in this source. Without the
-            # used-set guard, e.g. both "gemini-3-flash" and
-            # "gemini-3-flash (thinking-minimal)" would both bind to the
-            # tracked Gemini 3 Flash and collide on the same D3 id.
             raw_lower = raw_name.lower();
             tracked_match = None;
             best_len = -1;
@@ -273,8 +267,6 @@ def build_sources_json(lma_df, aa_df, lb_df, fixed_df, models_json_path, output_
                     pt_lower = provider_text.lower();
                     logo = alias_to_logo.get(pt_lower);
                     if not logo:
-                        # Some sources combine fields (e.g. LMArena "Anthropic · Proprietary").
-                        # Split on common separators and try each part.
                         for part in re.split(r"\s*[·|/,]\s*", provider_text):
                             cand = part.strip().lower();
                             if cand and cand in alias_to_logo:
@@ -604,18 +596,44 @@ for idx, row in fixed_df.iterrows():
                 "lookup": str(lookup_value).strip(),
             });
 
-alerts_output.append("");
-alerts_output.append("─" * 70);
-alerts_output.append("1. TRACKING ISSUES — models with lookups that returned no match");
-alerts_output.append("─" * 70);
+# Diff today's tracking issues against yesterday's snapshot in Firebase RTDB so we
+# can a) gate Section 1 (only show on change) and b) highlight new rows in the HTML.
+def _sig(t):
+    return f"{t['model_id']}|{t['source']}|{t['lookup']}"
 
-if tracking_issues:
+today_tracking_sigs = [_sig(t) for t in tracking_issues]
+previous_tracking_sigs = set()
+
+import os as _os_a
+if _os_a.environ.get("FIREBASE_DATABASE_URL"):
+    try:
+        import sys as _sys_a
+        _sys_a.path.insert(0, str(BASE_DIR))
+        from scripts.firebase_upload import _init_firebase as _init_fb
+        from firebase_admin import db as _db
+        _init_fb(_os_a.environ["FIREBASE_DATABASE_URL"])
+        prev = _db.reference("previous_alerts/tracking_issues").get()
+        if isinstance(prev, list):
+            previous_tracking_sigs = {str(s) for s in prev}
+        elif isinstance(prev, dict):
+            previous_tracking_sigs = {str(s) for s in prev.values()}
+        _db.reference("previous_alerts/tracking_issues").set(today_tracking_sigs)
+    except Exception as _e:
+        print_step(f"⚠ previous_alerts roundtrip skipped: {_e}", "WARN")
+
+new_tracking_sigs = {sig for sig in today_tracking_sigs if sig not in previous_tracking_sigs}
+
+# Only emit Section 1 when something is new vs. yesterday — known/ongoing issues
+# are noise in a daily email.
+if new_tracking_sigs:
+    alerts_output.append("");
+    alerts_output.append("─" * 70);
+    alerts_output.append("TRACKING ISSUES — models with lookups that returned no match");
+    alerts_output.append("─" * 70);
     alerts_output.append("");
     for t in tracking_issues:
-        alerts_output.append(f"  • {t['model']} — {t['source']} lookup \"{t['lookup']}\" returned nothing");
-else:
-    alerts_output.append("");
-    alerts_output.append("  All tracked lookups are matching. No issues detected.");
+        marker = " [NEW]" if _sig(t) in new_tracking_sigs else "";
+        alerts_output.append(f"  • {t['model']}{marker} — {t['source']} lookup \"{t['lookup']}\" returned nothing");
 
 # --- Section 3: NEW UNTRACKED MODELS ---
 print_step("Collecting untracked models across sources...")
@@ -666,7 +684,7 @@ else:
 
 alerts_output.append("");
 alerts_output.append("─" * 70);
-alerts_output.append("2. UNTRACKED MODELS — top 30 models not in tracking.json");
+alerts_output.append("UNTRACKED MODELS — top 30 models not in tracking.json");
 alerts_output.append("─" * 70);
 
 new_models_count = 0;
@@ -713,33 +731,6 @@ print("\n".join(alerts_output))
 print("─" * 70 + "\n")
 
 # --- Build HTML email body with NEW highlights ---
-def _sig(t):
-    return f"{t['model_id']}|{t['source']}|{t['lookup']}"
-
-today_tracking_sigs = [_sig(t) for t in tracking_issues]
-previous_tracking_sigs = set()
-
-# Try to fetch yesterday's tracking signatures from RTDB so we can highlight new ones.
-import os as _os_a
-if _os_a.environ.get("FIREBASE_DATABASE_URL"):
-    try:
-        import sys as _sys_a
-        _sys_a.path.insert(0, str(BASE_DIR))
-        from scripts.firebase_upload import _init_firebase as _init_fb
-        from firebase_admin import db as _db
-        _init_fb(_os_a.environ["FIREBASE_DATABASE_URL"])
-        prev = _db.reference("previous_alerts/tracking_issues").get()
-        if isinstance(prev, list):
-            previous_tracking_sigs = {str(s) for s in prev}
-        elif isinstance(prev, dict):
-            previous_tracking_sigs = {str(s) for s in prev.values()}
-        # Persist today's signatures for tomorrow's diff.
-        _db.reference("previous_alerts/tracking_issues").set(today_tracking_sigs)
-    except Exception as _e:
-        print_step(f"⚠ previous_alerts roundtrip skipped: {_e}", "WARN")
-
-new_tracking_sigs = {sig for sig in today_tracking_sigs if sig not in previous_tracking_sigs}
-
 def _esc(s):
     return (str(s)
             .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -756,9 +747,11 @@ html.append('<!DOCTYPE html><html><body style="font-family:-apple-system,BlinkMa
 html.append(f'<h2 style="margin:0 0 4px 0;">Leaderboard alerts</h2>')
 html.append(f'<div style="color:#666;font-size:13px;margin-bottom:18px;">{today_str}</div>')
 
-# Section 1: Tracking issues
-html.append('<h3 style="margin:18px 0 6px 0;font-size:15px;color:#444;border-bottom:1px solid #ddd;padding-bottom:4px;">1. Tracking issues — lookups returning no match</h3>')
-if tracking_issues:
+# Section 1: Tracking issues — only render when at least one issue is new vs. yesterday.
+# Why: ongoing/known issues are noise in a daily email; the section should fire only
+# when a previously-matching model just stopped matching.
+if new_tracking_sigs:
+    html.append('<h3 style="margin:18px 0 6px 0;font-size:15px;color:#444;border-bottom:1px solid #ddd;padding-bottom:4px;">Tracking issues — lookups returning no match</h3>')
     html.append('<table style="width:100%;border-collapse:collapse;font-size:13px;">')
     html.append('<thead><tr>'
                 '<th style="text-align:left;padding:6px 8px;background:#f5f5f5;border-bottom:1px solid #ddd;">Model</th>'
@@ -777,12 +770,10 @@ if tracking_issues:
             f'</tr>'
         )
     html.append('</tbody></table>')
-else:
-    html.append('<p style="color:#666;font-style:italic;">All tracked lookups are matching.</p>')
 
 # Section 2: Untracked models (top 30 by appearance order)
 top_untracked = grouped_models[:30]
-html.append('<h3 style="margin:24px 0 6px 0;font-size:15px;color:#444;border-bottom:1px solid #ddd;padding-bottom:4px;">2. Untracked models — top 30 not in tracking.json</h3>')
+html.append('<h3 style="margin:24px 0 6px 0;font-size:15px;color:#444;border-bottom:1px solid #ddd;padding-bottom:4px;">Untracked models — top 30 not in tracking.json</h3>')
 if top_untracked:
     html.append('<table style="width:100%;border-collapse:collapse;font-size:13px;">')
     html.append('<thead><tr>'

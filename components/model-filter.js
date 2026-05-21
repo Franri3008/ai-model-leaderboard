@@ -106,6 +106,15 @@
   let bubble, panel, list, search;
   let activityTimer = null;
   let mounted = false;
+  let uiDisabled = false;
+
+  function isUiEnabled() {
+    try {
+      return new URLSearchParams(window.location.search).get('filter') !== '0';
+    } catch (e) {
+      return true;
+    }
+  }
 
   function ensureStyles() {
     if (document.getElementById('mfc-styles')) return;
@@ -139,12 +148,14 @@
   }
 
   function close() {
+    if (!mounted) return;
     panel.classList.remove('mfc-open');
     bubble.classList.remove('mfc-open');
     bubble.setAttribute('aria-expanded', 'false');
   }
 
   function open() {
+    if (!mounted) return;
     panel.classList.add('mfc-open');
     bubble.classList.add('mfc-open');
     bubble.setAttribute('aria-expanded', 'true');
@@ -270,6 +281,11 @@
 
   function init(options) {
     opts = options || {};
+    uiDisabled = !isUiEnabled();
+    // When ?filter=0 we never mount the bubble/panel. The internal `hidden` set
+    // and the onChange notify path still work so programmatic setHidden() calls
+    // (e.g. scatter.html's default subset) keep applying — just without a UI.
+    if (uiDisabled) return;
     ensureStyles();
     if (!mounted) {
       buildDOM();
