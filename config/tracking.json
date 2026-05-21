@@ -625,5 +625,16 @@
         "lma_lookup": "mimo-v2-pro",
         "aa_lookup": "MiMo-V2-Pro",
         "lb_lookup": "MiMo V2 Pro"
+    },
+    {
+        "model": "step-3-5-flash",
+        "name": "Step 3.5 Flash",
+        "logo": "stepfun",
+        "geo": "China",
+        "os": 1,
+        "release_date": "2026-02-12",
+        "lma_lookup": "step-3.5-flash",
+        "aa_lookup": "Step 3.5 Flash 2603",
+        "lb_lookup": null
     }
 ]

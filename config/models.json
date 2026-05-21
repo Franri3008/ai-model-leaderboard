@@ -141,5 +141,15 @@
             "Xiaomi",
             "MiMo"
         ]
+    },
+    {
+        "id": "stepfun",
+        "name": "Step",
+        "org": "StepFun",
+        "color": "#00a9ff",
+        "aliases": [
+            "StepFun",
+            "Step"
+        ]
     }
 ]
