@@ -319,11 +319,11 @@
         "lb_lookup": null
     },
     {
-        "model": "qwen3-7",
+        "model": "qwen3-7-max",
         "name": "Qwen 3.7 Max (Preview)",
         "logo": "qwen",
         "geo": "China",
-        "os": 1,
+        "os": 0,
         "release_date": null,
         "lma_lookup": "qwen3.7-max-preview",
         "aa_lookup": "Qwen3.7 Max",
