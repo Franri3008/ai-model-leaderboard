@@ -1,0 +1,28 @@
+name: Backfill history dates (one-off)
+
+# Temporary workflow to fix gemini-3-5-flash / qwen3-7-max / step-3-5-flash
+# date entries in Firebase /history. Idempotent, but delete this file after
+# the run succeeds — it has no reason to exist long-term.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install firebase-admin
+
+      - name: Run backfill
+        env:
+          FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+        run: python scripts/backfill_history.py

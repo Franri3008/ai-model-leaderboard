@@ -290,13 +290,37 @@ def build_sources_json(lma_df, aa_df, lb_df, fixed_df, models_json_path, output_
 
     return sources
 
+def _load_history_from_firebase():
+    import os as _os
+    db_url = _os.environ.get("FIREBASE_DATABASE_URL")
+    if not db_url:
+        return None
+    import sys as _sys
+    _sys.path.insert(0, str(BASE_DIR))
+    from scripts.firebase_upload import _init_firebase
+    from firebase_admin import db
+    _init_firebase(db_url)
+    raw = db.reference("history").get()
+    if isinstance(raw, dict):
+        raw = list(raw.values())
+    if not raw:
+        return pd.DataFrame(columns=["date", "model", "lma", "aa", "lb"])
+    df = pd.DataFrame([r for r in raw if r])
+    for col in ["date", "model", "lma", "aa", "lb"]:
+        if col not in df.columns:
+            df[col] = None
+    return df[["date", "model", "lma", "aa", "lb"]]
+
+
 def append_history(result, history_file):
     today = datetime.now().strftime("%Y-%m-%d");
 
-    if history_file.exists():
-        history = pd.read_csv(history_file, sep=";");
-    else:
-        history = pd.DataFrame(columns=["date", "model", "lma", "aa", "lb"]);
+    history = _load_history_from_firebase();
+    if history is None:
+        if history_file.exists():
+            history = pd.read_csv(history_file, sep=";");
+        else:
+            history = pd.DataFrame(columns=["date", "model", "lma", "aa", "lb"]);
 
     new_rows = [];
     for _, row in result.iterrows():
@@ -322,10 +346,11 @@ def append_history(result, history_file):
 
     if new_rows:
         history = pd.concat([history, pd.DataFrame(new_rows)], ignore_index=True);
-        history.to_csv(history_file, sep=";", index=False);
-        print_step(f"Appended {len(new_rows)} changed rows to history.csv");
+        print_step(f"Appended {len(new_rows)} changed rows to history");
     else:
-        print_step("No score changes detected, history.csv unchanged");
+        print_step("No score changes detected");
+
+    history.to_csv(history_file, sep=";", index=False);
 
     return len(new_rows)
 
@@ -354,9 +379,6 @@ table = soup.select_one("table.w-full.caption-bottom.text-sm");
 if not table:
     raise ValueError("LMArena table not found")
 lma_df = extract_table_data(table, extra_selectors="span.text-text-secondary");
-# Re-walk tbody to capture the provider, which lives in span.text-text-secondary
-# (currently stripped above to keep model names clean) and is what lmarena.ai
-# shows under each model name (e.g. "Anthropic", "OpenAI").
 lma_tbody = table.find("tbody") or table;
 lma_providers = [];
 for tr in lma_tbody.find_all("tr", recursive=False):
@@ -367,8 +389,6 @@ for tr in lma_tbody.find_all("tr", recursive=False):
     for cell in cells:
         for span in cell.select("span.text-text-secondary"):
             txt = " ".join(span.stripped_strings).strip();
-            # Provider strings contain letters; skip numeric secondaries
-            # like rank-spread "1 4" or score CI "±6".
             if txt and any(c.isalpha() for c in txt):
                 provider_text = txt;
                 break;
@@ -596,8 +616,6 @@ for idx, row in fixed_df.iterrows():
                 "lookup": str(lookup_value).strip(),
             });
 
-# Diff today's tracking issues against yesterday's snapshot in Firebase RTDB so we
-# can a) gate Section 1 (only show on change) and b) highlight new rows in the HTML.
 def _sig(t):
     return f"{t['model_id']}|{t['source']}|{t['lookup']}"
 
@@ -623,8 +641,6 @@ if _os_a.environ.get("FIREBASE_DATABASE_URL"):
 
 new_tracking_sigs = {sig for sig in today_tracking_sigs if sig not in previous_tracking_sigs}
 
-# Only emit Section 1 when something is new vs. yesterday — known/ongoing issues
-# are noise in a daily email.
 if new_tracking_sigs:
     alerts_output.append("");
     alerts_output.append("─" * 70);
@@ -747,9 +763,6 @@ html.append('<!DOCTYPE html><html><body style="font-family:-apple-system,BlinkMa
 html.append(f'<h2 style="margin:0 0 4px 0;">Leaderboard alerts</h2>')
 html.append(f'<div style="color:#666;font-size:13px;margin-bottom:18px;">{today_str}</div>')
 
-# Section 1: Tracking issues — only render when at least one issue is new vs. yesterday.
-# Why: ongoing/known issues are noise in a daily email; the section should fire only
-# when a previously-matching model just stopped matching.
 if new_tracking_sigs:
     html.append('<h3 style="margin:18px 0 6px 0;font-size:15px;color:#444;border-bottom:1px solid #ddd;padding-bottom:4px;">Tracking issues — lookups returning no match</h3>')
     html.append('<table style="width:100%;border-collapse:collapse;font-size:13px;">')
