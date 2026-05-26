@@ -308,26 +308,15 @@
         "lb_lookup": "GLM 4.6"
     },
     {
-        "model": "glm-4-5-air",
-        "name": "GLM 4.5 Air",
-        "logo": "zai",
-        "geo": "China",
-        "os": 1,
-        "release_date": "2025-07-28",
-        "lma_lookup": null,
-        "aa_lookup": null,
-        "lb_lookup": null
-    },
-    {
         "model": "qwen3-7-max",
         "name": "Qwen 3.7 Max (Preview)",
         "logo": "qwen",
         "geo": "China",
         "os": 0,
-        "release_date": null,
+        "release_date": "2025-05-19",
         "lma_lookup": "qwen3.7-max-preview",
         "aa_lookup": "Qwen3.7 Max",
-        "lb_lookup": null
+        "lb_lookup": "Qwen 3.7 Max"
     },
     {
         "model": "qwen3-6",
