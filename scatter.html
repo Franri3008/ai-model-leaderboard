@@ -268,10 +268,7 @@
         function load() {
             const params = new URLSearchParams(window.location.search);
 
-            Promise.all([
-                LB.loadData({ dataBase: DATA_BASE, configBase: CONFIG_BASE }),
-                d3.json(`${CONFIG_BASE}/config/scatter_defaults.json`).catch(() => null)
-            ]).then(([state, defaultsData]) => {
+            LB.loadData({ dataBase: DATA_BASE, configBase: CONFIG_BASE }).then(state => {
                 rawData = state.rawData;
                 lastTrackedScores = state.lastTrackedScores;
                 modelToOs = state.modelToOs;
@@ -346,14 +343,10 @@
                         onChange: () => updateChart()
                     });
 
-                    const visibleArr = defaultsData && (defaultsData.visible_models || (Array.isArray(defaultsData) ? defaultsData : null));
-                    if (Array.isArray(visibleArr) && visibleArr.length) {
-                        const visibleSet = new Set(visibleArr);
-                        const toHide = rawData
-                            .map(d => String(d.model || '').trim())
-                            .filter(m => m && !visibleSet.has(m));
-                        window.ModelFilter.setHidden(toHide);
-                    }
+                    const toHide = rawData
+                        .map(d => String(d.model || '').trim())
+                        .filter(m => m && !(trackingMap[m] && trackingMap[m].scatter_default === 1));
+                    if (toHide.length) window.ModelFilter.setHidden(toHide);
                 }
                 renderLegend();
 

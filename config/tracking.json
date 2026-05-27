@@ -8,7 +8,8 @@
         "release_date": "2026-05-19",
         "lma_lookup": "gemini-3.5-flash",
         "aa_lookup": "Gemini 3.5 Flash",
-        "lb_lookup": "Gemini 3.5 Flash High"
+        "lb_lookup": "Gemini 3.5 Flash High",
+        "scatter_default": 1
     },
     {
         "model": "gemma-4",
@@ -19,7 +20,8 @@
         "release_date": "2026-04-02",
         "lma_lookup": "gemma-4-31b",
         "aa_lookup": "Gemma 4 31B",
-        "lb_lookup": "Gemma 4 31B"
+        "lb_lookup": "Gemma 4 31B",
+        "scatter_default": 1
     },
     {
         "model": "gemini-3-1-pro",
@@ -30,7 +32,8 @@
         "release_date": "2026-02-19",
         "lma_lookup": "gemini-3.1-pro-preview",
         "aa_lookup": "Gemini 3.1 Pro Preview",
-        "lb_lookup": "Gemini 3.1 Pro Preview High**5th rank in unseen questions across all categories"
+        "lb_lookup": "Gemini 3.1 Pro Preview High**5th rank in unseen questions across all categories",
+        "scatter_default": 1
     },
     {
         "model": "gemini-3-pro",
@@ -41,7 +44,8 @@
         "release_date": "2025-11-18",
         "lma_lookup": "gemini-3-pro",
         "aa_lookup": "Gemini 3 Pro Preview (low)",
-        "lb_lookup": "Gemini 3 Pro Preview High"
+        "lb_lookup": "Gemini 3 Pro Preview High",
+        "scatter_default": 1
     },
     {
         "model": "gemini-3-flash",
@@ -63,7 +67,8 @@
         "release_date": "2025-06-17",
         "lma_lookup": "gemini-2.5-pro",
         "aa_lookup": "Gemini 2.5 Pro",
-        "lb_lookup": "Gemini 2.5 Pro (Max Thinking)"
+        "lb_lookup": "Gemini 2.5 Pro (Max Thinking)",
+        "scatter_default": 1
     },
     {
         "model": "gemini-2-5-flash",
@@ -85,7 +90,8 @@
         "release_date": "2026-04-16",
         "lma_lookup": "claude-opus-4-7-thinking",
         "aa_lookup": "Claude Opus 4.7 (max)",
-        "lb_lookup": "Claude 4.7 Opus Thinking xHigh Effort"
+        "lb_lookup": "Claude 4.7 Opus Thinking xHigh Effort",
+        "scatter_default": 1
     },
     {
         "model": "claude-opus-4-6-thinking",
@@ -96,7 +102,8 @@
         "release_date": "2026-02-05",
         "lma_lookup": "claude-opus-4-6-thinking",
         "aa_lookup": "Claude Opus 4.6 (max)",
-        "lb_lookup": "Claude 4.6 Opus Thinking High Effort"
+        "lb_lookup": "Claude 4.6 Opus Thinking High Effort",
+        "scatter_default": 1
     },
     {
         "model": "claude-sonnet-4-6-thinking",
@@ -118,7 +125,8 @@
         "release_date": "2025-11-24",
         "lma_lookup": "claude-opus-4-5-20251101-thinking-32k",
         "aa_lookup": "Claude Opus 4.5",
-        "lb_lookup": "Claude 4.5 Opus Thinking High Effort"
+        "lb_lookup": "Claude 4.5 Opus Thinking High Effort",
+        "scatter_default": 1
     },
     {
         "model": "claude-sonnet-4-5-thinking",
@@ -140,7 +148,8 @@
         "release_date": "2025-08-05",
         "lma_lookup": "claude-opus-4-1-20250805",
         "aa_lookup": "Claude 4.1 Opus",
-        "lb_lookup": "Claude 4.1 Opus Thinking"
+        "lb_lookup": "Claude 4.1 Opus Thinking",
+        "scatter_default": 1
     },
     {
         "model": "claude-haiku-4-5",
@@ -162,7 +171,8 @@
         "release_date": "2026-04-23",
         "lma_lookup": "gpt-5.5-high",
         "aa_lookup": "GPT-5.5 (xhigh)",
-        "lb_lookup": "GPT-5.5 Thinking xHigh Effort"
+        "lb_lookup": "GPT-5.5 Thinking xHigh Effort",
+        "scatter_default": 1
     },
     {
         "model": "gpt-5.4-mini",
@@ -173,7 +183,8 @@
         "release_date": "2026-03-18",
         "lma_lookup": "gpt-5.4-mini-high",
         "aa_lookup": "GPT-5.4 mini (xhigh)",
-        "lb_lookup": "GPT-5.4 Mini xHigh"
+        "lb_lookup": "GPT-5.4 Mini xHigh",
+        "scatter_default": 1
     },
     {
         "model": "gpt-5.4",
@@ -184,7 +195,8 @@
         "release_date": "2026-03-05",
         "lma_lookup": "gpt-5.4-high",
         "aa_lookup": "GPT-5.4 (xhigh)",
-        "lb_lookup": "GPT-5.4 Thinking xHigh Effort"
+        "lb_lookup": "GPT-5.4 Thinking xHigh Effort",
+        "scatter_default": 1
     },
     {
         "model": "gpt-5.2",
@@ -195,7 +207,8 @@
         "release_date": "2025-12-11",
         "lma_lookup": "gpt-5.2-high",
         "aa_lookup": "GPT-5.2 (xhigh)",
-        "lb_lookup": "GPT-5.2 High"
+        "lb_lookup": "GPT-5.2 High",
+        "scatter_default": 1
     },
     {
         "model": "gpt-5-1",
@@ -206,7 +219,8 @@
         "release_date": "2025-11-12",
         "lma_lookup": "gpt-5.1-high",
         "aa_lookup": "GPT-5.1 (high)",
-        "lb_lookup": "GPT-5.1 High"
+        "lb_lookup": "GPT-5.1 High",
+        "scatter_default": 1
     },
     {
         "model": "gpt-5-high",
@@ -217,7 +231,8 @@
         "release_date": "2025-08-07",
         "lma_lookup": "gpt-5-high",
         "aa_lookup": "GPT-5 (high)",
-        "lb_lookup": "GPT-5 Pro"
+        "lb_lookup": "GPT-5 Pro",
+        "scatter_default": 1
     },
     {
         "model": "o3-2025-04-16",
@@ -228,7 +243,8 @@
         "release_date": "2025-04-16",
         "lma_lookup": "o3-2025-04-16",
         "aa_lookup": "o3",
-        "lb_lookup": null
+        "lb_lookup": null,
+        "scatter_default": 1
     },
     {
         "model": "gpt-5-mini",
@@ -239,7 +255,8 @@
         "release_date": "2025-08-07",
         "lma_lookup": "gpt-5-mini-high",
         "aa_lookup": "GPT-5 mini (high)",
-        "lb_lookup": "GPT-5 Mini High"
+        "lb_lookup": "GPT-5 Mini High",
+        "scatter_default": 1
     },
     {
         "model": "gpt-5-nano",
@@ -272,7 +289,8 @@
         "release_date": "2026-04-07",
         "lma_lookup": "glm-5.1",
         "aa_lookup": "GLM-5.1",
-        "lb_lookup": "GLM 5.1"
+        "lb_lookup": "GLM 5.1",
+        "scatter_default": 1
     },
     {
         "model": "glm-5",
@@ -283,7 +301,8 @@
         "release_date": "2026-02-11",
         "lma_lookup": "glm-5",
         "aa_lookup": "GLM-5",
-        "lb_lookup": "GLM 5"
+        "lb_lookup": "GLM 5",
+        "scatter_default": 1
     },
     {
         "model": "glm-4-7",
@@ -294,7 +313,8 @@
         "release_date": "2025-12-22",
         "lma_lookup": "glm-4.7",
         "aa_lookup": "GLM-4.7",
-        "lb_lookup": "GLM 4.7"
+        "lb_lookup": "GLM 4.7",
+        "scatter_default": 1
     },
     {
         "model": "glm-4-6",
@@ -305,7 +325,8 @@
         "release_date": "2025-09-30",
         "lma_lookup": "glm-4.6",
         "aa_lookup": "GLM-4.6",
-        "lb_lookup": "GLM 4.6"
+        "lb_lookup": "GLM 4.6",
+        "scatter_default": 1
     },
     {
         "model": "qwen3-7-max",
@@ -313,10 +334,11 @@
         "logo": "qwen",
         "geo": "China",
         "os": 0,
-        "release_date": "2025-05-19",
+        "release_date": "2026-05-19",
         "lma_lookup": "qwen3.7-max-preview",
         "aa_lookup": "Qwen3.7 Max",
-        "lb_lookup": "Qwen 3.7 Max"
+        "lb_lookup": "Qwen 3.7 Max",
+        "scatter_default": 1
     },
     {
         "model": "qwen3-6",
@@ -327,7 +349,8 @@
         "release_date": "2026-04-02",
         "lma_lookup": null,
         "aa_lookup": "Qwen3.6 Plus",
-        "lb_lookup": "Qwen 3.6 Plus"
+        "lb_lookup": "Qwen 3.6 Plus",
+        "scatter_default": 1
     },
     {
         "model": "qwen3-5",
@@ -338,7 +361,8 @@
         "release_date": "2026-02-16",
         "lma_lookup": "qwen3.5-397b-a17b",
         "aa_lookup": "Qwen3.5 397B A17B",
-        "lb_lookup": null
+        "lb_lookup": null,
+        "scatter_default": 1
     },
     {
         "model": "qwen3-max",
@@ -349,7 +373,8 @@
         "release_date": "2025-09-24",
         "lma_lookup": "qwen3-max-2025-09-23",
         "aa_lookup": "Qwen3 235B A22B 2507",
-        "lb_lookup": "Qwen 3 235B A22B Thinking 2507"
+        "lb_lookup": "Qwen 3 235B A22B Thinking 2507",
+        "scatter_default": 1
     },
     {
         "model": "deepseek-v4-flash",
@@ -371,7 +396,8 @@
         "release_date": "2026-04-24",
         "lma_lookup": "deepseek-v4-pro",
         "aa_lookup": "DeepSeek V4 Pro (Max)",
-        "lb_lookup": "DeepSeek V4 Pro"
+        "lb_lookup": "DeepSeek V4 Pro",
+        "scatter_default": 1
     },
     {
         "model": "deepseek-v3-2-exp-thinking",
@@ -382,7 +408,8 @@
         "release_date": "2025-12-01",
         "lma_lookup": "deepseek-v3.2-thinking",
         "aa_lookup": "DeepSeek V3.2",
-        "lb_lookup": "DeepSeek V3.2 Thinking"
+        "lb_lookup": "DeepSeek V3.2 Thinking",
+        "scatter_default": 1
     },
     {
         "model": "grok-4-3",
@@ -393,7 +420,8 @@
         "release_date": "2026-04-30",
         "lma_lookup": "grok-4.3",
         "aa_lookup": "Grok 4.3",
-        "lb_lookup": "Grok 4.3"
+        "lb_lookup": "Grok 4.3",
+        "scatter_default": 1
     },
     {
         "model": "grok-4-20",
@@ -470,7 +498,8 @@
         "release_date": "2026-04-08",
         "lma_lookup": "muse-spark",
         "aa_lookup": "Muse Spark",
-        "lb_lookup": null
+        "lb_lookup": null,
+        "scatter_default": 1
     },
     {
         "model": "llama-4-maverick-17b-128e-instruct",
@@ -492,7 +521,8 @@
         "release_date": "2026-03-14",
         "lma_lookup": "nvidia-nemotron-3-super-120b-a12b",
         "aa_lookup": "NVIDIA Nemotron 3 Super",
-        "lb_lookup": null
+        "lb_lookup": null,
+        "scatter_default": 1
     },
     {
         "model": "nemotron-ultra-v1",
@@ -536,7 +566,8 @@
         "release_date": "2026-03-17",
         "lma_lookup": "minimax-m2.7",
         "aa_lookup": "MiniMax-M2.7",
-        "lb_lookup": "Minimax M2.7"
+        "lb_lookup": "Minimax M2.7",
+        "scatter_default": 1
     },
     {
         "model": "minimax-m2-5",
@@ -580,7 +611,8 @@
         "release_date": "2026-01-27",
         "lma_lookup": "kimi-k2.5-thinking",
         "aa_lookup": "Kimi K2.5",
-        "lb_lookup": "Kimi K2.5 Thinking"
+        "lb_lookup": "Kimi K2.5 Thinking",
+        "scatter_default": 1
     },
     {
         "model": "kimi-k2-thinking",
@@ -591,7 +623,8 @@
         "release_date": "2025-11-06",
         "lma_lookup": "kimi-k2-thinking-turbo",
         "aa_lookup": "Kimi K2 Thinking",
-        "lb_lookup": "Kimi K2 Thinking"
+        "lb_lookup": "Kimi K2 Thinking",
+        "scatter_default": 1
     },
     {
         "model": "mimo-v2-5-pro",
@@ -602,7 +635,8 @@
         "release_date": "2026-04-22",
         "lma_lookup": "mimo-v2.5-pro",
         "aa_lookup": "MiMo-V2.5-Pro",
-        "lb_lookup": null
+        "lb_lookup": null,
+        "scatter_default": 1
     },
     {
         "model": "mimo-v2-pro",
@@ -624,6 +658,7 @@
         "release_date": "2026-02-12",
         "lma_lookup": "step-3.5-flash",
         "aa_lookup": "Step 3.5 Flash 2603",
-        "lb_lookup": null
+        "lb_lookup": null,
+        "scatter_default": 1
     }
 ]
