@@ -576,7 +576,7 @@
         "geo": "China",
         "os": 1,
         "release_date": "2026-06-01",
-        "lma_lookup": null,
+        "lma_lookup": "minimax-m3",
         "aa_lookup": "MiniMax-M3",
         "lb_lookup": null,
         "scatter_default": 1
