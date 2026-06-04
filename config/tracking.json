@@ -570,6 +570,18 @@
         "lb_lookup": null
     },
     {
+        "model": "minimax-m3",
+        "name": "MiniMax M3",
+        "logo": "minimax",
+        "geo": "China",
+        "os": 1,
+        "release_date": "2026-06-01",
+        "lma_lookup": null,
+        "aa_lookup": "MiniMax-M3",
+        "lb_lookup": null,
+        "scatter_default": 1
+    },
+    {
         "model": "minimax-m2-7",
         "name": "MiniMax M2.7",
         "logo": "minimax",
