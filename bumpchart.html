@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Rankings Shift</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="scripts/lb-config.js"></script>
+  <script src="scripts/tooltip.js"></script>
+  <script src="scripts/viz-controls.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="styles/common.css">
+  <style>
+    .viz-grid {
+      display: grid;
+      grid-template-rows: auto 19fr 1fr;
+      grid-template-columns: 1fr auto;
+      height: 100vh;
+      width: 100vw;
+      box-sizing: border-box;
+      padding-bottom: 8px;
+    }
+
+    #container1 {
+      grid-row: 2;
+      grid-column: 1 / span 2;
+      display: flex;
+      overflow-y: hidden;
+      overflow-x: hidden;
+      align-items: flex-start;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    #container1 .chart-wrapper {
+      flex: 1 1 auto;
+      display: flex;
+      min-width: 0;
+      min-height: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #container1 .chart-wrapper-inner {
+      flex: 1 1 auto;
+      display: flex;
+      min-width: 0;
+      min-height: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #chart {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #container2 {
+      grid-row: 1;
+      grid-column: 1 / span 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 20px;
+      position: relative;
+    }
+
+    .c2-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .c2-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .c2-label {
+      font-size: clamp(10px, 1.2vw, 12px);
+      font-weight: 600;
+      color: #666;
+    }
+
+    #footnote-container {
+      grid-row: 3;
+      grid-column: 1 / span 2;
+      background: #f9fafc;
+      padding: 8px 16px 12px;
+      font-size: clamp(10px, 1.4vw, 13px);
+      color: #666;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 50px;
+      box-sizing: border-box;
+    }
+
+    /* Slider — week-stepped comparison period selector */
+    #slider-container {
+      display: flex;
+      align-items: center;
+      justify-self: center;
+      gap: 12px;
+      padding: 18px 8px 22px;
+      overflow: visible;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .slider-side-label {
+      font-size: clamp(10px, 1.2vw, 12px);
+      font-weight: 600;
+      color: #666;
+      white-space: nowrap;
+      min-width: 64px;
+      min-height: 32px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .slider-side-label.left {
+      text-align: right;
+      justify-content: flex-end;
+    }
+
+    .slider-side-label.right {
+      text-align: left;
+      justify-content: flex-start;
+      color: #2756d3;
+      font-weight: 700;
+    }
+
+    .slider-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      height: 32px;
+      min-width: 120px;
+      overflow: visible;
+    }
+
+    .slider-tooltip {
+      position: absolute;
+      bottom: calc(50% + 14px);
+      transform: translateX(-50%);
+      font-size: clamp(10px, 1.2vw, 12px);
+      font-weight: 600;
+      color: #fff;
+      background: #2756d3;
+      padding: 3px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      pointer-events: none;
+      transition: left 0.05s linear;
+    }
+
+    .slider-tooltip::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid #2756d3;
+    }
+
+    .slider-track-bg {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 12px;
+      background: #e2e8f0;
+      border-radius: 6px;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .slider-track-fill {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      height: 12px;
+      background: #2756d3;
+      border-radius: 6px;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .week-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 12px;
+      background: transparent;
+      border-radius: 6px;
+      outline: none;
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+      margin: 0;
+    }
+
+    .week-slider::-webkit-slider-runnable-track {
+      height: 12px;
+      background: transparent;
+      border-radius: 6px;
+    }
+
+    .week-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      margin-top: -3px;
+      border-radius: 50%;
+      background: #2756d3;
+      border: 3px solid #fff;
+      box-shadow: 0 1px 4px rgba(39, 86, 211, 0.35);
+      cursor: pointer;
+      transition: box-shadow 0.2s;
+    }
+
+    .week-slider::-webkit-slider-thumb:hover {
+      box-shadow: 0 0 0 6px rgba(39, 86, 211, 0.15);
+    }
+
+    .week-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #2756d3;
+      border: 3px solid #fff;
+      box-shadow: 0 2px 6px rgba(39, 86, 211, 0.4);
+      cursor: pointer;
+    }
+
+    .week-slider::-moz-range-track {
+      height: 12px;
+      background: transparent;
+      border-radius: 6px;
+    }
+
+    .week-slider:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    #container3 {
+      display: none;
+    }
+
+    #container4 {
+      display: none;
+    }
+
+    .viz-grid.with-logo #footnote-container {
+      grid-column: 1;
+    }
+
+    .viz-grid.with-logo #container4 {
+      display: flex;
+      grid-row: 3;
+      grid-column: 2;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 4px 16px 4px 0;
+      overflow: hidden;
+      min-width: 0;
+      gap: 0;
+    }
+
+    .viz-grid.with-logo #container4 .logo {
+      height: auto;
+      max-height: 100%;
+      width: auto;
+    }
+
+    .bump-row-bg {
+      rx: 6;
+      ry: 6;
+    }
+
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+
+    .badge-rect {
+      rx: 1;
+      ry: 1;
+      stroke-width: 1px;
+    }
+
+    @media (max-height:500px),
+    (max-width:640px) {
+      .viz-grid {
+        grid-template-rows: auto 1fr auto;
+        grid-template-columns: 1fr;
+        padding-bottom: 0px;
+      }
+
+      #container1 {
+        grid-row: 2;
+        grid-column: 1;
+      }
+
+      #container2 {
+        grid-row: 1;
+        grid-column: 1;
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px 16px;
+      }
+
+      .c2-controls {
+        align-items: center;
+      }
+
+      #footnote-container {
+        grid-row: 3;
+        grid-column: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="viz-grid">
+    <div id="container2" class="container control-container">
+      <div class="tabs-container">
+        <div class="tab active" data-question="ALL">Overall</div>
+        <div class="tab-separator"></div>
+        <div class="tab" data-question="LMArena">LMArena</div>
+        <div class="tab" data-question="Artificial Analysis">Artificial Analysis</div>
+        <div class="tab" data-question="LiveBench">LiveBench</div>
+        <div class="tab-indicator"></div>
+      </div>
+      <div class="c2-controls">
+        <div class="c2-row">
+          <div class="c2-label">Models by Provider</div>
+          <div class="selector-group">
+            <button class="selector-button bop-btn active" data-bop="0">All</button>
+            <button class="selector-button bop-btn" data-bop="1">Best</button>
+          </div>
+        </div>
+        <div class="c2-row">
+          <div class="c2-label">Color by</div>
+          <div class="selector-group">
+            <button class="selector-button" data-palette="0">Org</button>
+            <button class="selector-button" data-palette="1">Licensing</button>
+            <button class="selector-button" data-palette="2">Country</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="container1" class="container chart-container">
+      <div class="chart-wrapper">
+        <div class="chart-wrapper-inner">
+          <svg id="chart"></svg>
+        </div>
+      </div>
+    </div>
+    <div id="container3" class="container source-container">
+      <div class="source-text">Source: <a href="https://aiworld.eu" target="_blank">AI World</a></div>
+    </div>
+    <div id="container4" class="container logo-container">
+      <a href="https://aiworld.eu/" target="_blank" rel="noopener">
+        <img src="https://aiworld.eu/logo-transparent.svg" class="logo" alt="AI World logo">
+      </a>
+    </div>
+    <div id="footnote-container"></div>
+  </div>
+  <div id="tooltip"></div>
+
+  <script>
+    const tooltip = d3.select("#tooltip");
+    const DATA_BASE = (LB.config && LB.config.dataBase) || ".";
+    const CONFIG_BASE = (LB.config && LB.config.configBase) || DATA_BASE;
+
+    let historyData = [];
+    let trackingMap = {};
+    let idToColor = {};
+    let modelToOs = {};
+    let modelToGeo = {};
+    let modelIcons = {};
+    let modelColors = {};
+    let modelNames = {};
+    let modelToOrg = {};
+
+    let activeOsFilter = null;
+    let hiddenGeos = [];
+    let paletteMode = 0;
+    let modeParam = 0;
+    let activeSource = 'ALL';
+    let comparisonWeeks = 4;
+    let maxWeeks = 1;
+    let displayLimit = 10;
+    let bgColor = '#f9fafc';
+
+    let allDates = [];
+    let latestDate = '';
+    let pastDate = '';
+
+    function parseNum(v) {
+      if (v == null) return 0;
+      const s = String(v).replace(/,/g, '.');
+      const n = parseFloat(s);
+      return isNaN(n) ? 0 : n;
+    }
+
+    function reconstructSnapshot(data, date) {
+      const latest = {};
+      data.forEach(row => {
+        if (row.date <= date) {
+          latest[row.model] = row;
+        }
+      });
+      return Object.values(latest);
+    }
+
+    function findDateForWeeksAgo(dates, latest, weeks) {
+      if (dates.length < 2) return dates[0] || latest;
+      const latestMs = new Date(latest).getTime();
+      const targetMs = latestMs - weeks * 7 * 24 * 60 * 60 * 1000;
+      let best = null;
+      let bestDiff = Infinity;
+      for (const d of dates) {
+        if (d === latest) continue;
+        const diff = Math.abs(new Date(d).getTime() - targetMs);
+        if (diff < bestDiff) {
+          bestDiff = diff;
+          best = d;
+        }
+      }
+      return best || dates[0];
+    }
+
+    function computeMaxWeeks(dates, latest) {
+      if (!dates.length) return 1;
+      const earliest = dates[0];
+      const spanDays = Math.floor((new Date(latest).getTime() - new Date(earliest).getTime()) / (24 * 60 * 60 * 1000));
+      return Math.max(1, Math.floor(spanDays / 7));
+    }
+
+    function computeRankedSnapshot(snapshotRows, source, gpt5Baseline) {
+      let scored;
+      if (source === 'ALL') {
+        const maxLma = gpt5Baseline.lma || 1434;
+        const maxAa = gpt5Baseline.aa || 45;
+        const maxLb = gpt5Baseline.lb || 70.48;
+
+        scored = snapshotRows.map(d => {
+          const model = String(d.model || '').trim();
+          let lma = parseNum(d.lma);
+          let aa = parseNum(d.aa);
+          let lb = parseNum(d.lb);
+
+          const hasLma = lma > 0;
+          const hasAa = aa > 0;
+          const hasLb = lb > 0;
+          const missingCount = (hasLma ? 0 : 1) + (hasAa ? 0 : 1) + (hasLb ? 0 : 1);
+
+          let normalizedLma = lma > 0 ? (lma / (2 * maxLma)) : 0;
+          let normalizedAa = aa > 0 ? (aa / (2 * maxAa)) : 0;
+          let normalizedLb = lb > 0 ? (lb / (2 * maxLb)) : 0;
+
+          if (missingCount === 1) {
+            if (!hasLma && hasAa && hasLb) normalizedLma = (normalizedAa + normalizedLb) / 2;
+            else if (!hasAa && hasLma && hasLb) normalizedAa = (normalizedLma + normalizedLb) / 2;
+            else if (!hasLb && hasLma && hasAa) normalizedLb = (normalizedLma + normalizedAa) / 2;
+          }
+
+          const score = (normalizedLma + normalizedAa + normalizedLb) / 3;
+          return { model, score, lma, aa, lb };
+        });
+      } else if (source === 'LMArena') {
+        scored = snapshotRows.map(d => ({
+          model: String(d.model || '').trim(),
+          score: parseNum(d.lma),
+          lma: parseNum(d.lma), aa: parseNum(d.aa), lb: parseNum(d.lb)
+        }));
+      } else if (source === 'Artificial Analysis') {
+        scored = snapshotRows.map(d => ({
+          model: String(d.model || '').trim(),
+          score: parseNum(d.aa),
+          lma: parseNum(d.lma), aa: parseNum(d.aa), lb: parseNum(d.lb)
+        }));
+      } else {
+        scored = snapshotRows.map(d => ({
+          model: String(d.model || '').trim(),
+          score: parseNum(d.lb),
+          lma: parseNum(d.lma), aa: parseNum(d.aa), lb: parseNum(d.lb)
+        }));
+      }
+
+      scored = scored.filter(d => {
+        if (d.score <= 0) return false;
+        if (hiddenGeos.length > 0) {
+          const geo = modelToGeo[d.model] || 'Other';
+          if (hiddenGeos.includes(geo)) return false;
+        }
+        if (activeOsFilter !== null) {
+          const os = modelToOs[d.model] !== undefined ? modelToOs[d.model] : 0;
+          if (os !== activeOsFilter) return false;
+        }
+        return true;
+      });
+
+      scored.sort((a, b) => b.score - a.score);
+
+      if (modeParam === 1) {
+        const bestByLogo = {};
+        scored.forEach(d => {
+          const logo = (trackingMap[d.model] && trackingMap[d.model].logo) || '';
+          if (!logo) return;
+          if (!bestByLogo[logo] || d.score > bestByLogo[logo].score) {
+            bestByLogo[logo] = d;
+          }
+        });
+        scored = Object.values(bestByLogo);
+        scored.sort((a, b) => b.score - a.score);
+      }
+
+      let rank = 1;
+      for (let i = 0; i < scored.length; i++) {
+        if (i > 0 && scored[i].score < scored[i - 1].score) {
+          rank = i + 1;
+        }
+        scored[i].rank = rank;
+      }
+
+      scored.forEach(d => {
+        d.name = modelNames[d.model] || d.model;
+        d.icon = modelIcons[d.model] || '';
+        d.color = modelColors[d.model] || '#1a73e8';
+      });
+
+      return scored;
+    }
+
+    function getGpt5Baseline(snapshotRows) {
+      const gpt5 = snapshotRows.find(d => String(d.model || '').trim() === 'gpt-5-high');
+      return {
+        lma: gpt5 ? parseNum(gpt5.lma) : 1434,
+        aa: gpt5 ? parseNum(gpt5.aa) : 45,
+        lb: gpt5 ? parseNum(gpt5.lb) : 70.48
+      };
+    }
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr + 'T00:00:00');
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    function daysBetween(d1, d2) {
+      const ms = new Date(d2).getTime() - new Date(d1).getTime();
+      return Math.round(ms / (24 * 60 * 60 * 1000));
+    }
+
+    function formatScore(score, source) {
+      if (source === 'ALL') {
+        return score.toFixed(3);
+      } else if (source === 'LMArena') {
+        return Math.round(score).toLocaleString('en-US');
+      } else if (source === 'Artificial Analysis') {
+        return Math.round(score).toString();
+      } else {
+        return score.toFixed(2);
+      }
+    }
+
+    function applyPaletteColors() {
+      Object.keys(trackingMap).forEach(model => {
+        const t = trackingMap[model];
+        if (paletteMode === 1) {
+          const os = modelToOs[model] !== undefined ? modelToOs[model] : 0;
+          modelColors[model] = os === 1 ? '#188ab2' : '#ef476f';
+        } else if (paletteMode === 2) {
+          const geo = modelToGeo[model] || 'Other';
+          if (geo === 'US') modelColors[model] = '#ec787a';
+          else if (geo === 'China') modelColors[model] = '#fadb56';
+          else if (geo === 'France') modelColors[model] = '#5c5a74';
+          else modelColors[model] = '#cccccc';
+        } else {
+          modelColors[model] = (t.logo && idToColor[t.logo]) ? idToColor[t.logo] : '#1a73e8';
+        }
+      });
+    }
+
+    function renderBumpChart() {
+      const container = document.getElementById('container1');
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
+      if (containerWidth <= 0 || containerHeight <= 0) return;
+
+      const svg = d3.select('#chart');
+      svg.selectAll('*').remove();
+      svg.attr('width', containerWidth);
+
+      const pastSnapshot = reconstructSnapshot(historyData, pastDate);
+      const latestSnapshot = reconstructSnapshot(historyData, latestDate);
+
+      const baseline = getGpt5Baseline(latestSnapshot);
+
+      const pastRanked = computeRankedSnapshot(pastSnapshot, activeSource, baseline);
+      const latestRanked = computeRankedSnapshot(latestSnapshot, activeSource, baseline);
+
+      const pastTop = pastRanked.slice(0, displayLimit);
+      const latestTop = latestRanked.slice(0, displayLimit);
+
+      const pastModels = new Set(pastTop.map(d => d.model));
+      const latestModels = new Set(latestTop.map(d => d.model));
+
+      const badges = {};
+      latestTop.forEach(d => {
+        if (!pastModels.has(d.model)) {
+          badges[d.model] = { type: 'NEW' };
+        } else {
+          const pastEntry = pastTop.find(p => p.model === d.model);
+          if (pastEntry) {
+            const delta = pastEntry.rank - d.rank;
+            if (delta !== 0) {
+              badges[d.model] = { type: 'change', delta };
+            }
+          }
+        }
+      });
+
+      const outBadges = {};
+      pastTop.forEach(d => {
+        if (!latestModels.has(d.model)) {
+          outBadges[d.model] = { type: 'OUT' };
+        }
+      });
+
+      const chartBottomClearance = Math.max(48, Math.min(90, containerHeight * 0.20));
+      const padding = { top: 58, bottom: chartBottomClearance, left: 16, right: 16 };
+      const availableHeight = containerHeight - padding.top - padding.bottom;
+      const maxRows = Math.max(pastTop.length, latestTop.length, 1);
+      const sizeFactor = Math.max(0.6, Math.min(1.15, Math.min(containerWidth / 900, containerHeight / 650)));
+      const rowHeight = Math.max(1, Math.min(Math.max(1, availableHeight) / maxRows, 56 * sizeFactor));
+      const rowScale = Math.max(0.35, Math.min(sizeFactor, rowHeight / 42));
+      const fontSize = Math.max(6, Math.min(15, 14 * rowScale, rowHeight * 0.42));
+      const rankFontSize = Math.max(8, Math.min(20, 18.4 * rowScale, rowHeight * 0.60));
+      const scoreFontSize = Math.max(6, Math.min(13, 12 * rowScale, rowHeight * 0.38));
+      const logoSize = Math.max(6, Math.min(24, 22 * rowScale, Math.max(6, rowHeight - 8)));
+      const badgeFontSize = Math.max(5, Math.min(11, 10 * rowScale, rowHeight * 0.32));
+      const statusBadgeHeight = Math.max(6, Math.min(18, rowHeight * 0.62));
+      const statusBadgeWidth = Math.max(22, Math.min(38, 36 * rowScale));
+      const rowInset = Math.min(2, Math.max(0.5, rowHeight * 0.08));
+      const rowRectHeight = Math.max(1, rowHeight - rowInset * 2);
+      const svgHeight = containerHeight;
+      svg.attr('height', svgHeight);
+
+      const availableWidth = containerWidth - padding.left - padding.right;
+      const colWidthRatio = availableWidth < 560 ? 0.30 : 0.245;
+      const colWidth = availableWidth * colWidthRatio;
+      const midWidth = availableWidth < 560
+        ? availableWidth * 0.20
+        : Math.max(140, Math.min(280, availableWidth * 0.25));
+      const rankGutter = Math.max(34, Math.min(64, rankFontSize * 3.2));
+      const rankGap = Math.max(4, Math.min(8, 6 * rowScale));
+      const scoreSlotWidth = Math.max(30, Math.min(58, scoreFontSize * (activeSource === 'ALL' ? 4.4 : 4.9)));
+      const layoutWidth = colWidth * 2 + midWidth + rankGutter * 2;
+
+      const leftX = padding.left + rankGutter + Math.max(0, (availableWidth - layoutWidth) / 2);
+      const rightX = leftX + colWidth + midWidth;
+      const midLeftX = leftX + colWidth;
+      const midRightX = rightX;
+
+      const totalLeftHeight = pastTop.length * rowHeight;
+      const totalRightHeight = latestTop.length * rowHeight;
+      const startYLeft = padding.top + (svgHeight - padding.top - padding.bottom - totalLeftHeight) / 2;
+      const startYRight = padding.top + (svgHeight - padding.top - padding.bottom - totalRightHeight) / 2;
+
+      const g = svg.append('g');
+
+      const leftCenterX = leftX + colWidth / 2;
+      const rightCenterX = rightX + colWidth / 2;
+      const labelSmallFontSize = Math.max(9, Math.min(11, 10 * sizeFactor));
+      const labelDateFontSize = Math.max(13, Math.min(20, 18 * sizeFactor));
+
+      const days = daysBetween(pastDate, latestDate);
+      let agoLabel;
+      if (days <= 0) agoLabel = 'EARLIER';
+      else if (days === 1) agoLabel = '1 DAY AGO';
+      else if (days < 14) agoLabel = `${days} DAYS AGO`;
+      else if (days < 60) { const wks = Math.round(days / 7); agoLabel = wks === 1 ? '1 WEEK AGO' : `${wks} WEEKS AGO`; }
+      else { const mos = Math.round(days / 30); agoLabel = mos === 1 ? '1 MONTH AGO' : `${mos} MONTHS AGO`; }
+
+      const topY = Math.min(startYLeft, startYRight);
+      const dateY = topY - 10;
+      const smallY = dateY - labelDateFontSize - 4;
+
+      [
+        { x: leftCenterX, small: agoLabel, big: formatDate(pastDate) },
+        { x: rightCenterX, small: 'LATEST', big: formatDate(latestDate) }
+      ].forEach(({ x, small, big }) => {
+        g.append('text')
+          .attr('x', x).attr('y', smallY)
+          .attr('text-anchor', 'middle').attr('dominant-baseline', 'auto')
+          .attr('font-size', labelSmallFontSize).attr('font-weight', 700)
+          .attr('fill', '#888').attr('letter-spacing', '1.5')
+          .text(small);
+        g.append('text')
+          .attr('x', x).attr('y', dateY)
+          .attr('text-anchor', 'middle').attr('dominant-baseline', 'auto')
+          .attr('font-size', labelDateFontSize).attr('font-weight', 700)
+          .attr('fill', '#111')
+          .text(big);
+      });
+
+      function rowTooltipHtml(d, dateStr) {
+        const dateLabel = formatDate(dateStr);
+        const org = modelToOrg[d.model];
+        let html = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name}</b>${org ? '<br><span style="font-size:0.9em;">' + org + '</span>' : ''}</div>`;
+        html += `<table style="width:100%;margin-top:4px;border-spacing:0;">`;
+        html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Date</td><td style="text-align:right;padding:2px 0;">${dateLabel}</td></tr>`;
+        html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LMArena</td><td style="text-align:right;padding:2px 0;">${d.lma > 0 ? Math.round(d.lma).toLocaleString() : '—'}</td></tr>`;
+        html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Artificial Analysis</td><td style="text-align:right;padding:2px 0;">${d.aa > 0 ? Math.round(d.aa) : '—'}</td></tr>`;
+        html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LiveBench</td><td style="text-align:right;padding:2px 0;">${d.lb > 0 ? d.lb.toFixed(2) : '—'}</td></tr>`;
+        html += `</table>`;
+        return html;
+      }
+
+      function bindRowHover(selection, d, dateStr) {
+        selection.on('mouseenter', event => {
+          highlightModel(d.model);
+          tooltip.html(rowTooltipHtml(d, dateStr)).style('opacity', 1);
+          LB.tooltip.position(tooltip, event, { offsetX: 14, offsetY: -20 });
+        }).on('mousemove', event => {
+          LB.tooltip.position(tooltip, event, { offsetX: 14, offsetY: -20 });
+        }).on('mouseleave', clearHighlight);
+      }
+
+      pastTop.forEach((d, i) => {
+        const y = startYLeft + i * rowHeight;
+        const isOut = !!outBadges[d.model];
+        const rowBg = g.append('rect')
+          .attr('class', 'bump-row-bg')
+          .attr('x', leftX)
+          .attr('y', y + rowInset)
+          .attr('width', colWidth - 4)
+          .attr('height', rowRectHeight)
+          .attr('fill', isOut ? '#fef2f2' : (i % 2 === 0 ? '#fff' : '#f5f6f8'))
+          .attr('stroke', isOut ? '#fecaca' : '#e8e9ed')
+          .attr('stroke-width', 0.5)
+          .attr('data-model', d.model);
+        bindRowHover(rowBg, d, pastDate);
+      });
+
+      latestTop.forEach((d, i) => {
+        const y = startYRight + i * rowHeight;
+        const isNew = badges[d.model] && badges[d.model].type === 'NEW';
+        const rowBg = g.append('rect')
+          .attr('class', 'bump-row-bg')
+          .attr('x', rightX + 4)
+          .attr('y', y + rowInset)
+          .attr('width', colWidth - 4)
+          .attr('height', rowRectHeight)
+          .attr('fill', isNew ? '#f0fdf4' : (i % 2 === 0 ? '#fff' : '#f5f6f8'))
+          .attr('stroke', isNew ? '#bbf7d0' : '#e8e9ed')
+          .attr('stroke-width', 0.5)
+          .attr('data-model', d.model);
+        bindRowHover(rowBg, d, latestDate);
+      });
+
+      const lineGroup = svg.append('g');
+      pastTop.forEach((pd, pi) => {
+        const li = latestTop.findIndex(ld => ld.model === pd.model);
+        if (li === -1) return;
+
+        const y1 = startYLeft + pi * rowHeight + rowHeight / 2;
+        const y2 = startYRight + li * rowHeight + rowHeight / 2;
+
+        const link = d3.linkHorizontal()({
+          source: [midLeftX, y1],
+          target: [midRightX, y2]
+        });
+
+        lineGroup.append('path')
+          .attr('d', link)
+          .attr('fill', 'none')
+          .attr('stroke', pd.color)
+          .attr('stroke-width', 2.5 * sizeFactor)
+          .attr('opacity', 0.55)
+          .attr('data-model', pd.model)
+          .attr('class', 'bump-line');
+      });
+
+      const leftGroup = svg.append('g');
+      pastTop.forEach((d, i) => {
+        const y = startYLeft + i * rowHeight + rowHeight / 2;
+        const entryG = leftGroup.append('g')
+          .attr('class', 'bump-row')
+          .attr('data-model', d.model)
+          .attr('pointer-events', 'none');
+        const isOut = !!outBadges[d.model];
+        const rankX = leftX - rankGap;
+        const scoreX = leftX + colWidth - 14;
+        const logoX = scoreX - scoreSlotWidth - logoSize - 8;
+        const nameRightX = logoX - 8;
+
+        entryG.append('text')
+          .attr('x', rankX)
+          .attr('y', y)
+          .attr('text-anchor', 'end')
+          .attr('dominant-baseline', 'central')
+          .attr('font-size', rankFontSize)
+          .attr('font-weight', 700)
+          .attr('fill', '#111')
+          .text(d.rank);
+
+        entryG.append('text')
+          .attr('x', scoreX)
+          .attr('y', y)
+          .attr('text-anchor', 'end')
+          .attr('dominant-baseline', 'central')
+          .attr('font-size', scoreFontSize)
+          .attr('font-weight', 600)
+          .attr('fill', '#888')
+          .text(formatScore(d.score, activeSource));
+
+        if (d.icon) {
+          entryG.append('image')
+            .attr('href', d.icon)
+            .attr('x', logoX)
+            .attr('y', y - logoSize / 2)
+            .attr('width', logoSize)
+            .attr('height', logoSize);
+        }
+
+        entryG.append('text')
+          .attr('x', nameRightX)
+          .attr('y', y)
+          .attr('text-anchor', 'end')
+          .attr('dominant-baseline', 'central')
+          .attr('font-size', fontSize)
+          .attr('font-weight', 600)
+          .attr('fill', isOut ? '#9ca3af' : '#222')
+          .text(d.name)
+          .each(function () {
+            const maxW = Math.max(16, nameRightX - leftX - 8);
+            let text = d.name;
+            while (this.getComputedTextLength() > maxW && text.length > 4) {
+              text = text.slice(0, -1);
+              d3.select(this).text(text + '...');
+            }
+          });
+
+        if (outBadges[d.model]) {
+          const badgeX = leftX + 24;
+          const badgeY = y;
+          entryG.append('rect')
+            .attr('class', 'badge-rect')
+            .attr('x', badgeX - statusBadgeWidth / 2)
+            .attr('y', badgeY - statusBadgeHeight / 2)
+            .attr('width', statusBadgeWidth)
+            .attr('height', statusBadgeHeight)
+            .attr('fill', '#ef4444')
+            .attr('stroke', '#b91c1c');
+          entryG.append('text')
+            .attr('class', 'badge')
+            .attr('x', badgeX)
+            .attr('y', badgeY)
+            .attr('fill', '#fff')
+            .attr('font-size', badgeFontSize)
+            .text('OUT');
+        }
+
+      });
+
+      const rightGroup = svg.append('g');
+      latestTop.forEach((d, i) => {
+        const y = startYRight + i * rowHeight + rowHeight / 2;
+        const entryG = rightGroup.append('g')
+          .attr('class', 'bump-row')
+          .attr('data-model', d.model)
+          .attr('pointer-events', 'none');
+        const scoreX = rightX + 12 + 4;
+        const rankX = rightX + colWidth + rankGap;
+
+        const rankText = entryG.append('text')
+          .attr('x', rankX)
+          .attr('y', y)
+          .attr('text-anchor', 'start')
+          .attr('dominant-baseline', 'central')
+          .attr('font-size', rankFontSize)
+          .attr('font-weight', 700)
+          .attr('fill', '#111')
+          .text(d.rank);
+
+        entryG.append('text')
+          .attr('x', scoreX)
+          .attr('y', y)
+          .attr('text-anchor', 'start')
+          .attr('dominant-baseline', 'central')
+          .attr('font-size', scoreFontSize)
+          .attr('font-weight', 600)
+          .attr('fill', '#888')
+          .text(formatScore(d.score, activeSource));
+
+        const logoX = scoreX + scoreSlotWidth + 8;
+        if (d.icon) {
+          entryG.append('image')
+            .attr('href', d.icon)
+            .attr('x', logoX)
+            .attr('y', y - logoSize / 2)
+            .attr('width', logoSize)
+            .attr('height', logoSize);
+        }
+
+        const badge = badges[d.model];
+        const newBadgeW = badge && badge.type === 'NEW' ? statusBadgeWidth : 0;
+        const newBadgeCenterX = rightX + colWidth - 8 - newBadgeW / 2;
+        const nameRightLimit = newBadgeW > 0 ? newBadgeCenterX - newBadgeW / 2 - 8 : rightX + colWidth - 6;
+
+        const nameX = logoX + logoSize + 8;
+        entryG.append('text')
+          .attr('x', nameX)
+          .attr('y', y)
+          .attr('text-anchor', 'start')
+          .attr('dominant-baseline', 'central')
+          .attr('font-size', fontSize)
+          .attr('font-weight', 600)
+          .attr('fill', '#222')
+          .text(d.name)
+          .each(function () {
+            const maxW = Math.max(16, nameRightLimit - nameX - 8);
+            let text = d.name;
+            while (this.getComputedTextLength() > maxW && text.length > 4) {
+              text = text.slice(0, -1);
+              d3.select(this).text(text + '...');
+            }
+          });
+
+        if (badge) {
+          let badgeText, badgeColor, badgeTextColor;
+          if (badge.type === 'NEW') {
+            badgeText = 'NEW';
+            badgeColor = '#22c55e';
+            badgeTextColor = '#fff';
+            entryG.append('rect')
+              .attr('class', 'badge-rect')
+              .attr('x', newBadgeCenterX - newBadgeW / 2)
+              .attr('y', y - statusBadgeHeight / 2)
+              .attr('width', newBadgeW)
+              .attr('height', statusBadgeHeight)
+              .attr('fill', badgeColor)
+              .attr('stroke', '#15803d');
+            entryG.append('text')
+              .attr('class', 'badge')
+              .attr('x', newBadgeCenterX)
+              .attr('y', y)
+              .attr('fill', badgeTextColor)
+              .attr('font-size', badgeFontSize)
+              .text(badgeText);
+          } else {
+            const delta = badge.delta;
+            const bw = Math.max(18, Math.min(24, 22 * rowScale));
+            const bh = Math.max(10, Math.min(14, 13 * rowScale, rowHeight * 0.45));
+            const rankWidth = rankText.node() ? rankText.node().getComputedTextLength() : rankFontSize;
+            const badgeCenterX = rankX + rankWidth + bw / 2 + Math.max(4, 5 * rowScale);
+            const badgeY = y;
+            badgeText = delta > 0 ? `+${delta}` : `${delta}`;
+            badgeColor = '#9ca3af';
+            badgeTextColor = '#fff';
+            entryG.append('rect')
+              .attr('class', 'badge-rect')
+              .attr('x', badgeCenterX - bw / 2)
+              .attr('y', badgeY - bh / 2)
+              .attr('width', bw)
+              .attr('height', bh)
+              .attr('fill', badgeColor)
+              .attr('stroke', '#6b7280');
+            entryG.append('text')
+              .attr('class', 'badge')
+              .attr('x', badgeCenterX)
+              .attr('y', badgeY)
+              .attr('fill', badgeTextColor)
+              .attr('font-size', Math.max(6, Math.min(9, 8.5 * rowScale, bh * 0.7)))
+              .text(badgeText);
+          }
+        }
+
+      });
+    }
+
+    function highlightModel(model) {
+      const sf = Math.max(0.6, Math.min(1.15, Math.min(document.getElementById('container1').clientWidth / 900, document.getElementById('container1').clientHeight / 650)));
+      d3.selectAll('.bump-line').transition().duration(150)
+        .attr('opacity', function () { return this.getAttribute('data-model') === model ? 0.9 : 0.1; })
+        .attr('stroke-width', function () {
+          return this.getAttribute('data-model') === model ? 4 * sf : 1.5 * sf;
+        });
+      d3.selectAll('.bump-row').transition().duration(150)
+        .attr('opacity', function () { return this.getAttribute('data-model') === model ? 1 : 0.3; });
+      d3.selectAll('.bump-row-bg').transition().duration(150)
+        .attr('opacity', function () {
+          return this.getAttribute('data-model') === model ? 1 : 0.3;
+        });
+    }
+
+    function weeksAgoToSliderValue(w) {
+      return Math.max(1, Math.min(maxWeeks, maxWeeks - w + 1));
+    }
+
+    function sliderValueToWeeksAgo(v) {
+      return Math.max(1, Math.min(maxWeeks, maxWeeks - v + 1));
+    }
+
+    function updateSliderValueLabel() {
+      const tip = document.getElementById('period-slider-tooltip');
+      const slider = document.getElementById('period-slider');
+      const wrapper = slider ? slider.closest('.slider-wrapper') : null;
+      const fill = wrapper ? wrapper.querySelector('.slider-track-fill') : null;
+      if (!tip || !slider || !wrapper) return;
+
+      const w = comparisonWeeks;
+      tip.textContent = w === 1 ? '1 week ago' : `${w} weeks ago`;
+
+      const v = parseInt(slider.value, 10) || 1;
+      const min = parseInt(slider.min, 10) || 1;
+      const max = parseInt(slider.max, 10) || 1;
+      const pct = max > min ? (v - min) / (max - min) : 0.5;
+      const wrapperW = wrapper.clientWidth;
+      const thumbHalf = 9; // 18px thumb / 2
+      const x = thumbHalf + pct * Math.max(0, wrapperW - 18);
+      tip.style.left = x + 'px';
+      if (fill) fill.style.left = x + 'px';
+    }
+
+    function clearHighlight() {
+      const sf = Math.max(0.6, Math.min(1.15, Math.min(document.getElementById('container1').clientWidth / 900, document.getElementById('container1').clientHeight / 650)));
+      d3.selectAll('.bump-line').transition().duration(200)
+        .attr('opacity', 0.55)
+        .attr('stroke-width', 2.5 * sf);
+      d3.selectAll('.bump-row').transition().duration(200).attr('opacity', 1);
+      d3.selectAll('.bump-row-bg').transition().duration(200).attr('opacity', 1);
+      tooltip.style('opacity', 0);
+    }
+
+    function renderLegend() {
+      const footer = document.getElementById('footnote-container');
+      if (!footer) return;
+
+      LB.vizControls.renderFilterLegend({
+        container: footer,
+        paletteMode,
+        activeOsFilter,
+        hiddenGeos,
+        geoColors: { US: '#ec787a', China: '#fadb56', France: '#5c5a74' },
+        matchOsBorder: true,
+        extraHtml: `
+          <div id="slider-container">
+            <div class="slider-side-label left" id="slider-start-date">—</div>
+            <div class="slider-wrapper">
+              <div class="slider-track-bg"></div>
+              <div class="slider-track-fill"></div>
+              <div class="slider-tooltip" id="period-slider-tooltip">1 week ago</div>
+              <input type="range" class="week-slider" id="period-slider" min="1" max="1" value="1" step="1" aria-label="Comparison period in weeks">
+            </div>
+            <div class="slider-side-label right">Today</div>
+          </div>
+        `,
+        onChange: state => {
+          activeOsFilter = state.activeOsFilter;
+          hiddenGeos = state.hiddenGeos;
+          renderBumpChart();
+          renderLegend();
+        }
+      });
+
+      const sliderEl = footer.querySelector('#period-slider');
+      if (sliderEl && sliderEl.dataset.lbBound !== '1') {
+        sliderEl.dataset.lbBound = '1';
+        sliderEl.addEventListener('input', () => {
+          const v = parseInt(sliderEl.value, 10) || 1;
+          comparisonWeeks = sliderValueToWeeksAgo(v);
+          pastDate = findDateForWeeksAgo(allDates, latestDate, comparisonWeeks);
+          updateSliderValueLabel();
+          renderBumpChart();
+        });
+      }
+
+      if (sliderEl) {
+        const mw = Math.max(1, maxWeeks);
+        sliderEl.min = '1';
+        sliderEl.max = String(mw);
+        sliderEl.value = String(weeksAgoToSliderValue(comparisonWeeks));
+        sliderEl.disabled = mw <= 1;
+      }
+      const startEl = footer.querySelector('#slider-start-date');
+      if (startEl) {
+        const startDate = findDateForWeeksAgo(allDates, latestDate, maxWeeks);
+        startEl.textContent = formatDate(startDate);
+      }
+      updateSliderValueLabel();
+    }
+
+    function setupTabs() {
+      LB.vizControls.setupTabs({
+        value: activeSource,
+        onChange: source => {
+          activeSource = source;
+          renderBumpChart();
+        }
+      });
+    }
+
+    function load() {
+      const query = LB.vizControls.readQuery({
+        paletteDefault: paletteMode,
+        paletteValues: [1, 2],
+        sourceDefault: activeSource,
+        topDefault: displayLimit,
+        weeksDefault: comparisonWeeks,
+        colorDefault: bgColor,
+        bopDefault: modeParam
+      });
+
+      const dataMode = (LB.config && LB.config.dataMode) || 'static';
+      const fetchHistory = dataMode === 'rtdb'
+        ? d3.json(`${DATA_BASE}/history.json`).then(rows => rows || [])
+        : d3.dsv(";", `${DATA_BASE}/data/history.csv`);
+
+      Promise.all([
+        fetchHistory,
+        d3.json(`${CONFIG_BASE}/config/models.json`),
+        d3.json(`${CONFIG_BASE}/config/tracking.json`)
+      ]).then(([history, modelsData, trackingData]) => {
+        historyData = history;
+
+        const idToOrg = {};
+        modelsData.forEach(m => { idToColor[m.id] = m.color; idToOrg[m.id] = m.org; });
+        trackingData.forEach(t => {
+          trackingMap[t.model] = t;
+          modelToOs[t.model] = t.os;
+          if (t.geo) modelToGeo[t.model] = t.geo === 'USA' ? 'US' : t.geo;
+          modelNames[t.model] = t.name || t.model;
+          if (t.logo) { modelIcons[t.model] = `logos/${t.logo}.png`; if (idToOrg[t.logo]) modelToOrg[t.model] = idToOrg[t.logo]; }
+        });
+
+        paletteMode = query.palette;
+        activeSource = query.source;
+        LB.vizControls.setActiveTab(activeSource);
+        displayLimit = query.top;
+        comparisonWeeks = query.weeks;
+        bgColor = query.color;
+        modeParam = query.bop;
+        LB.vizControls.applyPageChrome({ bgColor, logo: query.logo });
+
+        applyPaletteColors();
+
+        allDates = [...new Set(historyData.map(d => d.date))].sort();
+        latestDate = allDates[allDates.length - 1];
+        maxWeeks = computeMaxWeeks(allDates, latestDate);
+        comparisonWeeks = Math.min(Math.max(1, comparisonWeeks), Math.max(1, maxWeeks));
+        pastDate = findDateForWeeksAgo(allDates, latestDate, comparisonWeeks);
+
+        setupTabs();
+
+        LB.vizControls.setupValueButtons({
+          selector: '.bop-btn',
+          attr: 'data-bop',
+          value: modeParam,
+          onChange: val => {
+            modeParam = val;
+            LB.vizControls.syncUrlFlag('bop', modeParam === 1);
+            renderBumpChart();
+          }
+        });
+
+        LB.vizControls.setupValueButtons({
+          selector: '[data-palette]',
+          attr: 'data-palette',
+          value: paletteMode,
+          onChange: val => {
+            paletteMode = val;
+            applyPaletteColors();
+            renderBumpChart();
+            renderLegend();
+          }
+        });
+
+        renderBumpChart();
+        renderLegend();
+
+        window.addEventListener('resize', () => {
+          renderBumpChart();
+          updateSliderValueLabel();
+        });
+      });
+    }
+
+    load();
+  </script>
+</body>
+
+</html>
