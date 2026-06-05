@@ -525,6 +525,18 @@
         "lb_lookup": null
     },
     {
+        "model": "nemotron-3-ultra",
+        "name": "Nemotron 3 Ultra",
+        "logo": "nemotron",
+        "geo": "US",
+        "os": 1,
+        "release_date": "2026-06-04",
+        "lma_lookup": "nvidia-nemotron-3-ultra-550b-a55b-nvfp4",
+        "aa_lookup": "Nemotron 3 Ultra",
+        "lb_lookup": null,
+        "scatter_default": 1
+    },
+    {
         "model": "nemotron-3-super",
         "name": "Nemotron 3 Super",
         "logo": "nemotron",
@@ -578,7 +590,7 @@
         "release_date": "2026-06-01",
         "lma_lookup": "minimax-m3",
         "aa_lookup": "MiniMax-M3",
-        "lb_lookup": null,
+        "lb_lookup": "Minimax M3",
         "scatter_default": 1
     },
     {
