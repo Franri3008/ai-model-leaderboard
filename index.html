@@ -12,6 +12,7 @@
   <script src="scripts/lb-config.js"></script>
   <script src="scripts/util.js"></script>
   <script src="scripts/tooltip.js"></script>
+  <script src="scripts/viz-controls.js"></script>
   <script src="scripts/data-loader.js"></script>
   <script src="scripts/aggregation.js"></script>
   <style>
@@ -304,9 +305,32 @@
         modelColors[model] = '#9ca3af';
       }
     }
+    function assignAllColors(updateKnownSourceModels) {
+      rawData.forEach(d => assignColor(d));
+      if (!sourceData) return;
+      ['lma', 'aa', 'lb'].forEach(k => {
+        const rows = sourceData[k];
+        if (!Array.isArray(rows)) return;
+        rows.forEach(r => {
+          const id = String(r.id || '').trim();
+          if (!id || (!updateKnownSourceModels && modelColors[id] !== undefined)) return;
+          assignColor({ model: id, logo: r.logo || '' });
+        });
+      });
+    }
     function load() {
-      const params = new URLSearchParams(window.location.search);
-      const snapshotParam = params.get('snapshot');
+      const query = LB.vizControls.readQuery({
+        paletteDefault: paletteMode,
+        paletteValues: [1, 2],
+        sourceDefault: 'ALL',
+        topDefault: displayLimit,
+        styleDefault: styleMode,
+        styleValues: [1],
+        colorDefault: bgColor,
+        bopDefault: modeParam,
+        displayDefault: 0
+      });
+      const snapshotParam = query.snapshot;
 
       LB.loadData({ dataBase: DATA_BASE, snapshotParam }).then(state => {
         rawData = state.rawData;
@@ -322,151 +346,49 @@
         sourceData = state.sourceData || null;
         snapshotMode = !!snapshotParam;
 
-        const paletteParam = params.get('palette');
-        if (paletteParam) {
-          const p = parseInt(paletteParam, 10);
-          if (p === 1) paletteMode = 1;
-          if (p === 2) paletteMode = 2;
-        }
-
-        rawData.forEach(d => assignColor(d));
-        if (sourceData) {
-          ['lma', 'aa', 'lb'].forEach(k => {
-            const rows = sourceData[k];
-            if (!Array.isArray(rows)) return;
-            rows.forEach(r => {
-              const id = String(r.id || '').trim();
-              if (!id || modelColors[id] !== undefined) return;
-              assignColor({ model: id, logo: r.logo || '' });
-            });
-          });
-        }
+        paletteMode = query.palette;
+        assignAllColors(false);
 
         questions = ['ALL', 'LMArena', 'Artificial Analysis', 'LiveBench'];
-        active.question = 'ALL';
+        active.question = query.source;
+        LB.vizControls.setActiveTab(active.question);
 
-        const sourceParam = params.get('source');
-        if (sourceParam) {
-          const map = { 'aiw': 'ALL', 'llma': 'LMArena', 'aa': 'Artificial Analysis', 'lb': 'LiveBench' };
-          const mapped = map[sourceParam.toLowerCase()];
-          if (mapped) {
-            active.question = mapped;
-            document.querySelectorAll('.tab').forEach(t => {
-              if (t.getAttribute('data-question') === mapped) {
-                t.classList.add('active');
-              } else {
-                t.classList.remove('active');
-              }
-            });
-          }
-        }
-
-        const topParam = params.get('top');
-        if (topParam) {
-          const val = parseInt(topParam, 10);
-          if (!isNaN(val) && val > 0) {
-            displayLimit = val;
-          }
-        }
-
-        const styleParam = params.get('style');
-        if (styleParam) {
-          const s = parseInt(styleParam, 10);
-          if (s === 1) styleMode = 1;
-        }
-
-        const highlightParam = params.get('highlight');
-        if (highlightParam) {
-          highlightMode = highlightParam;
-          highlightMode = highlightParam;
+        displayLimit = query.top;
+        styleMode = query.style;
+        if (query.highlight) {
+          highlightMode = query.highlight;
           document.addEventListener('mousemove', pauseHighlight);
         }
 
-        const colorParam = params.get('color');
-        if (colorParam === 'white') {
-          bgColor = '#ffffff';
-          document.body.style.background = bgColor;
-          const fn = document.getElementById('footnote-container');
-          if (fn) fn.style.background = bgColor;
-        } else if (colorParam === 'gray') {
-          bgColor = '#f9fafc';
-          document.body.style.background = bgColor;
-          const fn = document.getElementById('footnote-container');
-          if (fn) fn.style.background = bgColor;
-        }
-
-        const bopParam = params.get('bop');
-        if (bopParam === '1') modeParam = 1;
-
-        const logoParam = params.get('logo');
-        if (logoParam === '1') {
-          document.querySelector('.viz-grid').classList.add('with-logo');
-        }
-
-        const displayParam = params.get('display');
-        if (displayParam === '1') {
-          document.querySelector('.viz-grid').classList.add('display-mode-1');
-        } else {
-          document.querySelector('.viz-grid').classList.add('display-mode-0');
-        }
+        bgColor = query.color;
+        modeParam = query.bop;
+        LB.vizControls.applyPageChrome({ bgColor, logo: query.logo, displayMode: query.display });
 
         setupTabs();
 
-        const bopButtons = document.querySelectorAll('.bop-btn');
-        bopButtons.forEach(btn => {
-          if (parseInt(btn.getAttribute('data-bop'), 10) === modeParam) {
-            btn.classList.add('active');
-          } else {
-            btn.classList.remove('active');
+        LB.vizControls.setupValueButtons({
+          selector: '.bop-btn',
+          attr: 'data-bop',
+          value: modeParam,
+          onChange: val => {
+            modeParam = val;
+            LB.vizControls.syncUrlFlag('bop', modeParam === 1);
+            updateChart();
+            updateFootnote();
           }
-          btn.addEventListener('click', () => {
-            const val = parseInt(btn.getAttribute('data-bop'), 10);
-            if (modeParam !== val) {
-              modeParam = val;
-              bopButtons.forEach(b => b.classList.remove('active'));
-              btn.classList.add('active');
-              const url = new URL(window.location.href);
-              if (modeParam === 1) url.searchParams.set('bop', '1');
-              else url.searchParams.delete('bop');
-              history.replaceState(null, '', url.toString());
-              updateChart();
-              updateFootnote();
-            }
-          });
         });
 
-        const paletteButtons = document.querySelectorAll('[data-palette]');
-        paletteButtons.forEach(btn => {
-          if (parseInt(btn.getAttribute('data-palette'), 10) === paletteMode) {
-            btn.classList.add('active');
-          } else {
-            btn.classList.remove('active');
+        LB.vizControls.setupValueButtons({
+          selector: '[data-palette]',
+          attr: 'data-palette',
+          value: paletteMode,
+          onChange: val => {
+            paletteMode = val;
+            assignAllColors(true);
+            if (window.ModelFilter) window.ModelFilter.refresh();
+            updateChart();
+            updateFootnote();
           }
-          btn.addEventListener('click', () => {
-            const val = parseInt(btn.getAttribute('data-palette'), 10);
-            if (paletteMode !== val) {
-              paletteMode = val;
-              paletteButtons.forEach(b => b.classList.remove('active'));
-              btn.classList.add('active');
-
-              rawData.forEach(d => assignColor(d));
-              if (sourceData) {
-                ['lma', 'aa', 'lb'].forEach(k => {
-                  const rows = sourceData[k];
-                  if (!Array.isArray(rows)) return;
-                  rows.forEach(r => {
-                    const id = String(r.id || '').trim();
-                    if (!id) return;
-                    assignColor({ model: id, logo: r.logo || '' });
-                  });
-                });
-              }
-
-              if (window.ModelFilter) window.ModelFilter.refresh();
-              updateChart();
-              updateFootnote();
-            }
-          });
         });
 
         if (window.ModelFilter) {
@@ -496,179 +418,29 @@
       });
     }
     function setupTabs() {
-      const tabs = document.querySelectorAll('.tab');
-      const indicator = document.querySelector('.tab-indicator');
-
-      function updateTabIndicator(activeTab) {
-        const container = activeTab.closest('.tabs-container');
-        const containerRect = container.getBoundingClientRect();
-        const tabRect = activeTab.getBoundingClientRect();
-
-        indicator.style.left = (tabRect.left - containerRect.left) + 'px';
-        indicator.style.width = tabRect.width + 'px';
-        indicator.classList.add('active');
-      }
-
-      tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-          const question = tab.getAttribute('data-question');
+      LB.vizControls.setupTabs({
+        value: active.question,
+        onChange: question => {
           active.question = question;
-          tabs.forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
-          updateTabIndicator(tab);
           updateChart();
           updateFootnote();
-        });
-      });
-
-      const activeTab = document.querySelector('.tab.active');
-      if (activeTab) {
-        updateTabIndicator(activeTab);
-      }
-
-      window.addEventListener('resize', () => {
-        const currentActive = document.querySelector('.tab.active');
-        if (currentActive) {
-          updateTabIndicator(currentActive);
         }
       });
     }
-    const baseFootnote = "Scores are normalized from three benchmarks (LMArena, Artificial Analysis, LiveBench). If a model is missing one benchmark, it is estimated as the average of the other two.";
     function updateFootnote() {
-      const footnote = document.getElementById('footnote-container');
-      if (!footnote) return;
-
-      footnote.style.display = 'flex';
-      footnote.style.justifyContent = 'center';
-
-      let container = footnote.querySelector('.legend-wrapper-inner');
-      if (!container) {
-        footnote.innerHTML = `
-          <div class="legend-wrapper-inner" style="display: flex; gap: clamp(16px, 4vw, 48px); justify-content: center; align-items: flex-start; flex-wrap: wrap;">
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-              <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Licensing</div>
-              <div class="legend" style="margin: 0; padding: 0;">
-                <div class="legend-item" tabindex="0" data-os="1">
-                  <div class="legend-square" style="transition: background 0.7s ease, border-color 0.7s ease;"></div>
-                  <span>Open Source</span>
-                </div>
-                <div class="legend-item" tabindex="0" data-os="0">
-                  <div class="legend-square" style="transition: background 0.7s ease, border-color 0.7s ease;"></div>
-                  <span>Proprietary</span>
-                </div>
-              </div>
-            </div>
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-              <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Country</div>
-              <div class="legend" style="margin: 0; padding: 0;">
-                <div class="legend-item" tabindex="0" data-geo="US">
-                  <div class="legend-square" style="transition: background 0.7s ease, border-color 0.7s ease;"></div>
-                  <span>US</span>
-                </div>
-                <div class="legend-item" tabindex="0" data-geo="China">
-                  <div class="legend-square" style="transition: background 0.7s ease, border-color 0.7s ease;"></div>
-                  <span>China</span>
-                </div>
-                <div class="legend-item" tabindex="0" data-geo="France">
-                  <div class="legend-square" style="transition: background 0.7s ease, border-color 0.7s ease;"></div>
-                  <span>France</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-
-        footnote.querySelectorAll('.legend-item[data-os]').forEach(item => {
-          item.addEventListener('click', () => {
-            const osVal = parseInt(item.getAttribute('data-os'), 10);
-            if (activeOsFilter === null) {
-              activeOsFilter = (osVal === 1) ? 0 : 1;
-            } else if (activeOsFilter === osVal) {
-              return;
-            } else {
-              activeOsFilter = null;
-            }
-            updateChart();
-            updateFootnote();
-          });
-          item.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              item.click();
-            }
-          });
-        });
-
-        footnote.querySelectorAll('.legend-item[data-geo]').forEach(item => {
-          item.addEventListener('click', () => {
-            const geoVal = item.getAttribute('data-geo');
-            if (hiddenGeos.includes(geoVal)) {
-              hiddenGeos = hiddenGeos.filter(g => g !== geoVal);
-            } else {
-              if (hiddenGeos.length >= 2) return;
-              hiddenGeos.push(geoVal);
-            }
-            updateChart();
-            updateFootnote();
-          });
-          item.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              item.click();
-            }
-          });
-        });
-      }
-
-      const osBg = paletteMode === 1 ? '#188ab2' : '#ffffff';
-      const propBg = paletteMode === 1 ? '#ef476f' : '#ffffff';
-      const osCheck = (activeOsFilter === null || activeOsFilter === 1) ? '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>' : '';
-      const propCheck = (activeOsFilter === null || activeOsFilter === 0) ? '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>' : '';
-
-      const itOs = footnote.querySelector('.legend-item[data-os="1"]');
-      if (activeOsFilter === 0) itOs.classList.add('dim'); else itOs.classList.remove('dim');
-      const sqOs = itOs.querySelector('.legend-square');
-      sqOs.style.background = osBg;
-      sqOs.setAttribute('data-palette', paletteMode === 1 ? 1 : 0);
-      sqOs.innerHTML = osCheck;
-
-      const itProp = footnote.querySelector('.legend-item[data-os="0"]');
-      if (activeOsFilter === 1) itProp.classList.add('dim'); else itProp.classList.remove('dim');
-      const sqProp = itProp.querySelector('.legend-square');
-      sqProp.style.background = propBg;
-      sqProp.setAttribute('data-palette', paletteMode === 1 ? 1 : 0);
-      sqProp.innerHTML = propCheck;
-
-      const usBg = paletteMode === 2 ? '#ec787a' : '#ffffff';
-      const cnBg = paletteMode === 2 ? '#fadb56' : '#ffffff';
-      const frBg = paletteMode === 2 ? '#5c5a74' : '#ffffff';
-      const usCheck = !hiddenGeos.includes('US') ? '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>' : '';
-      const cnCheck = !hiddenGeos.includes('China') ? '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>' : '';
-      const frCheck = !hiddenGeos.includes('France') ? '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>' : '';
-
-      const itUs = footnote.querySelector('.legend-item[data-geo="US"]');
-      if (hiddenGeos.includes('US')) itUs.classList.add('dim'); else itUs.classList.remove('dim');
-      const sqUs = itUs.querySelector('.legend-square');
-      sqUs.style.background = usBg;
-      sqUs.style.borderColor = paletteMode === 2 ? usBg : '#111';
-      sqUs.setAttribute('data-palette', paletteMode === 2 ? 2 : 0);
-      sqUs.innerHTML = usCheck;
-
-      const itCn = footnote.querySelector('.legend-item[data-geo="China"]');
-      if (hiddenGeos.includes('China')) itCn.classList.add('dim'); else itCn.classList.remove('dim');
-      const sqCn = itCn.querySelector('.legend-square');
-      sqCn.style.background = cnBg;
-      sqCn.style.borderColor = paletteMode === 2 ? cnBg : '#111';
-      sqCn.setAttribute('data-palette', paletteMode === 2 ? 2 : 0);
-      sqCn.innerHTML = cnCheck;
-
-      const itFr = footnote.querySelector('.legend-item[data-geo="France"]');
-      if (hiddenGeos.includes('France')) itFr.classList.add('dim'); else itFr.classList.remove('dim');
-      const sqFr = itFr.querySelector('.legend-square');
-      sqFr.style.background = frBg;
-      sqFr.style.borderColor = paletteMode === 2 ? frBg : '#111';
-      sqFr.setAttribute('data-palette', paletteMode === 2 ? 2 : 0);
-      sqFr.innerHTML = frCheck;
+      LB.vizControls.renderFilterLegend({
+        container: document.getElementById('footnote-container'),
+        paletteMode,
+        activeOsFilter,
+        hiddenGeos,
+        geoColors: { US: '#ec787a', China: '#fadb56', France: '#5c5a74' },
+        onChange: state => {
+          activeOsFilter = state.activeOsFilter;
+          hiddenGeos = state.hiddenGeos;
+          updateChart();
+          updateFootnote();
+        }
+      });
     }
     function updateAnswerDisplay() { const answerEl = document.getElementById('correctAnswer'); const answerSection = document.getElementById('answerSection'); if (!answerEl || !answerSection) { return; } if (active.question === 'ALL') { answerSection.classList.add('hidden'); } else { answerEl.textContent = questionAnswers[active.question] || '-'; answerSection.classList.remove('hidden'); } }
     function getAggregated() {
@@ -1035,7 +807,8 @@
             html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Untracked model</div>`;
           }
         }
-        tooltip.html(html).style('left', (event.pageX + 12) + 'px').style('top', (event.pageY - 28) + 'px').style('opacity', 1);
+        tooltip.html(html).style('opacity', 1);
+        LB.tooltip.position(tooltip, event, { offsetY: -28 });
       }).on('mouseleave', () => { tooltip.style('opacity', 0); });
     }
     function updateHighlight(data, animate) {
@@ -1308,7 +1081,8 @@
             html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Untracked model</div>`;
           }
         }
-        tooltip.html(html).style('left', (event.pageX + 12) + 'px').style('top', (event.pageY - 28) + 'px').style('opacity', 1);
+        tooltip.html(html).style('opacity', 1);
+        LB.tooltip.position(tooltip, event, { offsetY: -28 });
       }).on('mouseleave', () => { tooltip.style('opacity', 0); });
       updateHighlight(data, true);
     }

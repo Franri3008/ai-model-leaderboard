@@ -12,6 +12,7 @@
     <script src="components/model-filter.js"></script>
     <script src="scripts/util.js"></script>
     <script src="scripts/tooltip.js"></script>
+    <script src="scripts/viz-controls.js"></script>
     <script src="scripts/data-loader.js"></script>
     <script src="scripts/aggregation.js"></script>
     <style>
@@ -118,7 +119,6 @@
         }
 
         .scatter-dot {
-            cursor: pointer;
             transition: r 0.15s ease, stroke-width 0.15s ease;
         }
 
@@ -266,7 +266,13 @@
         const displayName = LB.util.displayName;
 
         function load() {
-            const params = new URLSearchParams(window.location.search);
+            const query = LB.vizControls.readQuery({
+                paletteDefault: paletteMode,
+                paletteValues: [0, 1, 2],
+                sourceDefault: active.question,
+                colorDefault: bgColor,
+                bopDefault: modeParam
+            });
 
             LB.loadData({ dataBase: DATA_BASE, configBase: CONFIG_BASE }).then(state => {
                 rawData = state.rawData;
@@ -281,43 +287,14 @@
                 idToOrg = state.idToOrg;
                 trackingMap = state.trackingMap;
 
-                const paletteParam = params.get('palette');
-                if (paletteParam) {
-                    const p = parseInt(paletteParam, 10);
-                    if (p === 0 || p === 1 || p === 2) paletteMode = p;
-                }
-
+                paletteMode = query.palette;
                 rawData.forEach(d => assignColor(d));
 
-                const sourceParam = params.get('source');
-                if (sourceParam) {
-                    const map = { 'aiw': 'ALL', 'llma': 'LMArena', 'aa': 'Artificial Analysis', 'lb': 'LiveBench' };
-                    const mapped = map[sourceParam.toLowerCase()];
-                    if (mapped) {
-                        active.question = mapped;
-                        document.querySelectorAll('.tab').forEach(t => {
-                            t.classList.toggle('active', t.getAttribute('data-question') === mapped);
-                        });
-                    }
-                }
-
-                const bopParam = params.get('bop');
-                if (bopParam === '1') modeParam = 1;
-
-                const colorParam = params.get('color');
-                if (colorParam === 'gray' || colorParam === 'grey') {
-                    bgColor = '#f9fafc';
-                } else if (colorParam === 'white') {
-                    bgColor = '#ffffff';
-                }
-                document.body.style.background = bgColor;
-                {
-                    const fn = document.getElementById('footnote-container');
-                    if (fn) fn.style.background = bgColor;
-                }
-
-                const logoParam = params.get('logo');
-                if (logoParam === '1') document.querySelector('.viz-grid').classList.add('with-logo');
+                active.question = query.source;
+                LB.vizControls.setActiveTab(active.question);
+                modeParam = query.bop;
+                bgColor = query.color;
+                LB.vizControls.applyPageChrome({ bgColor, logo: query.logo });
 
                 setupTabs();
                 setupBopButtons();
@@ -378,62 +355,39 @@
         }
 
         function setupTabs() {
-            const tabs = document.querySelectorAll('.tab');
-            const indicator = document.querySelector('.tab-indicator');
-            function updateIndicator(activeTab) {
-                const containerRect = activeTab.closest('.tabs-container').getBoundingClientRect();
-                const tabRect = activeTab.getBoundingClientRect();
-                indicator.style.left = (tabRect.left - containerRect.left) + 'px';
-                indicator.style.width = tabRect.width + 'px';
-                indicator.classList.add('active');
-            }
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    active.question = tab.getAttribute('data-question');
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    updateIndicator(tab);
+            LB.vizControls.setupTabs({
+                value: active.question,
+                onChange: question => {
+                    active.question = question;
                     updateChart();
-                });
-            });
-            const activeTab = document.querySelector('.tab.active');
-            if (activeTab) updateIndicator(activeTab);
-            window.addEventListener('resize', () => {
-                const cur = document.querySelector('.tab.active');
-                if (cur) updateIndicator(cur);
+                }
             });
         }
 
         function setupBopButtons() {
-            const btns = document.querySelectorAll('.bop-btn');
-            btns.forEach(btn => {
-                btn.classList.toggle('active', parseInt(btn.getAttribute('data-bop'), 10) === modeParam);
-                btn.addEventListener('click', () => {
-                    const val = parseInt(btn.getAttribute('data-bop'), 10);
-                    if (modeParam === val) return;
+            LB.vizControls.setupValueButtons({
+                selector: '.bop-btn',
+                attr: 'data-bop',
+                value: modeParam,
+                onChange: val => {
                     modeParam = val;
-                    btns.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
                     updateChart();
-                });
+                }
             });
         }
 
         function setupPaletteButtons() {
-            const btns = document.querySelectorAll('[data-palette]');
-            btns.forEach(btn => {
-                btn.classList.toggle('active', parseInt(btn.getAttribute('data-palette'), 10) === paletteMode);
-                btn.addEventListener('click', () => {
-                    const val = parseInt(btn.getAttribute('data-palette'), 10);
-                    if (paletteMode === val) return;
+            LB.vizControls.setupValueButtons({
+                selector: '[data-palette]',
+                attr: 'data-palette',
+                value: paletteMode,
+                onChange: val => {
                     paletteMode = val;
-                    btns.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
                     rawData.forEach(d => assignColor(d));
                     if (window.ModelFilter) window.ModelFilter.refresh();
                     updateChart();
                     renderLegend();
-                });
+                }
             });
         }
 
@@ -769,9 +723,10 @@
                     }
                     const note = anyUntracked ? LB.tooltip.disclaimerHtml : '';
                     tooltip.style('opacity', 1).html(head + body + note);
+                    LB.tooltip.position(tooltip, event);
                 })
                 .on('mousemove', function (event) {
-                    tooltip.style('left', (event.pageX + 12) + 'px').style('top', (event.pageY - 8) + 'px');
+                    LB.tooltip.position(tooltip, event);
                 })
                 .on('mouseout', function (event, d) {
                     d3.select(this).interrupt().attr('r', radiusFor(d));
@@ -822,82 +777,19 @@
         }
 
         function renderLegend() {
-            const footnote = document.getElementById('footnote-container');
-            if (!footnote) return;
-            footnote.style.display = 'flex';
-            footnote.style.justifyContent = 'center';
-
-            let container = footnote.querySelector('.legend-wrapper-inner');
-            if (!container) {
-                footnote.innerHTML = `
-          <div class="legend-wrapper-inner" style="display: flex; gap: clamp(16px, 4vw, 48px); justify-content: center; align-items: flex-start; flex-wrap: wrap;">
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-              <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Licensing</div>
-              <div class="legend" style="margin: 0; padding: 0;">
-                <div class="legend-item" tabindex="0" data-os="1"><div class="legend-square"></div><span>Open Source</span></div>
-                <div class="legend-item" tabindex="0" data-os="0"><div class="legend-square"></div><span>Proprietary</span></div>
-              </div>
-            </div>
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-              <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Country</div>
-              <div class="legend" style="margin: 0; padding: 0;">
-                <div class="legend-item" tabindex="0" data-geo="US"><div class="legend-square"></div><span>US</span></div>
-                <div class="legend-item" tabindex="0" data-geo="China"><div class="legend-square"></div><span>China</span></div>
-                <div class="legend-item" tabindex="0" data-geo="France"><div class="legend-square"></div><span>France</span></div>
-              </div>
-            </div>
-          </div>
-        `;
-                footnote.querySelectorAll('.legend-item[data-os]').forEach(item => {
-                    item.addEventListener('click', () => {
-                        const v = parseInt(item.getAttribute('data-os'), 10);
-                        if (activeOsFilter === null) activeOsFilter = (v === 1) ? 0 : 1;
-                        else if (activeOsFilter === v) return;
-                        else activeOsFilter = null;
-                        updateChart(); renderLegend();
-                    });
-                });
-                footnote.querySelectorAll('.legend-item[data-geo]').forEach(item => {
-                    item.addEventListener('click', () => {
-                        const g = item.getAttribute('data-geo');
-                        if (hiddenGeos.includes(g)) hiddenGeos = hiddenGeos.filter(h => h !== g);
-                        else { if (hiddenGeos.length >= 2) return; hiddenGeos.push(g); }
-                        updateChart(); renderLegend();
-                    });
-                });
-            }
-
-            const osBg = paletteMode === 1 ? '#188ab2' : '#ffffff';
-            const propBg = paletteMode === 1 ? '#ef476f' : '#ffffff';
-            const check = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-
-            const itOs = footnote.querySelector('.legend-item[data-os="1"]');
-            itOs.classList.toggle('dim', activeOsFilter === 0);
-            const sqOs = itOs.querySelector('.legend-square');
-            sqOs.style.background = osBg;
-            sqOs.setAttribute('data-palette', paletteMode === 1 ? 1 : 0);
-            sqOs.innerHTML = (activeOsFilter === null || activeOsFilter === 1) ? check : '';
-
-            const itProp = footnote.querySelector('.legend-item[data-os="0"]');
-            itProp.classList.toggle('dim', activeOsFilter === 1);
-            const sqProp = itProp.querySelector('.legend-square');
-            sqProp.style.background = propBg;
-            sqProp.setAttribute('data-palette', paletteMode === 1 ? 1 : 0);
-            sqProp.innerHTML = (activeOsFilter === null || activeOsFilter === 0) ? check : '';
-
-            const usBg = paletteMode === 2 ? '#3b82f6' : '#ffffff';
-            const cnBg = paletteMode === 2 ? '#ef4444' : '#ffffff';
-            const frBg = paletteMode === 2 ? '#5c5a74' : '#ffffff';
-            const setGeo = (geo, bg) => {
-                const it = footnote.querySelector(`.legend-item[data-geo="${geo}"]`);
-                it.classList.toggle('dim', hiddenGeos.includes(geo));
-                const sq = it.querySelector('.legend-square');
-                sq.style.background = bg;
-                sq.style.borderColor = paletteMode === 2 ? bg : '#111';
-                sq.setAttribute('data-palette', paletteMode === 2 ? 2 : 0);
-                sq.innerHTML = !hiddenGeos.includes(geo) ? check : '';
-            };
-            setGeo('US', usBg); setGeo('China', cnBg); setGeo('France', frBg);
+            LB.vizControls.renderFilterLegend({
+                container: document.getElementById('footnote-container'),
+                paletteMode,
+                activeOsFilter,
+                hiddenGeos,
+                geoColors: { US: '#3b82f6', China: '#ef4444', France: '#5c5a74' },
+                onChange: state => {
+                    activeOsFilter = state.activeOsFilter;
+                    hiddenGeos = state.hiddenGeos;
+                    updateChart();
+                    renderLegend();
+                }
+            });
         }
 
         load();
