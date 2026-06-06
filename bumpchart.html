@@ -784,8 +784,14 @@
       });
 
       const lineGroup = svg.append('g');
+
+      const lineKey = d => modeParam === 1
+        ? ((trackingMap[d.model] && trackingMap[d.model].logo) || d.model)
+        : d.model;
+
       pastTop.forEach((pd, pi) => {
-        const li = latestTop.findIndex(ld => ld.model === pd.model);
+        const pdKey = lineKey(pd);
+        const li = latestTop.findIndex(ld => lineKey(ld) === pdKey);
         if (li === -1) return;
 
         const y1 = startYLeft + pi * rowHeight + rowHeight / 2;
@@ -1006,16 +1012,24 @@
 
     function highlightModel(model) {
       const sf = Math.max(0.6, Math.min(1.15, Math.min(document.getElementById('container1').clientWidth / 900, document.getElementById('container1').clientHeight / 650)));
+      // In "Best" mode, rows/lines for the same provider may carry different model
+      // ids across snapshots, so match by provider (logo) rather than model id.
+      const providerOf = m => (trackingMap[m] && trackingMap[m].logo) || m;
+      const targetKey = modeParam === 1 ? providerOf(model) : model;
+      const matches = el => {
+        const m = el.getAttribute('data-model');
+        return (modeParam === 1 ? providerOf(m) : m) === targetKey;
+      };
       d3.selectAll('.bump-line').transition().duration(150)
-        .attr('opacity', function () { return this.getAttribute('data-model') === model ? 0.9 : 0.1; })
+        .attr('opacity', function () { return matches(this) ? 0.9 : 0.1; })
         .attr('stroke-width', function () {
-          return this.getAttribute('data-model') === model ? 4 * sf : 1.5 * sf;
+          return matches(this) ? 4 * sf : 1.5 * sf;
         });
       d3.selectAll('.bump-row').transition().duration(150)
-        .attr('opacity', function () { return this.getAttribute('data-model') === model ? 1 : 0.3; });
+        .attr('opacity', function () { return matches(this) ? 1 : 0.3; });
       d3.selectAll('.bump-row-bg').transition().duration(150)
         .attr('opacity', function () {
-          return this.getAttribute('data-model') === model ? 1 : 0.3;
+          return matches(this) ? 1 : 0.3;
         });
     }
 
