@@ -88,7 +88,7 @@
         "geo": "US",
         "os": 0,
         "release_date": "2026-06-09",
-        "lma_lookup": null,
+        "lma_lookup": "claude-fable-5",
         "aa_lookup": "Claude Fable 5 (with fallback)",
         "lb_lookup": "Claude Fable 5 Thinking xHigh Effort",
         "scatter_default": 1
