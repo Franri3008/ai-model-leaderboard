@@ -263,6 +263,7 @@
     let modelToOs = {};
     let modelToLogo = {};
     let modelToOrg = {};
+    let modelToDeactivated = {};
     let activeOsFilter = null;
     let modelToGeo = {};
     let modelToReleaseDate = {};
@@ -277,6 +278,7 @@
     let highlightPaused = false;
     let highlightPauseTimeout = null;
     let bgColor = '#f9fafc';
+    let ignoreDeact = false;
     let idToColor = {};
     let idToOrg = {};
     const parseNum = LB.util.parseNum;
@@ -286,6 +288,15 @@
     const clampToDomain = LB.util.clampToDomain;
     function renderScoreCell(model, key, currentScore, formatter) {
       return LB.tooltip.renderScoreCell(model, key, currentScore, formatter, lastTrackedScores);
+    }
+    function isDeactivated(model) {
+      return !!(modelToDeactivated && modelToDeactivated[model]);
+    }
+    function isDeactivationActive(model) {
+      return !ignoreDeact && isDeactivated(model);
+    }
+    function chartColor(model) {
+      return (paletteMode === 0 && isDeactivationActive(model)) ? LB.tooltip.deactivatedColor : (modelColors[model] || '#9ca3af');
     }
     function assignColor(d) {
       const model = String(d.model || '').trim();
@@ -340,6 +351,7 @@
         modelToReleaseDate = state.modelToReleaseDate;
         modelToLogo = state.modelToLogo;
         modelToOrg = state.modelToOrg;
+        modelToDeactivated = state.modelToDeactivated || {};
         modelIcons = state.modelIcons;
         idToColor = state.idToColor;
         idToOrg = state.idToOrg;
@@ -362,6 +374,7 @@
 
         bgColor = query.color;
         modeParam = query.bop;
+        ignoreDeact = query.ignoreDeact;
         LB.vizControls.applyPageChrome({ bgColor, logo: query.logo, displayMode: query.display });
 
         setupTabs();
@@ -449,6 +462,7 @@
         lastTrackedScores,
         modelToGeo,
         modelToOs,
+        modelToDeactivated,
         modelToLogo,
         active,
         hiddenGeos,
@@ -470,11 +484,12 @@
         ties: 0,
         total: d.score,
         logo: modelIcons[d.model] || '',
-        color: modelColors[d.model] || '#9ca3af',
+        color: chartColor(d.model),
         lmaSegment: d.lmaSegment || 0,
         aaSegment: d.aaSegment || 0,
         lbSegment: d.lbSegment || 0,
-        untracked: !!d.untracked
+        untracked: !!d.untracked,
+        deactivated: isDeactivationActive(d.model)
       }));
     }
     function getTop20() { return getAggregated().slice().sort((a, b) => b.total - a.total).slice(0, displayLimit); }
@@ -555,6 +570,7 @@
     function truncateAxisLabels(maxWidth) {
       if (!chartState.yAxisGroup) { return; }
       const untrackedSet = chartState.untrackedSet || null;
+      const deactivatedSet = chartState.deactivatedSet || null;
       chartState.yAxisGroup.selectAll('.tick').each(function (d) {
         const tick = d3.select(this);
         const text = tick.select('text');
@@ -562,6 +578,8 @@
         const isThinking = full.includes('(Thinking)');
         const isPreview = full.includes('(Preview)') || full.includes('(Beta)');
         const isUntracked = !!(untrackedSet && untrackedSet.has(full));
+        const isDeactivated = !!(deactivatedSet && deactivatedSet.has(full));
+        const isMuted = isUntracked || isDeactivated;
 
         let baseText = full;
         if (isThinking) baseText = baseText.replace('(Thinking)', '');
@@ -570,12 +588,13 @@
 
         text.text(baseText);
         text.attr('dx', 0);
-        text.style('font-style', isUntracked ? 'italic' : null);
-        text.style('fill', isUntracked ? '#9ca3af' : null);
+        text.style('font-style', isMuted ? 'italic' : null);
+        text.style('fill', isMuted ? '#9ca3af' : null);
         let currentWidth = text.node().getComputedTextLength();
 
         let icons = [];
         if (isUntracked) icons.push('<span title="Untracked model" style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#9ca3af;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;">!</span>');
+        if (isDeactivated) icons.push('<span title="This model got deactivated." style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#9ca3af;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;">!</span>');
         if (isPreview) icons.push('<i class="fa-solid fa-flask fa-lg" style="color: rgb(84, 90, 160);" title="Preview model"></i>');
 
         let iconSpace = icons.length * 20;
@@ -727,6 +746,7 @@
       chartState.untrackedSet = active.question === 'ALL'
         ? new Set()
         : new Set(data.filter(d => d.untracked).map(d => d.id));
+      chartState.deactivatedSet = new Set(data.filter(d => d.deactivated).map(d => d.id));
       truncateAxisLabels(margin.left - logoWidth - padding - 8);
 
       chartState.xAxisGroup = g.append('g').attr('class', 'axis axis-x').attr('transform', `translate(0,${height})`).call(xAxis);
@@ -795,6 +815,9 @@
           if (anyUntracked) {
             html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>`;
           }
+          if (d.deactivated) {
+            html += LB.tooltip.deactivatedDisclaimerHtml;
+          }
         } else {
           const scoreHtml = d.untracked
             ? `<span style="color:#888;">${fmt(d.total)}</span> <span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#888;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;vertical-align:middle;">!</span>`
@@ -805,6 +828,9 @@
           html += `</table>`;
           if (d.untracked) {
             html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Untracked model</div>`;
+          }
+          if (d.deactivated) {
+            html += LB.tooltip.deactivatedDisclaimerHtml;
           }
         }
         tooltip.html(html).style('opacity', 1);
@@ -910,6 +936,7 @@
       chartState.untrackedSet = active.question === 'ALL'
         ? new Set()
         : new Set(data.filter(d => d.untracked).map(d => d.id));
+      chartState.deactivatedSet = new Set(data.filter(d => d.deactivated).map(d => d.id));
       chartState.yAxisGroup.transition().duration(700).call(yAxisGen).on('end', function () { truncateAxisLabels(chartState.margin.left - (chartState.logoWidth || 24) - (chartState.padding || 16) - 8); }).selection().selectAll('text').style('font-size', chartState.axisFS + 'px');
       truncateAxisLabels(chartState.margin.left - (chartState.logoWidth || 24) - (chartState.padding || 16) - 8);
 
@@ -1069,6 +1096,9 @@
           if (anyUntracked) {
             html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>`;
           }
+          if (d.deactivated) {
+            html += LB.tooltip.deactivatedDisclaimerHtml;
+          }
         } else {
           const scoreHtml = d.untracked
             ? `<span style="color:#888;">${fmt(d.total)}</span> <span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#888;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;vertical-align:middle;">!</span>`
@@ -1079,6 +1109,9 @@
           html += `</table>`;
           if (d.untracked) {
             html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Untracked model</div>`;
+          }
+          if (d.deactivated) {
+            html += LB.tooltip.deactivatedDisclaimerHtml;
           }
         }
         tooltip.html(html).style('opacity', 1);

@@ -245,6 +245,7 @@
         let modelToOs = {};
         let modelToLogo = {};
         let modelToOrg = {};
+        let modelToDeactivated = {};
         let modelToGeo = {};
         let modelToReleaseDate = {};
         let idToColor = {};
@@ -255,6 +256,7 @@
         let modeParam = 0;
         let paletteMode = 2;
         let bgColor = '#ffffff';
+        let ignoreDeact = false;
         let skippedNoDate = 0;
         let resizeTimer = null;
         let chartLayers = null;
@@ -282,6 +284,7 @@
                 modelToReleaseDate = state.modelToReleaseDate;
                 modelToLogo = state.modelToLogo;
                 modelToOrg = state.modelToOrg;
+                modelToDeactivated = state.modelToDeactivated || {};
                 modelIcons = state.modelIcons;
                 idToColor = state.idToColor;
                 idToOrg = state.idToOrg;
@@ -294,6 +297,7 @@
                 LB.vizControls.setActiveTab(active.question);
                 modeParam = query.bop;
                 bgColor = query.color;
+                ignoreDeact = query.ignoreDeact;
                 LB.vizControls.applyPageChrome({ bgColor, logo: query.logo });
 
                 setupTabs();
@@ -354,6 +358,18 @@
             }
         }
 
+        function isDeactivated(model) {
+            return !!(modelToDeactivated && modelToDeactivated[model]);
+        }
+
+        function isDeactivationActive(model) {
+            return !ignoreDeact && isDeactivated(model);
+        }
+
+        function chartColor(model) {
+            return (paletteMode === 0 && isDeactivationActive(model)) ? LB.tooltip.deactivatedColor : (modelColors[model] || '#1a73e8');
+        }
+
         function setupTabs() {
             LB.vizControls.setupTabs({
                 value: active.question,
@@ -397,6 +413,7 @@
                 lastTrackedScores,
                 modelToGeo,
                 modelToOs,
+                modelToDeactivated,
                 modelToLogo,
                 active,
                 hiddenGeos,
@@ -418,10 +435,11 @@
                     score: d.score,
                     date: release,
                     geo: modelToGeo[d.model] || 'Other',
-                    color: modelColors[d.model] || '#1a73e8',
+                    color: chartColor(d.model),
                     logo: modelToLogo[d.model] || '',
                     os: modelToOs[d.model] !== undefined ? modelToOs[d.model] : 0,
-                    untracked: !!d.untracked
+                    untracked: !!d.untracked,
+                    deactivated: isDeactivationActive(d.model)
                 };
             }).filter(Boolean);
             skippedNoDate = withoutDate;
@@ -721,7 +739,8 @@
                             + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Released</td><td style="text-align:right;padding:2px 0;">${d3.timeFormat('%b %d, %Y')(d.date)}</td></tr>`
                             + `</table>`;
                     }
-                    const note = anyUntracked ? LB.tooltip.disclaimerHtml : '';
+                    const note = (anyUntracked ? LB.tooltip.disclaimerHtml : '')
+                        + (d.deactivated ? LB.tooltip.deactivatedDisclaimerHtml : '');
                     tooltip.style('opacity', 1).html(head + body + note);
                     LB.tooltip.position(tooltip, event);
                 })
@@ -739,14 +758,21 @@
                 .attr('class', 'scatter-label')
                 .attr('x', d => d.lx).attr('y', d => d.ly)
                 .attr('dy', '0.32em')
-                .attr('fill', d => d.color)
+                .attr('fill', d => d.deactivated ? LB.tooltip.deactivatedColor : d.color)
+                .style('font-style', d => d.deactivated ? 'italic' : null)
                 .style('opacity', 0)
-                .text(d => displayName(d.name));
+                .text(d => d.deactivated ? `! ${displayName(d.name)}` : displayName(d.name));
             labelEnter.merge(labelSel)
-                .text(d => displayName(d.name))
+                .text(d => d.deactivated ? `! ${displayName(d.name)}` : displayName(d.name))
+                .each(function (d) {
+                    const text = d3.select(this);
+                    text.selectAll('title').remove();
+                    if (d.deactivated) text.append('title').text('This model got deactivated.');
+                })
                 .transition(t)
                 .attr('x', d => d.lx).attr('y', d => d.ly)
-                .attr('fill', d => d.color)
+                .attr('fill', d => d.deactivated ? LB.tooltip.deactivatedColor : d.color)
+                .style('font-style', d => d.deactivated ? 'italic' : null)
                 .style('opacity', 1);
 
             layers.notice.transition(t).style('opacity', 0);

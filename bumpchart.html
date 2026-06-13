@@ -408,6 +408,7 @@
     let hiddenGeos = [];
     let paletteMode = 0;
     let modeParam = 0;
+    let ignoreDeact = false;
     let activeSource = 'ALL';
     let comparisonWeeks = 4;
     let maxWeeks = 1;
@@ -549,7 +550,8 @@
       scored.forEach(d => {
         d.name = modelNames[d.model] || d.model;
         d.icon = modelIcons[d.model] || '';
-        d.color = modelColors[d.model] || '#1a73e8';
+        d.deactivated = !ignoreDeact && !!(trackingMap[d.model] && Number(trackingMap[d.model].deactivated) === 1);
+        d.color = (paletteMode === 0 && d.deactivated) ? LB.tooltip.deactivatedColor : (modelColors[d.model] || '#1a73e8');
       });
 
       return scored;
@@ -738,6 +740,9 @@
         html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Artificial Analysis</td><td style="text-align:right;padding:2px 0;">${d.aa > 0 ? Math.round(d.aa) : '—'}</td></tr>`;
         html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LiveBench</td><td style="text-align:right;padding:2px 0;">${d.lb > 0 ? d.lb.toFixed(2) : '—'}</td></tr>`;
         html += `</table>`;
+        if (d.deactivated) {
+          html += LB.tooltip.deactivatedDisclaimerHtml;
+        }
         return html;
       }
 
@@ -861,15 +866,17 @@
           .attr('dominant-baseline', 'central')
           .attr('font-size', fontSize)
           .attr('font-weight', 600)
-          .attr('fill', isOut ? '#9ca3af' : '#222')
-          .text(d.name)
+          .attr('fill', (isOut || d.deactivated) ? '#9ca3af' : '#222')
+          .attr('font-style', d.deactivated ? 'italic' : null)
+          .text(d.deactivated ? `! ${d.name}` : d.name)
           .each(function () {
             const maxW = Math.max(16, nameRightX - leftX - 8);
-            let text = d.name;
+            let text = d.deactivated ? `! ${d.name}` : d.name;
             while (this.getComputedTextLength() > maxW && text.length > 4) {
               text = text.slice(0, -1);
               d3.select(this).text(text + '...');
             }
+            if (d.deactivated) d3.select(this).append('title').text('This model got deactivated.');
           });
 
         if (outBadges[d.model]) {
@@ -947,15 +954,17 @@
           .attr('dominant-baseline', 'central')
           .attr('font-size', fontSize)
           .attr('font-weight', 600)
-          .attr('fill', '#222')
-          .text(d.name)
+          .attr('fill', d.deactivated ? '#9ca3af' : '#222')
+          .attr('font-style', d.deactivated ? 'italic' : null)
+          .text(d.deactivated ? `! ${d.name}` : d.name)
           .each(function () {
             const maxW = Math.max(16, nameRightLimit - nameX - 8);
-            let text = d.name;
+            let text = d.deactivated ? `! ${d.name}` : d.name;
             while (this.getComputedTextLength() > maxW && text.length > 4) {
               text = text.slice(0, -1);
               d3.select(this).text(text + '...');
             }
+            if (d.deactivated) d3.select(this).append('title').text('This model got deactivated.');
           });
 
         if (badge) {
@@ -1180,6 +1189,7 @@
         comparisonWeeks = query.weeks;
         bgColor = query.color;
         modeParam = query.bop;
+        ignoreDeact = query.ignoreDeact;
         LB.vizControls.applyPageChrome({ bgColor, logo: query.logo });
 
         applyPaletteColors();

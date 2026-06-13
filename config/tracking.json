@@ -91,7 +91,8 @@
         "lma_lookup": "claude-fable-5",
         "aa_lookup": "Claude Fable 5 (with fallback)",
         "lb_lookup": "Claude Fable 5 Thinking xHigh Effort",
-        "scatter_default": 1
+        "scatter_default": 1,
+        "deactivated": 1
     },
     {
         "model": "claude-opus-4-8-thinking",

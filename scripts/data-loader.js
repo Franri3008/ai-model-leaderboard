@@ -80,11 +80,13 @@
       const modelToOs = {};
       const modelToGeo = {};
       const modelToReleaseDate = {};
+      const modelToDeactivated = {};
       const trackingMap = {};
       if (trackingData) {
         trackingData.forEach(t => {
           modelToOs[t.model] = t.os;
           if (t.geo) modelToGeo[t.model] = t.geo === 'USA' ? 'US' : t.geo;
+          if (Number(t.deactivated) === 1) modelToDeactivated[t.model] = true;
           if (t.release_date) {
             const rd = new Date(t.release_date);
             if (!isNaN(rd.getTime())) modelToReleaseDate[t.model] = rd;
@@ -141,6 +143,7 @@
         modelToOs,
         modelToGeo,
         modelToReleaseDate,
+        modelToDeactivated,
         modelToLogo,
         modelToOrg,
         modelIcons,

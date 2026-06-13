@@ -8,6 +8,7 @@
       lastTrackedScores,
       modelToGeo,
       modelToOs,
+      modelToDeactivated,
       modelToLogo,
       active,
       hiddenGeos,
@@ -51,7 +52,7 @@
         const untracked = (!hasLma && last.lma && last.lma.value > 0)
           || (!hasAa && last.aa && last.aa.value > 0)
           || (!hasLb && last.lb && last.lb.value > 0);
-        const row = { model, name, score, untracked };
+        const row = { model, name, score, untracked, deactivated: !!(modelToDeactivated && modelToDeactivated[model]) };
         if (includeSegments) {
           row.lmaSegment = nLma;
           row.aaSegment = nAa;
@@ -66,7 +67,8 @@
           model: String(d.id || '').trim(),
           name: String(d.name || '').trim(),
           score: parseNum(d.score),
-          untracked: !d.tracked
+          untracked: !d.tracked,
+          deactivated: !!(modelToDeactivated && modelToDeactivated[String(d.id || '').trim()])
         }));
       } else {
         rows = rawData.map(d => {
@@ -81,7 +83,7 @@
               untracked = true;
             }
           }
-          return { model, name: String(d.name || '').trim(), score, untracked };
+          return { model, name: String(d.name || '').trim(), score, untracked, deactivated: !!(modelToDeactivated && modelToDeactivated[model]) };
         });
       }
     } else {
@@ -89,7 +91,8 @@
         model: String(d.model || '').trim(),
         name: String(d.name || '').trim(),
         score: parseNum(d.lma),
-        untracked: false
+        untracked: false,
+        deactivated: !!(modelToDeactivated && modelToDeactivated[String(d.model || '').trim()])
       }));
     }
 

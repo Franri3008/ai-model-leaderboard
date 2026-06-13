@@ -7,6 +7,11 @@
   const UNTRACKED_DISCLAIMER_HTML =
     '<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>';
 
+  const DEACTIVATED_DISCLAIMER_HTML =
+    '<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! This model got deactivated.</div>';
+
+  const DEACTIVATED_COLOR = '#9ca3af';
+
   function renderScoreCell(model, key, currentScore, formatter, lastTrackedScores) {
     if (currentScore > 0) return { html: formatter(currentScore), untracked: false };
     const last = lastTrackedScores && lastTrackedScores[model] && lastTrackedScores[model][key];
@@ -45,6 +50,8 @@
     renderScoreCell,
     position,
     badgeHtml: UNTRACKED_BADGE_HTML,
-    disclaimerHtml: UNTRACKED_DISCLAIMER_HTML
+    disclaimerHtml: UNTRACKED_DISCLAIMER_HTML,
+    deactivatedDisclaimerHtml: DEACTIVATED_DISCLAIMER_HTML,
+    deactivatedColor: DEACTIVATED_COLOR
   };
 })(typeof window !== 'undefined' ? window : globalThis);

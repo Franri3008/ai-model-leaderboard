@@ -69,6 +69,7 @@
       highlight: params.get('highlight') || null,
       color: readColorParam(params, options.colorDefault),
       bop: params.get('bop') === '1' ? 1 : (options.bopDefault || 0),
+      ignoreDeact: params.get('ignore_deact') === '1',
       logo: params.get('logo') === '1',
       display: params.get('display') === '1' ? 1 : (options.displayDefault || 0),
       weeks: readWeeksParam(params, options.weeksDefault)
