@@ -98,7 +98,7 @@
 
     let result = rows.filter(d => {
       if (d.score <= 0) return false;
-      if (global.ModelFilter && global.ModelFilter.isHidden(d.model)) return false;
+      if (!input.ignoreModelFilter && global.ModelFilter && global.ModelFilter.isHidden(d.model)) return false;
       if (hiddenGeos && hiddenGeos.length > 0) {
         const geo = (modelToGeo && modelToGeo[d.model]) || 'Other';
         if (hiddenGeos.includes(geo)) return false;
@@ -126,4 +126,24 @@
   }
 
   LB.aggregate = aggregate;
+  function computeFrontier(items) {
+    const valid = (items || []).filter(it =>
+      it && it.model && it.date instanceof Date && !isNaN(it.date.getTime()));
+    const groups = {};
+    valid.forEach(it => { (groups[it.group] = groups[it.group] || []).push(it); });
+    const frontier = new Set();
+    Object.keys(groups).forEach(key => {
+      const pts = groups[key];
+      pts.forEach(p => {
+        const dominated = pts.some(q => q !== p && (
+          (q.date < p.date && q.score >= p.score) ||
+          (q.date.getTime() === p.date.getTime() && q.score > p.score)
+        ));
+        if (!dominated) frontier.add(p.model);
+      });
+    });
+    return frontier;
+  }
+
+  LB.computeFrontier = computeFrontier;
 })(typeof window !== 'undefined' ? window : globalThis);

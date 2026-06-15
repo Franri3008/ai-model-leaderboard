@@ -198,19 +198,19 @@
             </div>
             <div class="c2-controls">
                 <div style="display: flex; flex-direction: row; align-items: center; gap: 8px;">
-                    <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Models by Provider
+                    <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Trend lines
                     </div>
                     <div class="selector-group">
-                        <button class="selector-button bop-btn active" data-bop="0">All</button>
-                        <button class="selector-button bop-btn" data-bop="1">Best</button>
+                        <button class="selector-button line-btn" data-line="0">Regression</button>
+                        <button class="selector-button line-btn active" data-line="1">Frontier</button>
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: row; align-items: center; gap: 8px;">
                     <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Color by</div>
                     <div class="selector-group">
                         <button class="selector-button" data-palette="0">Org</button>
-                        <button class="selector-button" data-palette="1">Licensing</button>
-                        <button class="selector-button active" data-palette="2">Country</button>
+                        <button class="selector-button active" data-palette="1">Licensing</button>
+                        <button class="selector-button" data-palette="2">Country</button>
                     </div>
                 </div>
             </div>
@@ -254,7 +254,8 @@
         let hiddenGeos = [];
         let active = { question: 'ALL' };
         let modeParam = 0;
-        let paletteMode = 2;
+        let lineMode = 1; // 0 = regression, 1 = frontier staircase
+        let paletteMode = 1;
         let bgColor = '#ffffff';
         let ignoreDeact = false;
         let skippedNoDate = 0;
@@ -301,7 +302,7 @@
                 LB.vizControls.applyPageChrome({ bgColor, logo: query.logo });
 
                 setupTabs();
-                setupBopButtons();
+                setupLineButtons();
                 setupPaletteButtons();
                 if (window.ModelFilter) {
                     window.ModelFilter.init({
@@ -324,9 +325,7 @@
                         onChange: () => updateChart()
                     });
 
-                    const toHide = rawData
-                        .map(d => String(d.model || '').trim())
-                        .filter(m => m && !(trackingMap[m] && trackingMap[m].scatter_default === 1));
+                    const toHide = frontierDefaultHidden();
                     if (toHide.length) window.ModelFilter.setHidden(toHide);
                 }
                 renderLegend();
@@ -380,13 +379,13 @@
             });
         }
 
-        function setupBopButtons() {
+        function setupLineButtons() {
             LB.vizControls.setupValueButtons({
-                selector: '.bop-btn',
-                attr: 'data-bop',
-                value: modeParam,
+                selector: '.line-btn',
+                attr: 'data-line',
+                value: lineMode,
                 onChange: val => {
-                    modeParam = val;
+                    lineMode = val;
                     updateChart();
                 }
             });
@@ -400,14 +399,17 @@
                 onChange: val => {
                     paletteMode = val;
                     rawData.forEach(d => assignColor(d));
-                    if (window.ModelFilter) window.ModelFilter.refresh();
+                    if (window.ModelFilter) {
+                        window.ModelFilter.setHidden(frontierDefaultHidden());
+                        window.ModelFilter.refresh();
+                    }
                     updateChart();
                     renderLegend();
                 }
             });
         }
 
-        function getAggregated() {
+        function getAggregated(opts) {
             return LB.aggregate({
                 rawData,
                 lastTrackedScores,
@@ -419,7 +421,8 @@
                 hiddenGeos,
                 activeOsFilter,
                 modeParam,
-                includeSegments: false
+                includeSegments: false,
+                ignoreModelFilter: !!(opts && opts.ignoreModelFilter)
             });
         }
 
@@ -444,6 +447,23 @@
             }).filter(Boolean);
             skippedNoDate = withoutDate;
             return data;
+        }
+
+        function frontierGroupKey(model) {
+            if (paletteMode === 1) return modelToOs[model] === 1 ? 'os' : 'prop';
+            if (paletteMode === 2) return modelToGeo[model] || 'Other';
+            return modelToLogo[model] || 'other';
+        }
+
+        function frontierDefaultHidden() {
+            const agg = getAggregated({ ignoreModelFilter: true });
+            const frontier = LB.computeFrontier(agg.map(d => ({
+                model: d.model,
+                score: d.score,
+                date: modelToReleaseDate[d.model] || null,
+                group: frontierGroupKey(d.model)
+            })));
+            return agg.map(d => d.model).filter(m => !frontier.has(m));
         }
 
         function trendlineGroupKey(d) {
@@ -496,6 +516,16 @@
             const svg = d3.select('#chart');
             if (chartLayers && chartLayers.svgNode === svg.node()) return chartLayers;
             svg.selectAll('*').remove();
+            const defs = svg.append('defs');
+            const halo = defs.append('filter').attr('id', 'label-halo')
+                .attr('x', '-30%').attr('y', '-30%').attr('width', '160%').attr('height', '160%');
+            halo.append('feMorphology').attr('in', 'SourceAlpha').attr('operator', 'dilate').attr('radius', 2).attr('result', 'thick');
+            halo.append('feGaussianBlur').attr('in', 'thick').attr('stdDeviation', 1.8).attr('result', 'blurred');
+            halo.append('feFlood').attr('flood-color', bgColor || '#ffffff').attr('flood-opacity', 0.85).attr('result', 'bg');
+            halo.append('feComposite').attr('in', 'bg').attr('in2', 'blurred').attr('operator', 'in').attr('result', 'haloShape');
+            const haloMerge = halo.append('feMerge');
+            haloMerge.append('feMergeNode').attr('in', 'haloShape');
+            haloMerge.append('feMergeNode').attr('in', 'SourceGraphic');
             const root = svg.append('g').attr('class', 'plot-area');
             chartLayers = {
                 svgNode: svg.node(),
@@ -599,35 +629,43 @@
             layers.axisY.selectAll('text').attr('font-size', 11).attr('fill', '#374151');
             layers.axisY.select('.domain').attr('stroke', '#9ca3af');
 
+            const stepLine = d3.line().x(p => x(p.date)).y(p => y(p.score)).curve(d3.curveStepAfter);
             const groups = d3.group(data, d => trendlineGroupKey(d));
             const trendData = [];
             groups.forEach((pts, key) => {
                 if (pts.length < 2) return;
-                const reg = linearRegression(pts);
-                if (!reg) return;
-                const xMin = d3.min(pts, p => p.date.getTime());
-                const xMax = d3.max(pts, p => p.date.getTime());
-                trendData.push({
-                    key,
-                    color: trendlineGroupColor(key),
-                    x1: x(new Date(xMin)),
-                    y1: y(reg.slope * xMin + reg.intercept),
-                    x2: x(new Date(xMax)),
-                    y2: y(reg.slope * xMax + reg.intercept)
-                });
+                let path;
+                if (lineMode === 1) {
+                    const sorted = pts.slice().sort((a, b) => a.date - b.date);
+                    let max = -Infinity;
+                    const records = [];
+                    sorted.forEach(p => { if (p.score > max) { max = p.score; records.push({ date: p.date, score: p.score }); } });
+                    const lastDate = sorted[sorted.length - 1].date;
+                    const lr = records[records.length - 1];
+                    if (lr.date < lastDate) records.push({ date: lastDate, score: lr.score });
+                    if (records.length < 2) return;
+                    path = stepLine(records);
+                } else {
+                    const reg = linearRegression(pts);
+                    if (!reg) return;
+                    const xMin = d3.min(pts, p => p.date.getTime());
+                    const xMax = d3.max(pts, p => p.date.getTime());
+                    path = `M ${x(new Date(xMin))} ${y(reg.slope * xMin + reg.intercept)} L ${x(new Date(xMax))} ${y(reg.slope * xMax + reg.intercept)}`;
+                }
+                trendData.push({ key, color: trendlineGroupColor(key), path, dash: lineMode === 1 ? 'none' : null });
             });
 
-            const trendSel = layers.trendlines.selectAll('line').data(trendData, d => d.key);
+            const trendSel = layers.trendlines.selectAll('path').data(trendData, d => d.key);
             trendSel.exit().transition(t).style('opacity', 0).remove();
-            const trendEnter = trendSel.enter().append('line').attr('class', 'trendline')
-                .attr('x1', d => d.x1).attr('y1', d => d.y1)
-                .attr('x2', d => d.x2).attr('y2', d => d.y2)
+            const trendEnter = trendSel.enter().append('path').attr('class', 'trendline')
+                .attr('d', d => d.path)
                 .attr('stroke', d => d.color)
+                .attr('stroke-dasharray', d => d.dash)
                 .style('opacity', 0);
             trendEnter.merge(trendSel)
+                .attr('stroke-dasharray', d => d.dash)
                 .transition(t)
-                .attr('x1', d => d.x1).attr('y1', d => d.y1)
-                .attr('x2', d => d.x2).attr('y2', d => d.y2)
+                .attr('d', d => d.path)
                 .attr('stroke', d => d.color)
                 .style('opacity', 0.85);
 
@@ -756,6 +794,7 @@
             labelSel.exit().transition(t).style('opacity', 0).remove();
             const labelEnter = labelSel.enter().append('text')
                 .attr('class', 'scatter-label')
+                .attr('filter', 'url(#label-halo)')
                 .attr('x', d => d.lx).attr('y', d => d.ly)
                 .attr('dy', '0.32em')
                 .attr('fill', d => d.deactivated ? LB.tooltip.deactivatedColor : d.color)
