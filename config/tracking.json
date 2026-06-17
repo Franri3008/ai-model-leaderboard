@@ -306,6 +306,18 @@
         "lb_lookup": "GPT OSS 120b"
     },
     {
+        "model": "glm-5-2",
+        "name": "GLM 5.2",
+        "logo": "zai",
+        "geo": "China",
+        "os": 1,
+        "release_date": "2026-06-16",
+        "lma_lookup": "glm-5.2",
+        "aa_lookup": "GLM-5.2",
+        "lb_lookup": "GLM 5.2",
+        "scatter_default": 1
+    },
+    {
         "model": "glm-5-1",
         "name": "GLM 5.1",
         "logo": "zai",
