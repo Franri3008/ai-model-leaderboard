@@ -653,6 +653,17 @@
         "lb_lookup": null
     },
     {
+        "model": "kimi-k2-7-code",
+        "name": "Kimi K2.7 Code",
+        "logo": "moonshot",
+        "geo": "China",
+        "os": 1,
+        "release_date": "2026-06-12",
+        "lma_lookup": null,
+        "aa_lookup": "Kimi K2.7 Code",
+        "lb_lookup": "Kimi K2.7 Code"
+    },
+    {
         "model": "kimi-k2-6-thinking",
         "name": "Kimi K2.6",
         "logo": "moonshot",
