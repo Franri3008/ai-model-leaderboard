@@ -840,7 +840,9 @@ metadata = {
     },
     "alerts_summary": {
         "tracking_issues": len(tracking_issues),
-        "new_untracked_models": new_models_count
+        "new_tracking_issues": len(new_tracking_sigs),
+        "new_untracked_models": new_models_count,
+        "send_email": bool(new_models_count or new_tracking_sigs)
     },
     "history_changes": changes_count
 };

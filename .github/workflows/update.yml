@@ -38,12 +38,13 @@ jobs:
         id: subj
         if: always() && hashFiles('metadata.json') != ''
         run: |
-          NEW=$(python -c "import json; print(json.load(open('metadata.json'))['alerts_summary']['new_untracked_models'])")
-          CHG=$(python -c "import json; print(json.load(open('metadata.json'))['history_changes'])")
-          echo "subject=Leaderboard $(date -u +%Y-%m-%d) — ${NEW} new untracked, ${CHG} score changes" >> "$GITHUB_OUTPUT"
+          S=$(python -c "import json; a=json.load(open('metadata.json'))['alerts_summary']; print(a['send_email'], a['new_untracked_models'], a['new_tracking_issues'])")
+          read SEND NEW NEWTRACK <<< "$S"
+          echo "send=$SEND" >> "$GITHUB_OUTPUT"
+          echo "subject=Leaderboard $(date -u +%Y-%m-%d) — ${NEW} new untracked, ${NEWTRACK} dropped from tracking" >> "$GITHUB_OUTPUT"
 
-      - name: Email the daily alerts
-        if: always() && hashFiles('alerts.html') != ''
+      - name: Email the alerts
+        if: always() && steps.subj.outputs.send == 'True' && hashFiles('alerts.html') != ''
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.MAIL_SERVER }}
