@@ -96,7 +96,8 @@ def match_source_score(scraped_df, lookup_value, model_keywords, score_keywords,
     if not model_col:
         model_col = scraped_df.columns[0];
 
-    match = scraped_df[scraped_df[model_col].str.contains(lookup_name, case=False, na=False, regex=False)];
+    col_vals = scraped_df[model_col].astype(str).str.strip();
+    match = scraped_df[col_vals.str.lower() == lookup_name.lower()];
     if match.empty:
         return None
 

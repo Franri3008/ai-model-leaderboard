@@ -292,7 +292,7 @@
         "release_date": "2025-08-07",
         "lma_lookup": "gpt-5-nano-high",
         "aa_lookup": "GPT-5 nano (high)",
-        "lb_lookup": "GPT-5 Nano"
+        "lb_lookup": "GPT-5 Nano High"
     },
     {
         "model": "gpt-oss",
