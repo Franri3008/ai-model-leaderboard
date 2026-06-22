@@ -123,7 +123,7 @@ def check_tracking_status(model_name, fixed_df, lookup_col):
     for idx, row in fixed_df.iterrows():
         lookup = row[lookup_col];
         if pd.notna(lookup) and str(lookup).strip():
-            if str(lookup).strip().lower() in str(model_name).lower():
+            if str(lookup).strip().lower() == str(model_name).strip().lower():  # exact, consistent with score matching
                 return True, row['name'];
     return False, None
 
@@ -245,7 +245,7 @@ def build_sources_json(lma_df, aa_df, lb_df, fixed_df, models_json_path, output_
                 if not pd.notna(lookup):
                     continue;
                 lk = str(lookup).strip().lower();
-                if not lk or lk not in raw_lower:
+                if not lk or lk != raw_lower:  # exact match — substring let "GLM-5" claim "GLM-5-Turbo"
                     continue;
                 if len(lk) > best_len:
                     tracked_match = t;

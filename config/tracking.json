@@ -312,8 +312,8 @@
         "geo": "China",
         "os": 1,
         "release_date": "2026-06-16",
-        "lma_lookup": "glm-5.2",
-        "aa_lookup": "GLM-5.2",
+        "lma_lookup": "glm-5.2 (max)",
+        "aa_lookup": "GLM-5.2 (max)",
         "lb_lookup": "GLM 5.2",
         "scatter_default": 1
     },
@@ -456,7 +456,7 @@
         "os": 0,
         "release_date": "2026-04-30",
         "lma_lookup": "grok-4.3",
-        "aa_lookup": "Grok 4.3",
+        "aa_lookup": "Grok 4.3 (high)",
         "lb_lookup": "Grok 4.3",
         "scatter_default": 1
     },
