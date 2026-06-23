@@ -90,7 +90,7 @@
         "release_date": "2026-06-09",
         "lma_lookup": "claude-fable-5",
         "aa_lookup": "Claude Fable 5 (with fallback)",
-        "lb_lookup": "Claude Fable 5 Thinking xHigh Effort",
+        "lb_lookup": "Claude Fable 5 Thinking xHigh Effort*losing out due to stricter content moderation",
         "scatter_default": 1,
         "deactivated": 1
     },

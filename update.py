@@ -245,7 +245,7 @@ def build_sources_json(lma_df, aa_df, lb_df, fixed_df, models_json_path, output_
                 if not pd.notna(lookup):
                     continue;
                 lk = str(lookup).strip().lower();
-                if not lk or lk != raw_lower:  # exact match — substring let "GLM-5" claim "GLM-5-Turbo"
+                if not lk or lk != raw_lower:
                     continue;
                 if len(lk) > best_len:
                     tracked_match = t;
@@ -312,6 +312,19 @@ def _load_history_from_firebase():
             df[col] = None
     return df[["date", "model", "lma", "aa", "lb"]]
 
+
+def _load_untracked_from_firebase():
+    import os as _os
+    db_url = _os.environ.get("FIREBASE_DATABASE_URL")
+    if not db_url:
+        return None
+    import sys as _sys
+    _sys.path.insert(0, str(BASE_DIR))
+    from scripts.firebase_upload import _init_firebase
+    from firebase_admin import db
+    _init_firebase(db_url)
+    raw = db.reference("untracked_models").get()
+    return raw if isinstance(raw, dict) else {}
 
 def append_history(result, history_file):
     today = datetime.now().strftime("%Y-%m-%d");
@@ -693,11 +706,13 @@ for group in grouped_models:
 grouped_models = filtered_groups;
 
 untracked_file = BASE_DIR / "data/untracked_models.json";
-if untracked_file.exists():
-    with open(untracked_file, "r") as f:
-        history_untracked = json.load(f);
-else:
-    history_untracked = {};
+history_untracked = _load_untracked_from_firebase();
+if history_untracked is None:
+    if untracked_file.exists():
+        with open(untracked_file, "r") as f:
+            history_untracked = json.load(f);
+    else:
+        history_untracked = {};
 
 alerts_output.append("");
 alerts_output.append("─" * 70);
@@ -725,7 +740,6 @@ else:
     alerts_output.append("");
     alerts_output.append("  No untracked models found in the top 30 of any leaderboard.");
 
-# --- Clean up stale entries from untracked history ---
 current_norms = {g["norm_name"] for g in grouped_models};
 stale_keys = [k for k in history_untracked if k not in current_norms];
 for k in stale_keys:
@@ -740,14 +754,12 @@ with open(untracked_file, "w") as f:
 
 print_step(f"✓ Alerts saved to: {alert_file.absolute()}", "SUCCESS")
 
-# Mirror the alerts body into stdout so it shows up in the GH Actions run log.
 print("\n" + "─" * 70)
 print("ALERTS (mirrored to log for daily visibility)")
 print("─" * 70)
 print("\n".join(alerts_output))
 print("─" * 70 + "\n")
 
-# --- Build HTML email body with NEW highlights ---
 def _esc(s):
     return (str(s)
             .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
