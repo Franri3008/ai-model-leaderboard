@@ -137,6 +137,21 @@
             opacity: 0.85;
         }
 
+        .quadrant-line {
+            pointer-events: none;
+            stroke: #94a3b8;
+            stroke-width: 1.5;
+            stroke-dasharray: 2 4;
+            stroke-linecap: round;
+            opacity: 0.7;
+        }
+
+        .selector-button[disabled] {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
         .axis-grid line {
             stroke: #e5e7eb;
             stroke-dasharray: 2 3;
@@ -205,7 +220,7 @@
                             <button class="selector-button x-btn" data-x="1">Cost</button>
                         </div>
                     </div>
-                    <div style="display: flex; flex-direction: row; align-items: center; gap: 8px;">
+                    <div id="trend-control" style="display: flex; flex-direction: row; align-items: center; gap: 8px;">
                         <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Trend lines
                         </div>
                         <div class="selector-group">
@@ -578,6 +593,7 @@
                 gridX: root.append('g').attr('class', 'axis-grid grid-x'),
                 axisX: root.append('g').attr('class', 'axis axis-x'),
                 axisY: root.append('g').attr('class', 'axis axis-y'),
+                quadrant: root.append('g').attr('class', 'quadrant-lines'),
                 trendlines: root.append('g').attr('class', 'trendlines'),
                 labelLines: root.append('g').attr('class', 'label-lines'),
                 dots: root.append('g').attr('class', 'dots'),
@@ -640,6 +656,12 @@
                 .text('Score');
 
             const costMode = xMode === 1;
+
+            // trend lines are meaningless over cost — disable + gray their controls in cost mode
+            const trendCtrl = document.getElementById('trend-control');
+            if (trendCtrl) trendCtrl.style.opacity = costMode ? '0.4' : '';
+            document.querySelectorAll('.line-btn').forEach(b => { b.disabled = costMode; });
+
             let x;
             if (costMode) {
                 const xExtent = d3.extent(data, d => d.xv);
@@ -701,32 +723,48 @@
             layers.axisY.selectAll('text').attr('font-size', 11).attr('fill', '#374151');
             layers.axisY.select('.domain').attr('stroke', '#9ca3af');
 
-            const stepLine = d3.line().x(p => x(p.xv)).y(p => y(p.score)).curve(d3.curveStepAfter);
-            const groups = d3.group(data, d => trendlineGroupKey(d));
+            // cost mode replaces trend lines with quadrant divider lines
             const trendData = [];
-            groups.forEach((pts, key) => {
-                if (pts.length < 2) return;
-                let path;
-                if (lineMode === 1) {
-                    const sorted = pts.slice().sort((a, b) => xNum(a) - xNum(b));
-                    let max = -Infinity;
-                    const records = [];
-                    sorted.forEach(p => { if (p.score > max) { max = p.score; records.push({ xv: p.xv, score: p.score }); } });
-                    const lastXv = sorted[sorted.length - 1].xv;
-                    const lr = records[records.length - 1];
-                    if (xNum(lr) < xNum({ xv: lastXv })) records.push({ xv: lastXv, score: lr.score });
-                    if (records.length < 2) return;
-                    path = stepLine(records);
-                } else {
-                    const reg = linearRegression(pts);
-                    if (!reg) return;
-                    const xMin = d3.min(pts, xNum);
-                    const xMax = d3.max(pts, xNum);
-                    const toX = v => x(costMode ? v : new Date(v));
-                    path = `M ${toX(xMin)} ${y(reg.slope * xMin + reg.intercept)} L ${toX(xMax)} ${y(reg.slope * xMax + reg.intercept)}`;
-                }
-                trendData.push({ key, color: trendlineGroupColor(key), path, dash: lineMode === 1 ? 'none' : null });
-            });
+            if (!costMode) {
+                const stepLine = d3.line().x(p => x(p.xv)).y(p => y(p.score)).curve(d3.curveStepAfter);
+                const groups = d3.group(data, d => trendlineGroupKey(d));
+                groups.forEach((pts, key) => {
+                    if (pts.length < 2) return;
+                    let path;
+                    if (lineMode === 1) {
+                        const sorted = pts.slice().sort((a, b) => xNum(a) - xNum(b));
+                        let max = -Infinity;
+                        const records = [];
+                        sorted.forEach(p => { if (p.score > max) { max = p.score; records.push({ xv: p.xv, score: p.score }); } });
+                        const lastXv = sorted[sorted.length - 1].xv;
+                        const lr = records[records.length - 1];
+                        if (xNum(lr) < xNum({ xv: lastXv })) records.push({ xv: lastXv, score: lr.score });
+                        if (records.length < 2) return;
+                        path = stepLine(records);
+                    } else {
+                        const reg = linearRegression(pts);
+                        if (!reg) return;
+                        const xMin = d3.min(pts, xNum);
+                        const xMax = d3.max(pts, xNum);
+                        const toX = v => x(costMode ? v : new Date(v));
+                        path = `M ${toX(xMin)} ${y(reg.slope * xMin + reg.intercept)} L ${toX(xMax)} ${y(reg.slope * xMax + reg.intercept)}`;
+                    }
+                    trendData.push({ key, color: trendlineGroupColor(key), path, dash: lineMode === 1 ? 'none' : null });
+                });
+            }
+
+            const quadData = costMode ? [
+                { k: 'v', x1: x(d3.mean(data, d => d.xv)), y1: 0, x2: x(d3.mean(data, d => d.xv)), y2: innerH },
+                { k: 'h', x1: 0, y1: y(d3.mean(data, d => d.score)), x2: innerW, y2: y(d3.mean(data, d => d.score)) }
+            ] : [];
+            const quadSel = layers.quadrant.selectAll('line').data(quadData, d => d.k);
+            quadSel.exit().transition(t).style('opacity', 0).remove();
+            const quadEnter = quadSel.enter().append('line').attr('class', 'quadrant-line')
+                .attr('x1', d => d.x1).attr('y1', d => d.y1).attr('x2', d => d.x2).attr('y2', d => d.y2)
+                .style('opacity', 0);
+            quadEnter.merge(quadSel).transition(t)
+                .attr('x1', d => d.x1).attr('y1', d => d.y1).attr('x2', d => d.x2).attr('y2', d => d.y2)
+                .style('opacity', 0.7);
 
             const trendSel = layers.trendlines.selectAll('path').data(trendData, d => d.key);
             trendSel.exit().transition(t).style('opacity', 0).remove();
