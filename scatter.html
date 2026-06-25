@@ -197,12 +197,21 @@
                 <div class="tab-indicator"></div>
             </div>
             <div class="c2-controls">
-                <div style="display: flex; flex-direction: row; align-items: center; gap: 8px;">
-                    <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Trend lines
+                <div style="display: flex; flex-direction: row; align-items: center; gap: 16px;">
+                    <div style="display: flex; flex-direction: row; align-items: center; gap: 8px;">
+                        <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">X axis</div>
+                        <div class="selector-group">
+                            <button class="selector-button x-btn active" data-x="0">Date</button>
+                            <button class="selector-button x-btn" data-x="1">Cost</button>
+                        </div>
                     </div>
-                    <div class="selector-group">
-                        <button class="selector-button line-btn" data-line="0">Regression</button>
-                        <button class="selector-button line-btn active" data-line="1">Frontier</button>
+                    <div style="display: flex; flex-direction: row; align-items: center; gap: 8px;">
+                        <div style="font-size: clamp(10px, 1.2vw, 12px); font-weight: 600; color: #666;">Trend lines
+                        </div>
+                        <div class="selector-group">
+                            <button class="selector-button line-btn" data-line="0">Regression</button>
+                            <button class="selector-button line-btn active" data-line="1">Frontier</button>
+                        </div>
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: row; align-items: center; gap: 8px;">
@@ -248,6 +257,7 @@
         let modelToDeactivated = {};
         let modelToGeo = {};
         let modelToReleaseDate = {};
+        let modelToCost = {};
         let idToColor = {};
         let idToOrg = {};
         let activeOsFilter = null;
@@ -256,9 +266,12 @@
         let modeParam = 0;
         let lineMode = 1; // 0 = regression, 1 = frontier staircase
         let paletteMode = 1;
+        let xMode = 0; // 0 = release date, 1 = output cost
+        // ?xaxis= log (d3 natural $ ticks, default) | even (evenly-spaced log ticks) | linear (linear positions)
+        const xAxisScale = (new URLSearchParams(location.search).get('xaxis') || 'even').toLowerCase();
         let bgColor = '#ffffff';
         let ignoreDeact = false;
-        let skippedNoDate = 0;
+        let skippedNoX = 0;
         let resizeTimer = null;
         let chartLayers = null;
 
@@ -283,6 +296,7 @@
                 modelToOs = state.modelToOs;
                 modelToGeo = state.modelToGeo;
                 modelToReleaseDate = state.modelToReleaseDate;
+                modelToCost = state.modelToCost || {};
                 modelToLogo = state.modelToLogo;
                 modelToOrg = state.modelToOrg;
                 modelToDeactivated = state.modelToDeactivated || {};
@@ -302,6 +316,7 @@
                 LB.vizControls.applyPageChrome({ bgColor, logo: query.logo });
 
                 setupTabs();
+                setupXButtons();
                 setupLineButtons();
                 setupPaletteButtons();
                 if (window.ModelFilter) {
@@ -379,6 +394,18 @@
             });
         }
 
+        function setupXButtons() {
+            LB.vizControls.setupValueButtons({
+                selector: '.x-btn',
+                attr: 'data-x',
+                value: xMode,
+                onChange: val => {
+                    xMode = val;
+                    updateChart();
+                }
+            });
+        }
+
         function setupLineButtons() {
             LB.vizControls.setupValueButtons({
                 selector: '.line-btn',
@@ -428,15 +455,20 @@
 
         function getPlotData() {
             const agg = getAggregated();
-            let withoutDate = 0;
+            const costMode = xMode === 1;
+            let withoutX = 0;
             const data = agg.map(d => {
                 const release = modelToReleaseDate[d.model];
-                if (!release) { withoutDate++; return null; }
+                const cost = modelToCost[d.model];
+                const xv = costMode ? cost : release;
+                if (xv == null) { withoutX++; return null; }
                 return {
                     model: d.model,
                     name: d.name || d.model,
                     score: d.score,
-                    date: release,
+                    date: release || null,
+                    cost: cost != null ? cost : null,
+                    xv,
                     geo: modelToGeo[d.model] || 'Other',
                     color: chartColor(d.model),
                     logo: modelToLogo[d.model] || '',
@@ -445,7 +477,7 @@
                     deactivated: isDeactivationActive(d.model)
                 };
             }).filter(Boolean);
-            skippedNoDate = withoutDate;
+            skippedNoX = withoutX;
             return data;
         }
 
@@ -478,12 +510,16 @@
             return GEO_TRENDLINE_COLORS[key] || '#9ca3af';
         }
 
+        function xNum(p) {
+            return p.xv instanceof Date ? p.xv.getTime() : p.xv;
+        }
+
         function linearRegression(points) {
             const n = points.length;
             if (n < 2) return null;
             let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
             points.forEach(p => {
-                const x = p.date.getTime();
+                const x = xNum(p);
                 sumX += x; sumY += p.score; sumXY += x * p.score; sumXX += x * x;
             });
             const denom = (n * sumXX - sumX * sumX);
@@ -508,8 +544,15 @@
         }
 
         function getChartTitle() {
-            if (active.question === 'ALL') return 'AI Capability over Time';
-            return `${active.question} over Time`;
+            const axis = xMode === 1 ? 'by Cost' : 'over Time';
+            if (active.question === 'ALL') return `AI Capability ${axis}`;
+            return `${active.question} ${axis}`;
+        }
+
+        function getXAxisTitle() {
+            if (xMode !== 1) return 'Released';
+            const prefix = (xAxisScale === 'log' || xAxisScale === 'even') ? 'Log of ' : '';
+            return `${prefix}Output cost ($ / 1M tokens)`;
         }
 
         function ensureLayers() {
@@ -566,8 +609,9 @@
             const data = getPlotData();
 
             if (data.length === 0) {
-                const msg = skippedNoDate > 0
-                    ? `No models have a release_date set in tracking.json (${skippedNoDate} skipped)`
+                const field = xMode === 1 ? 'cost_output' : 'release_date';
+                const msg = skippedNoX > 0
+                    ? `No models have a ${field} set in tracking.json (${skippedNoX} skipped)`
                     : 'No data';
                 layers.empty
                     .attr('x', width / 2).attr('y', height / 2)
@@ -590,15 +634,27 @@
 
             layers.xLabel
                 .attr('x', margin.left + innerW / 2).attr('y', height - 18)
-                .text('Released');
+                .text(getXAxisTitle());
             layers.yLabel
                 .attr('transform', `translate(20,${margin.top + innerH / 2}) rotate(-90)`)
                 .text('Score');
 
-            const xExtent = d3.extent(data, d => d.date);
-            const xPad = Math.max(15 * 86400000, (xExtent[1] - xExtent[0]) * 0.05);
-            const xDomain = [new Date(xExtent[0].getTime() - xPad), new Date(xExtent[1].getTime() + xPad)];
-            const x = d3.scaleTime().domain(xDomain).range([0, innerW]);
+            const costMode = xMode === 1;
+            let x;
+            if (costMode) {
+                const xExtent = d3.extent(data, d => d.xv);
+                const lo = Math.max(xExtent[0], 0.01);
+                const hi = Math.max(xExtent[1], lo * 1.01);
+                x = xAxisScale === 'linear'
+                    ? d3.scaleLinear().domain([0, hi * 1.05]).range([0, innerW])
+                    : d3.scaleLog().domain([lo / 1.4, hi * 1.4]).range([0, innerW]);
+            } else {
+                const xExtent = d3.extent(data, d => d.xv);
+                const xPad = Math.max(15 * 86400000, (xExtent[1] - xExtent[0]) * 0.05);
+                const xDomain = [new Date(xExtent[0].getTime() - xPad), new Date(xExtent[1].getTime() + xPad)];
+                x = d3.scaleTime().domain(xDomain).range([0, innerW]);
+            }
+            const px = d => x(d.xv);
 
             const yExtent = d3.extent(data, d => d.score);
             const yRange = yExtent[1] - yExtent[0];
@@ -615,13 +671,29 @@
             layers.gridY.selectAll('line').attr('stroke', '#e5e7eb');
             layers.gridY.select('.domain').attr('stroke', 'none');
 
-            layers.gridX.transition(t).call(d3.axisBottom(x).tickSize(-innerH).tickFormat(''));
+            const xTickCount = Math.max(4, Math.floor(innerW / 110));
+            const costFmt = v => '$' + (v < 1 ? d3.format('.2~f')(v) : d3.format('~r')(v));
+            const evenFmt = v => '$' + (v < 1 ? d3.format('.1~f')(v) : d3.format('.2~r')(v));
+
+            // configure x ticks/grid per mode: time, evenly-spaced-log, linear, or natural log
+            let setXTicks;
+            if (!costMode) {
+                setXTicks = ax => ax.ticks(xTickCount).tickFormat(d3.timeFormat('%b %Y'));
+            } else if (xAxisScale === 'even') {
+                const [d0, d1] = x.domain();
+                const tv = d3.range(xTickCount + 1).map(i => d0 * Math.pow(d1 / d0, i / xTickCount));
+                setXTicks = ax => ax.tickValues(tv).tickFormat(evenFmt);
+            } else if (xAxisScale === 'linear') {
+                setXTicks = ax => ax.ticks(xTickCount).tickFormat(costFmt);
+            } else {
+                setXTicks = ax => ax.ticks(xTickCount, '~r').tickFormat(costFmt);
+            }
+
+            layers.gridX.transition(t).call(setXTicks(d3.axisBottom(x)).tickSize(-innerH).tickFormat(''));
             layers.gridX.selectAll('line').attr('stroke', '#e5e7eb');
             layers.gridX.select('.domain').attr('stroke', 'none');
 
-            layers.axisX.transition(t).call(
-                d3.axisBottom(x).ticks(Math.max(4, Math.floor(innerW / 110))).tickFormat(d3.timeFormat('%b %Y'))
-            );
+            layers.axisX.transition(t).call(setXTicks(d3.axisBottom(x)));
             layers.axisX.selectAll('text').attr('font-size', 11).attr('fill', '#374151');
             layers.axisX.select('.domain').attr('stroke', '#9ca3af');
 
@@ -629,28 +701,29 @@
             layers.axisY.selectAll('text').attr('font-size', 11).attr('fill', '#374151');
             layers.axisY.select('.domain').attr('stroke', '#9ca3af');
 
-            const stepLine = d3.line().x(p => x(p.date)).y(p => y(p.score)).curve(d3.curveStepAfter);
+            const stepLine = d3.line().x(p => x(p.xv)).y(p => y(p.score)).curve(d3.curveStepAfter);
             const groups = d3.group(data, d => trendlineGroupKey(d));
             const trendData = [];
             groups.forEach((pts, key) => {
                 if (pts.length < 2) return;
                 let path;
                 if (lineMode === 1) {
-                    const sorted = pts.slice().sort((a, b) => a.date - b.date);
+                    const sorted = pts.slice().sort((a, b) => xNum(a) - xNum(b));
                     let max = -Infinity;
                     const records = [];
-                    sorted.forEach(p => { if (p.score > max) { max = p.score; records.push({ date: p.date, score: p.score }); } });
-                    const lastDate = sorted[sorted.length - 1].date;
+                    sorted.forEach(p => { if (p.score > max) { max = p.score; records.push({ xv: p.xv, score: p.score }); } });
+                    const lastXv = sorted[sorted.length - 1].xv;
                     const lr = records[records.length - 1];
-                    if (lr.date < lastDate) records.push({ date: lastDate, score: lr.score });
+                    if (xNum(lr) < xNum({ xv: lastXv })) records.push({ xv: lastXv, score: lr.score });
                     if (records.length < 2) return;
                     path = stepLine(records);
                 } else {
                     const reg = linearRegression(pts);
                     if (!reg) return;
-                    const xMin = d3.min(pts, p => p.date.getTime());
-                    const xMax = d3.max(pts, p => p.date.getTime());
-                    path = `M ${x(new Date(xMin))} ${y(reg.slope * xMin + reg.intercept)} L ${x(new Date(xMax))} ${y(reg.slope * xMax + reg.intercept)}`;
+                    const xMin = d3.min(pts, xNum);
+                    const xMax = d3.max(pts, xNum);
+                    const toX = v => x(costMode ? v : new Date(v));
+                    path = `M ${toX(xMin)} ${y(reg.slope * xMin + reg.intercept)} L ${toX(xMax)} ${y(reg.slope * xMax + reg.intercept)}`;
                 }
                 trendData.push({ key, color: trendlineGroupColor(key), path, dash: lineMode === 1 ? 'none' : null });
             });
@@ -671,9 +744,9 @@
 
             const labelObjs = data.map(d => ({
                 ...d,
-                x0: x(d.date),
+                x0: px(d),
                 y0: y(d.score),
-                lx: x(d.date) + 8,
+                lx: px(d) + 8,
                 ly: y(d.score)
             }));
             resolveLabelCollisions(labelObjs, innerH);
@@ -704,7 +777,7 @@
             dotSel.exit().transition(t).attr('r', 0).style('opacity', 0).remove();
             const dotEnter = dotSel.enter().append('circle')
                 .attr('class', 'scatter-dot')
-                .attr('cx', d => x(d.date))
+                .attr('cx', d => px(d))
                 .attr('cy', d => y(d.score))
                 .attr('r', 0)
                 .attr('fill', d => d.color)
@@ -713,7 +786,7 @@
                 .style('opacity', 0);
             dotEnter.merge(dotSel)
                 .transition(t)
-                .attr('cx', d => x(d.date))
+                .attr('cx', d => px(d))
                 .attr('cy', d => y(d.score))
                 .attr('fill', d => d.color)
                 .attr('r', radiusFor)
@@ -729,7 +802,7 @@
                 .attr('fill', '#fff')
                 .attr('font-weight', '700')
                 .attr('pointer-events', 'none')
-                .attr('x', d => x(d.date))
+                .attr('x', d => px(d))
                 .attr('y', d => y(d.score))
                 .style('opacity', 0)
                 .text('!');
@@ -737,7 +810,7 @@
                 .attr('font-size', Math.round(untrackedR * 1.6) + 'px')
                 .text('!')
                 .transition(t)
-                .attr('x', d => x(d.date))
+                .attr('x', d => px(d))
                 .attr('y', d => y(d.score))
                 .style('opacity', 1);
 
@@ -751,6 +824,12 @@
                     const head = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name}</b>${org ? '<br><span style="font-size:0.9em;">' + org + '</span>' : ''}</div>`;
                     let body;
                     let anyUntracked = false;
+                    const relRow = d.date
+                        ? `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Released</td><td style="text-align:right;padding:2px 0;">${d3.timeFormat('%b %d, %Y')(d.date)}</td></tr>`
+                        : '';
+                    const costRow = d.cost != null
+                        ? `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Output cost</td><td style="text-align:right;padding:2px 0;">$${d.cost} / 1M</td></tr>`
+                        : '';
                     if (isAll) {
                         const rawEntry = rawData.find(r => String(r.model || '').trim() === d.model);
                         const lmaScore = rawEntry ? parseNum(rawEntry.lma) : 0;
@@ -765,7 +844,7 @@
                             + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LMArena</td><td style="text-align:right;padding:2px 0;">${lmaCell.html}</td></tr>`
                             + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Artificial Analysis</td><td style="text-align:right;padding:2px 0;">${aaCell.html}</td></tr>`
                             + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LiveBench</td><td style="text-align:right;padding:2px 0;">${lbCell.html}</td></tr>`
-                            + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Released</td><td style="text-align:right;padding:2px 0;">${d3.timeFormat('%b %d, %Y')(d.date)}</td></tr>`
+                            + relRow + costRow
                             + `</table>`;
                     } else {
                         const scoreCell = d.untracked
@@ -774,7 +853,7 @@
                         anyUntracked = !!d.untracked;
                         body = `<table style="width:100%;margin-top:4px;border-spacing:0;">`
                             + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Score</td><td style="text-align:right;padding:2px 0;">${scoreCell}</td></tr>`
-                            + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Released</td><td style="text-align:right;padding:2px 0;">${d3.timeFormat('%b %d, %Y')(d.date)}</td></tr>`
+                            + relRow + costRow
                             + `</table>`;
                     }
                     const note = (anyUntracked ? LB.tooltip.disclaimerHtml : '')

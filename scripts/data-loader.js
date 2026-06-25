@@ -80,6 +80,7 @@
       const modelToOs = {};
       const modelToGeo = {};
       const modelToReleaseDate = {};
+      const modelToCost = {};
       const modelToDeactivated = {};
       const trackingMap = {};
       if (trackingData) {
@@ -90,6 +91,10 @@
           if (t.release_date) {
             const rd = new Date(t.release_date);
             if (!isNaN(rd.getTime())) modelToReleaseDate[t.model] = rd;
+          }
+          if (t.cost_output != null && t.cost_output !== '') {
+            const c = Number(t.cost_output);
+            if (!isNaN(c) && c > 0) modelToCost[t.model] = c;
           }
           trackingMap[t.model] = t;
         });
@@ -143,6 +148,7 @@
         modelToOs,
         modelToGeo,
         modelToReleaseDate,
+        modelToCost,
         modelToDeactivated,
         modelToLogo,
         modelToOrg,
