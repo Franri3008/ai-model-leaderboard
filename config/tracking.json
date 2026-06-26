@@ -590,7 +590,7 @@
         "aa_lookup": "Nemotron 3 Ultra",
         "lb_lookup": null,
         "scatter_default": 1,
-        "cost_output": 0
+        "cost_output": 3.27
     },
     {
         "model": "nemotron-3-super",
