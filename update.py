@@ -64,6 +64,25 @@ def get_chrome_driver(headless=True):
     opts.add_argument(f"user-agent={random.choice(USER_AGENTS)}");
     return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=opts)
 
+def render_page(url, wait_selector, timeout=60, attempts=3, post_load=None):
+    last_err = None;
+    for n in range(1, attempts + 1):
+        driver = get_chrome_driver();
+        try:
+            driver.get(url);
+            WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.CSS_SELECTOR, wait_selector)));
+            if post_load:
+                post_load(driver);
+            return driver.page_source;
+        except Exception as e:
+            last_err = e;
+            print_step(f"⚠ Render attempt {n}/{attempts} failed for {url}: {type(e).__name__}", "WARN");
+            if n < attempts:
+                time.sleep(5 * n);
+        finally:
+            driver.quit();
+    raise RuntimeError(f"render_page failed after {attempts} attempts for {url}") from last_err
+
 def extract_table_data(table, skip_first_empty=False, extra_selectors=None):
     thead = table.find("thead");
     header_cells = thead.select("tr")[-1].find_all("th") if thead and thead.select("tr") else table.select("tr th");
@@ -419,14 +438,10 @@ lma_df.to_csv(lma_file, index=False);
 print_step(f"✓ Saved: {lma_file}", "SUCCESS")
 
 print_step("[2/3] Scraping Artificial Analysis Models Leaderboard")
-print_step("Launching headless Chrome browser...")
-driver = get_chrome_driver();
 print_step("Loading page and waiting for table to render...")
-driver.get("https://artificialanalysis.ai/leaderboards/models?deprecation=all");
-WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, "table.w-full.caption-bottom.text-sm")));
+page_source = render_page("https://artificialanalysis.ai/leaderboards/models?deprecation=all", "table.w-full.caption-bottom.text-sm");
 print_step("Parsing rendered HTML...");
-soup = BeautifulSoup(driver.page_source, "html.parser");
-driver.quit();
+soup = BeautifulSoup(page_source, "html.parser");
 table = soup.select_one("table.w-full.caption-bottom.text-sm");
 if not table:
     raise RuntimeError("ArtificialAnalysis table not found")
@@ -437,23 +452,15 @@ aa_df.to_csv(aa_file, index=False);
 print_step(f"✓ Saved: {aa_file}", "SUCCESS")
 
 print_step("[3/3] Scraping LiveBench Leaderboard")
-print_step("Launching headless Chrome browser...")
-driver = get_chrome_driver();
-
 print_step("Loading page and waiting for table to render...")
-driver.get("https://livebench.ai/#/");
-
-print_step("Waiting for table data to load...")
-WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.CSS_SELECTOR, "table.main-tabl.table tbody tr")));
-
-time.sleep(3);
-
-print_step("Scrolling table to ensure all content is loaded...")
-table_el = driver.find_element(By.CSS_SELECTOR, "table.main-tabl.table");
-driver.execute_script("arguments[0].parentElement.scrollLeft=arguments[0].parentElement.scrollWidth", table_el);
+def _lb_post_load(driver):
+    time.sleep(3);
+    table_el = driver.find_element(By.CSS_SELECTOR, "table.main-tabl.table");
+    driver.execute_script("arguments[0].parentElement.scrollLeft=arguments[0].parentElement.scrollWidth", table_el);
+page_source = render_page("https://livebench.ai/#/", "table.main-tabl.table tbody tr", post_load=_lb_post_load);
 
 print_step("Parsing complex table...")
-soup = BeautifulSoup(driver.page_source, "html.parser");
+soup = BeautifulSoup(page_source, "html.parser");
 table = soup.select_one("table.main-tabl.table");
 
 if not table:
@@ -518,8 +525,6 @@ print_step(f"Extracted {len(lb_df)} rows, {len(lb_df.columns)} columns")
 lb_file = data_dir / "livebench_leaderboard.csv";
 lb_df.to_csv(lb_file, index=False);
 print_step(f"✓ Saved: {lb_file}", "SUCCESS")
-
-driver.quit();
 
 print("\n" + "=" * 80)
 print_step("ALL SCRAPING COMPLETED!", "SUCCESS")
