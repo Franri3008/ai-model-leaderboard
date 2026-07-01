@@ -89,6 +89,19 @@
         "cost_output": 2.5
     },
     {
+        "model": "claude-sonnet-5",
+        "name": "Claude Sonnet 5",
+        "logo": "claude",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-06-30",
+        "lma_lookup": null,
+        "aa_lookup": "Claude Sonnet 5 (max)",
+        "lb_lookup": "Claude Sonnet 5 xHigh Effort",
+        "scatter_default": 1,
+        "cost_output": 10
+    },
+    {
         "model": "claude-fable-5",
         "name": "Claude Fable 5",
         "logo": "claude",
