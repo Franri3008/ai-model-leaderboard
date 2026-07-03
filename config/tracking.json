@@ -112,7 +112,7 @@
         "aa_lookup": "Claude Fable 5 (with fallback)",
         "lb_lookup": "Claude Fable 5 Thinking xHigh Effort*losing out due to stricter content moderation",
         "scatter_default": 1,
-        "deactivated": 1,
+        "deactivated": 0,
         "cost_output": 50
     },
     {
