@@ -95,7 +95,7 @@
         "geo": "US",
         "os": 0,
         "release_date": "2026-06-30",
-        "lma_lookup": "claude-sonnet-5-thinking",
+        "lma_lookup": "claude-sonnet-5-high",
         "aa_lookup": "Claude Sonnet 5 (max)",
         "lb_lookup": "Claude Sonnet 5 xHigh Effort",
         "scatter_default": 1,
