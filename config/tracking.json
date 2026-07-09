@@ -34,7 +34,7 @@
         "release_date": "2026-02-19",
         "lma_lookup": "gemini-3.1-pro-preview",
         "aa_lookup": "Gemini 3.1 Pro Preview",
-        "lb_lookup": "Gemini 3.1 Pro Preview High**5th rank in unseen questions across all categories",
+        "lb_lookup": "Gemini 3.1 Pro Preview High",
         "scatter_default": 1,
         "cost_output": 12
     },
@@ -110,7 +110,7 @@
         "release_date": "2026-06-09",
         "lma_lookup": "claude-fable-5",
         "aa_lookup": "Claude Fable 5 (with fallback)",
-        "lb_lookup": "Claude Fable 5 Thinking xHigh Effort*losing out due to stricter content moderation",
+        "lb_lookup": "Claude Fable 5 xHigh Effort",
         "scatter_default": 1,
         "deactivated": 0,
         "cost_output": 50
@@ -353,7 +353,7 @@
         "release_date": "2026-06-16",
         "lma_lookup": "glm-5.2 (max)",
         "aa_lookup": "GLM-5.2 (max)",
-        "lb_lookup": "GLM 5.2",
+        "lb_lookup": "GLM-5.2",
         "scatter_default": 1,
         "cost_output": 4.4
     },
@@ -497,6 +497,19 @@
         "aa_lookup": "DeepSeek V3.2",
         "lb_lookup": "DeepSeek V3.2 Thinking",
         "scatter_default": 1
+    },
+    {
+        "model": "grok-4-5",
+        "name": "Grok 4.5",
+        "logo": "grok",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-07-08",
+        "lma_lookup": null,
+        "aa_lookup": "Grok 4.5 (high)",
+        "lb_lookup": "Grok 4.5",
+        "scatter_default": 1,
+        "cost_output": 6.0
     },
     {
         "model": "grok-4-3",
