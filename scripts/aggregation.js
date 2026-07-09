@@ -66,9 +66,7 @@
         const present = AXES.filter(a => src[a].value != null);
         const norm = { lma: 0, aa: 0, lb: 0 };
         const estimates = {};
-        if (present.length) {
-          // a model missing a source is placed on it at the percentile it holds on the sources it has,
-          // then that percentile is mapped back to a real value from the source's own distribution
+        if (present.length >= 2) {
           const target = present.reduce((s, a) => s + pctile(a, src[a].value), 0) / present.length;
           AXES.forEach(a => {
             let v = src[a].value;
