@@ -1,33 +1,16 @@
 import re
 import json
-import random
-import requests
-import time
 import pandas as pd
 from datetime import datetime
 from pathlib import Path
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 from rapidfuzz import process, fuzz
 
-BASE_DIR = Path(__file__).parent.absolute()
-STRIP_SELECTORS = "svg,img,picture,source,use,i,[aria-hidden='true'],*[hidden],.sr-only,.sr_only,.srOnly,.visually-hidden,[class*='icon'],i[class*='fa-']"
-USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-]
+import scraper_aa
+import scraper_lb
+import scraper_lma
+from scraper_common import print_step
 
-def print_step(message, level="INFO"):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S");
-    prefix = ">>>" if level == "INFO" else "***";
-    print(f"\n{prefix} [{timestamp}] {message}")
+BASE_DIR = Path(__file__).parent.absolute()
 
 def normalize_model_name(name):
     norm = str(name).lower();
@@ -45,60 +28,6 @@ def extract_numeric_score(score_value):
     if match:
         return match.group()
     return None
-
-def clean_text(tag, extra_selectors=None):
-    clone = BeautifulSoup(str(tag), "html.parser");
-    selectors = STRIP_SELECTORS;
-    if extra_selectors:
-        selectors += "," + extra_selectors;
-    for el in clone.select(selectors):
-        el.decompose();
-    return " ".join(clone.stripped_strings)
-
-def get_chrome_driver(headless=True):
-    opts = Options();
-    if headless:
-        opts.add_argument("--headless=new");
-    opts.add_argument("--disable-gpu");
-    opts.add_argument("--no-sandbox");
-    opts.add_argument(f"user-agent={random.choice(USER_AGENTS)}");
-    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=opts)
-
-def render_page(url, wait_selector, timeout=60, attempts=3, post_load=None):
-    last_err = None;
-    for n in range(1, attempts + 1):
-        driver = get_chrome_driver();
-        try:
-            driver.get(url);
-            WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.CSS_SELECTOR, wait_selector)));
-            if post_load:
-                post_load(driver);
-            return driver.page_source;
-        except Exception as e:
-            last_err = e;
-            print_step(f"⚠ Render attempt {n}/{attempts} failed for {url}: {type(e).__name__}", "WARN");
-            if n < attempts:
-                time.sleep(5 * n);
-        finally:
-            driver.quit();
-    raise RuntimeError(f"render_page failed after {attempts} attempts for {url}") from last_err
-
-def extract_table_data(table, skip_first_empty=False, extra_selectors=None):
-    thead = table.find("thead");
-    header_cells = thead.select("tr")[-1].find_all("th") if thead and thead.select("tr") else table.select("tr th");
-    headers = [clean_text(th, extra_selectors) for idx, th in enumerate(header_cells) if not (skip_first_empty and idx == 0 and clean_text(th, extra_selectors) == "")];
-
-    tbody = table.find("tbody") or table;
-    rows = [];
-    for tr in tbody.find_all("tr", recursive=False):
-        cells = tr.find_all(["td", "th"], recursive=False);
-        if not cells:
-            continue;
-        row = [clean_text(td, extra_selectors) for idx, td in enumerate(cells) if not (skip_first_empty and idx == 0 and clean_text(td, extra_selectors) == "")];
-        if len(row) != len(headers):
-            row = (row + [""] * len(headers))[:len(headers)];
-        rows.append(row);
-    return pd.DataFrame(rows, columns=headers)
 
 def match_source_score(scraped_df, lookup_value, model_keywords, score_keywords, score_type="int"):
     if scraped_df is None or pd.isna(lookup_value):
@@ -399,132 +328,23 @@ data_dir = BASE_DIR / "data/scraped";
 data_dir.mkdir(parents=True, exist_ok=True);
 print_step(f"Data directory: {data_dir.absolute()}")
 
-print_step("[1/3] Scraping LMArena Text Leaderboard")
-print_step("Fetching page with requests...")
-resp = requests.get("https://lmarena.ai/leaderboard/text", headers={
-    "User-Agent": USER_AGENTS[0], "Accept-Language": "en-US,en;q=0.9",
-    "Cache-Control": "no-cache", "Pragma": "no-cache"
-}, timeout=30);
-resp.raise_for_status();
-print_step("Parsing HTML and extracting table...")
-soup = BeautifulSoup(resp.text, "html.parser");
-table = soup.select_one("table.w-full.caption-bottom.text-sm");
-if not table:
-    raise ValueError("LMArena table not found")
-lma_df = extract_table_data(table, extra_selectors="span.text-text-secondary");
-lma_tbody = table.find("tbody") or table;
-lma_providers = [];
-for tr in lma_tbody.find_all("tr", recursive=False):
-    cells = tr.find_all(["td", "th"], recursive=False);
-    if not cells:
-        continue;
-    provider_text = "";
-    for cell in cells:
-        for span in cell.select("span.text-text-secondary"):
-            txt = " ".join(span.stripped_strings).strip();
-            if txt and any(c.isalpha() for c in txt):
-                provider_text = txt;
-                break;
-        if provider_text:
-            break;
-    lma_providers.append(provider_text);
-if len(lma_providers) == len(lma_df):
-    lma_df["Provider"] = lma_providers;
-else:
-    print_step(f"⚠ Provider extraction row count mismatch ({len(lma_providers)} vs {len(lma_df)}); skipping Provider column");
-print_step(f"Extracted {len(lma_df)} rows, {len(lma_df.columns)} columns")
-lma_file = data_dir / "lmarena_text_leaderboard.csv";
-lma_df.to_csv(lma_file, index=False);
-print_step(f"✓ Saved: {lma_file}", "SUCCESS")
+SCRAPERS = [
+    ("LMArena Text Leaderboard", scraper_lma.scrape, "lmarena_text_leaderboard.csv"),
+    ("Artificial Analysis Models Leaderboard", scraper_aa.scrape, "aa_models_leaderboard.csv"),
+    ("LiveBench Leaderboard", scraper_lb.scrape, "livebench_leaderboard.csv"),
+];
 
-print_step("[2/3] Scraping Artificial Analysis Models Leaderboard")
-print_step("Loading page and waiting for table to render...")
-page_source = render_page("https://artificialanalysis.ai/leaderboards/models?deprecation=all", "table.w-full.caption-bottom.text-sm");
-print_step("Parsing rendered HTML...");
-soup = BeautifulSoup(page_source, "html.parser");
-table = soup.select_one("table.w-full.caption-bottom.text-sm");
-if not table:
-    raise RuntimeError("ArtificialAnalysis table not found")
-aa_df = extract_table_data(table, skip_first_empty=True);
-print_step(f"Extracted {len(aa_df)} rows, {len(aa_df.columns)} columns")
-aa_file = data_dir / "aa_models_leaderboard.csv";
-aa_df.to_csv(aa_file, index=False);
-print_step(f"✓ Saved: {aa_file}", "SUCCESS")
+scraped = [];
+for i, (label, scrape, filename) in enumerate(SCRAPERS, 1):
+    print_step(f"[{i}/{len(SCRAPERS)}] Scraping {label}")
+    df = scrape();
+    print_step(f"Extracted {len(df)} rows, {len(df.columns)} columns")
+    out_file = data_dir / filename;
+    df.to_csv(out_file, index=False);
+    print_step(f"✓ Saved: {out_file}", "SUCCESS")
+    scraped.append(df);
 
-print_step("[3/3] Scraping LiveBench Leaderboard")
-print_step("Loading page and waiting for table to render...")
-def _lb_post_load(driver):
-    time.sleep(3);
-    table_el = driver.find_element(By.CSS_SELECTOR, "table.main-tabl.table");
-    driver.execute_script("arguments[0].parentElement.scrollLeft=arguments[0].parentElement.scrollWidth", table_el);
-page_source = render_page("https://livebench.ai/#/", "table.main-tabl.table tbody tr", post_load=_lb_post_load);
-
-print_step("Parsing complex table...")
-soup = BeautifulSoup(page_source, "html.parser");
-table = soup.select_one("table.main-tabl.table");
-
-if not table:
-    raise RuntimeError("LiveBench table not found in page")
-
-soup = BeautifulSoup(str(table), "html.parser");
-thead = soup.find("thead");
-header_rows = thead.find_all("tr") if thead else [];
-
-grid, spans = [], {};
-for tr in header_rows:
-    row = [];
-    for cell in tr.find_all(["th", "td"]):
-        row.append({"text": cell.get_text(strip=True), "colspan": int(cell.get("colspan", 1)), "rowspan": int(cell.get("rowspan", 1))});
-    grid.append(row);
-
-header_matrix = [];
-for r_idx in range(len(grid)):
-    row_out, col_idx = [], 0;
-    for cell in grid[r_idx]:
-        while (r_idx, col_idx) in spans:
-            row_out.append(spans[(r_idx, col_idx)]);
-            col_idx += 1;
-        for _ in range(cell["colspan"]):
-            row_out.append(cell["text"]);
-        if cell["rowspan"] > 1:
-            for r in range(1, cell["rowspan"]):
-                for i in range(cell["colspan"]):
-                    spans[(r_idx + r, col_idx + i)] = cell["text"];
-        col_idx += cell["colspan"];
-    header_matrix.append(row_out);
-
-max_cols = max(len(r) for r in header_matrix) if header_matrix else 0;
-headers = [" | ".join(filter(None, [header_matrix[r][c] if c < len(header_matrix[r]) else "" for r in range(len(header_matrix))])) or f"col_{c+1}" for c in range(max_cols)];
-
-tbody = soup.find("tbody");
-if not tbody:
-    print_step("⚠ Warning: No tbody found in LiveBench table");
-    tbody_rows = [];
-else:
-    tbody_rows = tbody.find_all("tr", recursive=False);
-    print_step(f"Found {len(tbody_rows)} rows in tbody");
-
-data = [];
-for tr in tbody_rows:
-    cells = tr.find_all(["td", "th"]);
-    if cells:
-        row = [td.get_text(strip=True) for td in cells];
-        data.append(row);
-
-print_step(f"Extracted {len(data)} data rows before processing")
-
-for row in data:
-    if len(row) < len(headers):
-        row += [""] * (len(headers) - len(row));
-    elif len(row) > len(headers):
-        data[data.index(row)] = row[:len(headers)];
-
-lb_df = pd.DataFrame(data, columns=headers if headers else None);
-print_step(f"Extracted {len(lb_df)} rows, {len(lb_df.columns)} columns")
-
-lb_file = data_dir / "livebench_leaderboard.csv";
-lb_df.to_csv(lb_file, index=False);
-print_step(f"✓ Saved: {lb_file}", "SUCCESS")
+lma_df, aa_df, lb_df = scraped;
 
 print("\n" + "=" * 80)
 print_step("ALL SCRAPING COMPLETED!", "SUCCESS")
