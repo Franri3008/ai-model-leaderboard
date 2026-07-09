@@ -1,18 +1,21 @@
-# AI Model Leaderboard — Data Pipeline
+# AI Model Leaderboard Data Pipeline
 
 Automated scraper and aggregator for three AI model leaderboards (LMArena, Artificial Analysis, LiveBench). Scores are matched using a crosswalk mapping and published as static data consumed by the [visualization](https://franri3008.github.io/pages/CEPS/AI-World/ModelLeaderboard/viz.html).
 
-## How It Works
+## How it works
 
 1. **Scrape** three leaderboards daily via GitHub Actions
 2. **Match** models using lookup keys in `config/tracking.json`
 3. **Output** `data/processed.csv` (current scores) and `data/history.csv` (append-only changelog)
-4. **Alert** on new untracked models entering the top 30 (`alerts.txt`)
 
-## File Structure
+## File structure
 
 ```
-update.py               Main script — scrapes, matches, builds data
+update.py               Main script, runs the scrapers, matches, builds data
+scraper_lma.py          LMArena scraper (requests/bs4)
+scraper_aa.py           Artificial Analysis scraper (selenium-rendered table)
+scraper_lb.py           LiveBench scraper (static CSV/JSON data files)
+scraper_common.py       Shared scraper helpers (logging, selenium, table parsing)
 config/
   ├── tracking.json     Model metadata & lookup keys
   └── models.json       Organization colors & logos
@@ -20,7 +23,6 @@ data/
   ├── processed.csv     Current aggregated scores (consumed by viz)
   ├── history.csv       Append-only score history (only changed rows)
   └── scraped/          Raw scraped CSVs (gitignored)
-alerts.txt              Top‑30 report flagging untracked models
 metadata.json           Run stats (timestamp, match counts)
 ```
 
@@ -49,7 +51,7 @@ python update.py
 2. If new organization, add to `config/models.json`
 3. Run `python update.py`
 
-## Score Types
+## Score types
 
 | Key | Source | Type | Range |
 |-----|--------|------|-------|
@@ -57,9 +59,9 @@ python update.py
 | `aa` | Artificial Analysis Quality Index | integer | 0–100 |
 | `lb` | LiveBench Average | float | 0–100 |
 
-## History Format
+## History format
 
-`data/history.csv` is append-only — a new row is added only when a model's score changes:
+`data/history.csv` is append-only, a new row is added only when a model's score changes:
 
 ```
 date;model;lma;aa;lb
