@@ -285,8 +285,8 @@
     const rgbToHex = LB.util.rgbToHex;
     const lighten = LB.util.lighten;
     const clampToDomain = LB.util.clampToDomain;
-    function renderScoreCell(model, key, currentScore, formatter) {
-      return LB.tooltip.renderScoreCell(model, key, currentScore, formatter, lastTrackedScores);
+    function renderScoreCell(model, key, currentScore, formatter, estimate) {
+      return LB.tooltip.renderScoreCell(model, key, currentScore, formatter, lastTrackedScores, estimate);
     }
     function isDeactivated(model) {
       return !!(modelToDeactivated && modelToDeactivated[model]);
@@ -809,10 +809,12 @@
           const aaScore = rawEntry ? parseNum(rawEntry.aa) : 0;
           const lbScore = rawEntry ? parseNum(rawEntry.lb) : 0;
 
-          const lmaCell = renderScoreCell(d.model, 'lma', lmaScore, v => Math.round(v));
-          const aaCell = renderScoreCell(d.model, 'aa', aaScore, v => v.toFixed(1));
-          const lbCell = renderScoreCell(d.model, 'lb', lbScore, v => v.toFixed(1));
+          const est = d.estimates || {};
+          const lmaCell = renderScoreCell(d.model, 'lma', lmaScore, v => Math.round(v), est.lma);
+          const aaCell = renderScoreCell(d.model, 'aa', aaScore, v => v.toFixed(1), est.aa);
+          const lbCell = renderScoreCell(d.model, 'lb', lbScore, v => v.toFixed(1), est.lb);
           const anyUntracked = lmaCell.untracked || aaCell.untracked || lbCell.untracked;
+          const anyEstimated = lmaCell.estimated || aaCell.estimated || lbCell.estimated;
 
           html = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name || d.id}</b>${modelToOrg[d.model] ? '<br><span style="font-size:0.9em;">' + modelToOrg[d.model] + '</span>' : ''}</div>`;
           html += `<table style="width:100%;margin-top:4px;border-spacing:0;">`;
@@ -822,6 +824,9 @@
           html += `</table>`;
           if (anyUntracked) {
             html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>`;
+          }
+          if (anyEstimated) {
+            html += LB.tooltip.estimatedDisclaimerHtml;
           }
           if (d.deactivated) {
             html += LB.tooltip.deactivatedDisclaimerHtml;
@@ -1091,10 +1096,12 @@
           const aaScore = rawEntry ? parseNum(rawEntry.aa) : 0;
           const lbScore = rawEntry ? parseNum(rawEntry.lb) : 0;
 
-          const lmaCell = renderScoreCell(d.model, 'lma', lmaScore, v => Math.round(v));
-          const aaCell = renderScoreCell(d.model, 'aa', aaScore, v => v.toFixed(1));
-          const lbCell = renderScoreCell(d.model, 'lb', lbScore, v => v.toFixed(1));
+          const est = d.estimates || {};
+          const lmaCell = renderScoreCell(d.model, 'lma', lmaScore, v => Math.round(v), est.lma);
+          const aaCell = renderScoreCell(d.model, 'aa', aaScore, v => v.toFixed(1), est.aa);
+          const lbCell = renderScoreCell(d.model, 'lb', lbScore, v => v.toFixed(1), est.lb);
           const anyUntracked = lmaCell.untracked || aaCell.untracked || lbCell.untracked;
+          const anyEstimated = lmaCell.estimated || aaCell.estimated || lbCell.estimated;
 
           html = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name || d.id}</b>${modelToOrg[d.model] ? '<br><span style="font-size:0.9em;">' + modelToOrg[d.model] + '</span>' : ''}</div>`;
           html += `<table style="width:100%;margin-top:4px;border-spacing:0;">`;
@@ -1104,6 +1111,9 @@
           html += `</table>`;
           if (anyUntracked) {
             html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>`;
+          }
+          if (anyEstimated) {
+            html += LB.tooltip.estimatedDisclaimerHtml;
           }
           if (d.deactivated) {
             html += LB.tooltip.deactivatedDisclaimerHtml;

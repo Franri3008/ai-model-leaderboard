@@ -27,36 +27,63 @@
         if (typeof onMissingBaseline === 'function') onMissingBaseline();
         return [];
       }
-      const maxLma = parseNum(gpt5.lma) || 1434;
-      const maxAa = parseNum(gpt5.aa) || 45;
-      const maxLb = parseNum(gpt5.lb) || 70.48;
+      const anchor = { lma: parseNum(gpt5.lma) || 1434, aa: parseNum(gpt5.aa) || 45, lb: parseNum(gpt5.lb) || 70.48 };
+      const AXES = ['lma', 'aa', 'lb'];
 
-      rows = rawData.map(d => {
+      // resolve each source: live value, else last tracked score (stale), else missing
+      const resolveSrc = (last, k, cur) => {
+        const c = parseNum(cur);
+        if (c > 0) return { value: c, state: 'live' };
+        const h = last[k] && last[k].value;
+        return h > 0 ? { value: h, state: 'stale' } : { value: null, state: 'missing' };
+      };
+      const resolved = rawData.map(d => {
         const model = String(d.model || '').trim();
-        const name = String(d.name || '').trim();
-        const lma = parseNum(d.lma);
-        const aa = parseNum(d.aa);
-        const lb = parseNum(d.lb);
-        const hasLma = lma > 0, hasAa = aa > 0, hasLb = lb > 0;
-        const missing = (hasLma ? 0 : 1) + (hasAa ? 0 : 1) + (hasLb ? 0 : 1);
-        let nLma = hasLma ? (lma / (2 * maxLma)) : 0;
-        let nAa = hasAa ? (aa / (2 * maxAa)) : 0;
-        let nLb = hasLb ? (lb / (2 * maxLb)) : 0;
-        if (missing === 1) {
-          if (!hasLma && hasAa && hasLb) nLma = (nAa + nLb) / 2;
-          else if (!hasAa && hasLma && hasLb) nAa = (nLma + nLb) / 2;
-          else if (!hasLb && hasLma && hasAa) nLb = (nLma + nAa) / 2;
-        }
-        const score = (nLma + nAa + nLb) / 3;
         const last = (lastTrackedScores && lastTrackedScores[model]) || {};
-        const untracked = (!hasLma && last.lma && last.lma.value > 0)
-          || (!hasAa && last.aa && last.aa.value > 0)
-          || (!hasLb && last.lb && last.lb.value > 0);
+        return { d, model, src: { lma: resolveSrc(last, 'lma', d.lma), aa: resolveSrc(last, 'aa', d.aa), lb: resolveSrc(last, 'lb', d.lb) } };
+      });
+
+      // per-axis sorted field of known values, used to estimate a missing source by percentile
+      const fields = {};
+      AXES.forEach(a => { fields[a] = resolved.map(r => r.src[a].value).filter(v => v != null).sort((x, y) => x - y); });
+      const pctile = (a, v) => {
+        const arr = fields[a], n = arr.length;
+        if (n <= 1) return 1;
+        let below = 0, ties = 0;
+        for (const x of arr) { if (x < v) below++; else if (x === v) ties++; }
+        return (below + (ties - 1) / 2) / (n - 1);
+      };
+      const quantile = (a, p) => {
+        const arr = fields[a], n = arr.length;
+        if (!n) return 0;
+        if (n === 1) return arr[0];
+        const pos = p * (n - 1), lo = Math.floor(pos), frac = pos - lo;
+        return lo >= n - 1 ? arr[n - 1] : arr[lo] + frac * (arr[lo + 1] - arr[lo]);
+      };
+
+      rows = resolved.map(({ d, model, src }) => {
+        const name = String(d.name || '').trim();
+        const present = AXES.filter(a => src[a].value != null);
+        const norm = { lma: 0, aa: 0, lb: 0 };
+        const estimates = {};
+        if (present.length) {
+          // a model missing a source is placed on it at the percentile it holds on the sources it has,
+          // then that percentile is mapped back to a real value from the source's own distribution
+          const target = present.reduce((s, a) => s + pctile(a, src[a].value), 0) / present.length;
+          AXES.forEach(a => {
+            let v = src[a].value;
+            if (v == null) { v = quantile(a, target); estimates[a] = v; }
+            norm[a] = v / (2 * anchor[a]);
+          });
+        }
+        const score = (norm.lma + norm.aa + norm.lb) / 3;
+        const untracked = AXES.some(a => src[a].state === 'stale');
         const row = { model, name, score, untracked, deactivated: !!(modelToDeactivated && modelToDeactivated[model]) };
+        if (Object.keys(estimates).length) row.estimates = estimates;
         if (includeSegments) {
-          row.lmaSegment = nLma;
-          row.aaSegment = nAa;
-          row.lbSegment = nLb;
+          row.lmaSegment = norm.lma;
+          row.aaSegment = norm.aa;
+          row.lbSegment = norm.lb;
         }
         return row;
       });

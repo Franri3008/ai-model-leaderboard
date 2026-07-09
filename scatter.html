@@ -852,8 +852,8 @@
                 .attr('y', d => y(d.score))
                 .style('opacity', 1);
 
-            const renderCell = (model, key, currentScore, formatter) =>
-                LB.tooltip.renderScoreCell(model, key, currentScore, formatter, lastTrackedScores);
+            const renderCell = (model, key, currentScore, formatter, estimate) =>
+                LB.tooltip.renderScoreCell(model, key, currentScore, formatter, lastTrackedScores, estimate);
 
             layers.dots.selectAll('circle')
                 .on('mouseover', function (event, d) {
@@ -862,6 +862,7 @@
                     const head = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name}</b>${org ? '<br><span style="font-size:0.9em;">' + org + '</span>' : ''}</div>`;
                     let body;
                     let anyUntracked = false;
+                    let anyEstimated = false;
                     const relRow = d.date
                         ? `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Released</td><td style="text-align:right;padding:2px 0;">${d3.timeFormat('%b %d, %Y')(d.date)}</td></tr>`
                         : '';
@@ -873,10 +874,12 @@
                         const lmaScore = rawEntry ? parseNum(rawEntry.lma) : 0;
                         const aaScore = rawEntry ? parseNum(rawEntry.aa) : 0;
                         const lbScore = rawEntry ? parseNum(rawEntry.lb) : 0;
-                        const lmaCell = renderCell(d.model, 'lma', lmaScore, v => Math.round(v));
-                        const aaCell = renderCell(d.model, 'aa', aaScore, v => v.toFixed(1));
-                        const lbCell = renderCell(d.model, 'lb', lbScore, v => v.toFixed(1));
+                        const est = d.estimates || {};
+                        const lmaCell = renderCell(d.model, 'lma', lmaScore, v => Math.round(v), est.lma);
+                        const aaCell = renderCell(d.model, 'aa', aaScore, v => v.toFixed(1), est.aa);
+                        const lbCell = renderCell(d.model, 'lb', lbScore, v => v.toFixed(1), est.lb);
                         anyUntracked = lmaCell.untracked || aaCell.untracked || lbCell.untracked;
+                        anyEstimated = lmaCell.estimated || aaCell.estimated || lbCell.estimated;
                         body = `<table style="width:100%;margin-top:4px;border-spacing:0;">`
                             + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Score</td><td style="text-align:right;padding:2px 0;">${fmt(d.score)}</td></tr>`
                             + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LMArena</td><td style="text-align:right;padding:2px 0;">${lmaCell.html}</td></tr>`
@@ -895,6 +898,7 @@
                             + `</table>`;
                     }
                     const note = (anyUntracked ? LB.tooltip.disclaimerHtml : '')
+                        + (anyEstimated ? LB.tooltip.estimatedDisclaimerHtml : '')
                         + (d.deactivated ? LB.tooltip.deactivatedDisclaimerHtml : '');
                     tooltip.style('opacity', 1).html(head + body + note);
                     LB.tooltip.position(tooltip, event);

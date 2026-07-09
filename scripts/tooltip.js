@@ -10,15 +10,25 @@
   const DEACTIVATED_DISCLAIMER_HTML =
     '<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! This model got deactivated.</div>';
 
+  const ESTIMATED_DISCLAIMER_HTML =
+    '<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">~ Estimated from the other sources</div>';
+
   const DEACTIVATED_COLOR = '#9ca3af';
 
-  function renderScoreCell(model, key, currentScore, formatter, lastTrackedScores) {
+  function renderScoreCell(model, key, currentScore, formatter, lastTrackedScores, estimate) {
     if (currentScore > 0) return { html: formatter(currentScore), untracked: false };
     const last = lastTrackedScores && lastTrackedScores[model] && lastTrackedScores[model][key];
     if (last && last.value > 0) {
       return {
         html: '<span style="color:#888;">' + formatter(last.value) + '</span> ' + UNTRACKED_BADGE_HTML,
         untracked: true
+      };
+    }
+    if (estimate != null && estimate > 0) {
+      return {
+        html: '<span style="color:#888;font-style:italic;">~' + formatter(estimate) + ' (est.)</span>',
+        untracked: false,
+        estimated: true
       };
     }
     return { html: '-', untracked: false };
@@ -52,6 +62,7 @@
     badgeHtml: UNTRACKED_BADGE_HTML,
     disclaimerHtml: UNTRACKED_DISCLAIMER_HTML,
     deactivatedDisclaimerHtml: DEACTIVATED_DISCLAIMER_HTML,
+    estimatedDisclaimerHtml: ESTIMATED_DISCLAIMER_HTML,
     deactivatedColor: DEACTIVATED_COLOR
   };
 })(typeof window !== 'undefined' ? window : globalThis);

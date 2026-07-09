@@ -218,20 +218,20 @@
     },
     {
         "model": "gpt-5.5",
-        "name": "GPT-5.5 (Thinking)",
+        "name": "GPT 5.5",
         "logo": "gpt",
         "geo": "US",
         "os": 0,
         "release_date": "2026-04-23",
         "lma_lookup": "gpt-5.5-high",
         "aa_lookup": "GPT-5.5 (xhigh)",
-        "lb_lookup": "GPT-5.5 Thinking xHigh Effort",
+        "lb_lookup": "GPT-5.5 Thinking High Effort",
         "scatter_default": 1,
         "cost_output": 30
     },
     {
         "model": "gpt-5.4-mini",
-        "name": "GPT-5.4 mini (Thinking)",
+        "name": "GPT 5.4 mini",
         "logo": "gpt",
         "geo": "US",
         "os": 0,

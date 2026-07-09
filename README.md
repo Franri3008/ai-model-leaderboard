@@ -59,6 +59,15 @@ python update.py
 | `aa` | Artificial Analysis Quality Index | integer | 0–100 |
 | `lb` | LiveBench Average | float | 0–100 |
 
+## Aggregate score ("ALL" view)
+
+Per-source tabs show raw scores. The combined **"ALL"** ranking is computed in the frontend ([`scripts/aggregation.js`](scripts/aggregation.js)): the Python pipeline never normalizes, it only stores raw values.
+
+1. **Normalize each source against a fixed baseline.** Each raw score is divided by `2 × GPT-5's score on that source` (`lma≈1434`, `aa≈45`, `lb≈70.48`, with those constants as fallback if GPT-5 drops out). This puts every axis on a scale where **GPT-5 = 0.5**, and keeps scores stable over time (they're anchored to a fixed reference, not to the current field).
+2. **Combine.** The aggregate is the mean of the three normalized axes.
+3. **Estimate a missing source** instead of dropping the model or giving it a free pass. When a model isn't on a leaderboard yet (e.g. a new model missing from LMArena), it's placed on that source at the **percentile it holds on the sources it does have**, and that percentile is mapped back to a real value from the source's own distribution. The estimate is then normalized like any real score, so a missing axis no longer inflates the model's rank. Estimated cells are shown in tooltips as `~X (est.)`.
+4. **Stale scores persist.** If a model stops being tracked on a source but has history, its last known value is used (greyed with a `!` in tooltips) rather than treated as missing, so models don't vanish from the aggregate once a leaderboard drops them.
+
 ## History format
 
 `data/history.csv` is append-only, a new row is added only when a model's score changes:
