@@ -1,6 +1,6 @@
 # AI Model Leaderboard Data Pipeline
 
-Automated scraper and aggregator for three AI model leaderboards (LMArena, Artificial Analysis, LiveBench). Scores are matched using a crosswalk mapping and published as static data consumed by the [visualization](https://franri3008.github.io/pages/CEPS/AI-World/ModelLeaderboard/viz.html).
+Automated scraper and aggregator for three AI model leaderboards (LMArena, Artificial Analysis, LiveBench). Scores are matched using a crosswalk mapping and published as static data consumed by the [visualization](https://aileaderboard.franri.dev/index.html).
 
 ## How it works
 

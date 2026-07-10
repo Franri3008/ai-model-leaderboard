@@ -110,7 +110,7 @@
         "release_date": "2026-06-09",
         "lma_lookup": "claude-fable-5",
         "aa_lookup": "Claude Fable 5 (with fallback)",
-        "lb_lookup": "Claude Fable 5 xHigh Effort",
+        "lb_lookup": "Claude Fable 5 Max Effort",
         "scatter_default": 1,
         "deactivated": 0,
         "cost_output": 50
@@ -217,7 +217,46 @@
         "cost_output": 5
     },
     {
-        "model": "gpt-5.5",
+        "model": "gpt-5-6-sol",
+        "name": "GPT 5.6 Sol",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-07-09",
+        "lma_lookup": null,
+        "aa_lookup": "GPT-5.6 Sol (max)",
+        "lb_lookup": "GPT-5.6 Sol Max Effort",
+        "scatter_default": 1,
+        "cost_output": 30
+    },
+    {
+        "model": "gpt-5-6-terra",
+        "name": "GPT 5.6 Terra",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-07-09",
+        "lma_lookup": null,
+        "aa_lookup": "GPT-5.6 Terra (max)",
+        "lb_lookup": "GPT-5.6 Terra Max Effort",
+        "scatter_default": 1,
+        "cost_output": 15
+    },
+    {
+        "model": "gpt-5-6-luna",
+        "name": "GPT 5.6 Luna",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-07-09",
+        "lma_lookup": null,
+        "aa_lookup": "GPT-5.6 Luna (max)",
+        "lb_lookup": "GPT-5.6 Luna Max Effort",
+        "scatter_default": 1,
+        "cost_output": 6
+    },
+    {
+        "model": "gpt-5-5",
         "name": "GPT 5.5",
         "logo": "gpt",
         "geo": "US",
@@ -230,7 +269,7 @@
         "cost_output": 30
     },
     {
-        "model": "gpt-5.4-mini",
+        "model": "gpt-5-4-mini",
         "name": "GPT 5.4 mini",
         "logo": "gpt",
         "geo": "US",
@@ -243,7 +282,7 @@
         "cost_output": 4.5
     },
     {
-        "model": "gpt-5.4",
+        "model": "gpt-5-4",
         "name": "GPT-5.4 (Thinking)",
         "logo": "gpt",
         "geo": "US",
@@ -256,7 +295,7 @@
         "cost_output": 15
     },
     {
-        "model": "gpt-5.2",
+        "model": "gpt-5-2",
         "name": "GPT-5.2 (Thinking)",
         "logo": "gpt",
         "geo": "US",
