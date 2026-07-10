@@ -404,6 +404,10 @@
                 value: active.question,
                 onChange: question => {
                     active.question = question;
+                    if (window.ModelFilter) {
+                        window.ModelFilter.setHidden(frontierDefaultHidden());
+                        window.ModelFilter.refresh();
+                    }
                     updateChart();
                 }
             });

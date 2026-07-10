@@ -283,7 +283,7 @@
     },
     {
         "model": "gpt-5-4",
-        "name": "GPT-5.4 (Thinking)",
+        "name": "GPT-5.4",
         "logo": "gpt",
         "geo": "US",
         "os": 0,
