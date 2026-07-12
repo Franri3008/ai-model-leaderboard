@@ -385,6 +385,10 @@
           onChange: val => {
             modeParam = val;
             LB.vizControls.syncUrlFlag('bop', modeParam === 1);
+            if (window.ModelFilter) {
+              window.ModelFilter.setHidden(topNDefaultHidden());
+              window.ModelFilter.refresh();
+            }
             updateChart();
             updateFootnote();
           }
@@ -437,6 +441,10 @@
         value: active.question,
         onChange: question => {
           active.question = question;
+          if (window.ModelFilter) {
+            window.ModelFilter.setHidden(topNDefaultHidden());
+            window.ModelFilter.refresh();
+          }
           updateChart();
           updateFootnote();
         }
