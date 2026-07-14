@@ -71,6 +71,10 @@
       height: 100%;
     }
 
+    #chart text.value {
+      pointer-events: none;
+    }
+
     #container2 {
       grid-row: 1;
       grid-column: 1 / span 2;
@@ -385,10 +389,6 @@
           onChange: val => {
             modeParam = val;
             LB.vizControls.syncUrlFlag('bop', modeParam === 1);
-            if (window.ModelFilter) {
-              window.ModelFilter.setHidden(topNDefaultHidden());
-              window.ModelFilter.refresh();
-            }
             updateChart();
             updateFootnote();
           }
@@ -427,9 +427,6 @@
               }),
             onChange: () => { updateChart(); updateFootnote(); }
           });
-
-          const toHide = topNDefaultHidden();
-          if (toHide.length) window.ModelFilter.setHidden(toHide);
         }
 
         createChart();
@@ -441,10 +438,6 @@
         value: active.question,
         onChange: question => {
           active.question = question;
-          if (window.ModelFilter) {
-            window.ModelFilter.setHidden(topNDefaultHidden());
-            window.ModelFilter.refresh();
-          }
           updateChart();
           updateFootnote();
         }
@@ -504,11 +497,6 @@
       }));
     }
     function getTop20() { return getAggregated().slice().sort((a, b) => b.total - a.total).slice(0, displayLimit); }
-    function topNDefaultHidden() {
-      const agg = getAggregated({ ignoreModelFilter: true });
-      const shown = new Set(agg.slice().sort((a, b) => b.total - a.total).slice(0, displayLimit).map(d => d.model));
-      return agg.map(d => d.model).filter(m => !shown.has(m));
-    }
     function getXDomain() {
       const data = getTop20();
       const minScore = d3.min(data, d => d.total);
@@ -582,6 +570,17 @@
 
       path += ' Z';
       return path;
+    }
+    function getValueLabelX(xEnd, barHeight, sizeFactor) {
+      const defaultInset = 12;
+      if (styleMode !== 1) return xEnd - defaultInset;
+
+      // The style-1 cap is h / 2 wide. At the label baseline, move the
+      // text past the diagonal and retain a small amount of inner padding.
+      const baselineOffset = Math.round(4 * (sizeFactor || 1));
+      const diagonalInset = barHeight * 0.25 + baselineOffset * 0.5;
+      const innerPadding = Math.max(4, Math.round(4 * (sizeFactor || 1)));
+      return xEnd - Math.max(defaultInset, diagonalInset + innerPadding);
     }
     function truncateAxisLabels(maxWidth) {
       if (!chartState.yAxisGroup) { return; }
@@ -787,7 +786,7 @@
         this._h = barH;
       });
       const fmt = getValueFormatter();
-      g.selectAll('text.value').data(data, d => d.id).enter().append('text').attr('class', 'value').attr('x', d => x(clampValue(d.total)) - 12).attr('y', d => y(d.id) + y.bandwidth() / 2 + Math.round(4 * sizeFactor)).attr('text-anchor', 'end').attr('font-size', chartState.valueFS + 'px').attr('font-weight', '600').attr('fill', '#ffffff').text(d => fmt(d.total));
+      g.selectAll('text.value').data(data, d => d.id).enter().append('text').attr('class', 'value').attr('x', d => getValueLabelX(x(clampValue(d.total)), barH, sizeFactor)).attr('y', d => y(d.id) + y.bandwidth() / 2 + Math.round(4 * sizeFactor)).attr('text-anchor', 'end').attr('font-size', chartState.valueFS + 'px').attr('font-weight', '600').attr('fill', '#ffffff').text(d => fmt(d.total));
       g.selectAll('image.logo').data(data, d => d.id).enter().append('image').attr('class', 'logo').attr('x', d => x(clampValue(d.total)) + 6).attr('y', d => y(d.id) + (y.bandwidth() - logoSize) / 2).attr('width', logoSize).attr('height', logoSize).attr('href', d => d.logo).attr('xlink:href', d => d.logo);
       chartState.logos = g.selectAll('image.logo');
 
@@ -983,22 +982,28 @@
         }).attr('d', d => barPath(baseX, baseX, y(d.id) + y.bandwidth() / 2, barHNow, d.ties > 0 ? { roundStart: false, roundEnd: false, baseRadius: responsiveRadius } : { roundStart: false, baseRadius: responsiveRadius })).attr('fill', d => d.color || 'url(#gradBlue)'),
         update => update,
         exit => exit.transition().duration(350).attrTween('d', function (d) {
+          const node = this;
           const xStart = this._x1 ?? baseX;
           const yStart = this._yc ?? (y(d.id) + y.bandwidth() / 2);
           const hStart = this._h ?? barHNow;
           const xEnd = baseX;
-          const yEnd = y(d.id) + y.bandwidth() / 2;
+          const yEnd = yStart;
           const hEnd = barHNow;
           return function (t) {
             const xi = xStart + (xEnd - xStart) * t;
             const yi = yStart + (yEnd - yStart) * t;
             const hi = hStart + (hEnd - hStart) * t;
+            node._x0 = baseX;
+            node._x1 = xi;
+            node._yc = yi;
+            node._h = hi;
             return barPath(baseX, xi, yi, hi, d.ties > 0 ? { roundStart: false, roundEnd: false, baseRadius: responsiveRadius } : { roundStart: false, baseRadius: responsiveRadius });
           };
         }).on('end', function () { this.remove(); })
       ).transition().duration(700)
         .attr('fill', d => d.color || 'url(#gradBlue)')
         .attrTween('d', function (d) {
+          const node = this;
           const xStart = this._x1 ?? baseX;
           const yStart = this._yc ?? (y(d.id) + y.bandwidth() / 2);
           const hStart = this._h ?? barHNow;
@@ -1009,6 +1014,10 @@
             const xi = xStart + (xEnd - xStart) * t;
             const yi = yStart + (yEnd - yStart) * t;
             const hi = hStart + (hEnd - hStart) * t;
+            node._x0 = baseX;
+            node._x1 = xi;
+            node._yc = yi;
+            node._h = hi;
             return barPath(baseX, xi, yi, hi, d.ties > 0 ? { roundStart: false, roundEnd: false, baseRadius: responsiveRadius } : { roundStart: false, baseRadius: responsiveRadius });
           };
         }).on('end', function (d) {
@@ -1029,35 +1038,49 @@
         }).attr('d', d => barPath(baseX, baseX, y(d.id) + y.bandwidth() / 2, barHNow, d.wins > 0 ? { roundStart: false, baseRadius: responsiveRadius } : { baseRadius: responsiveRadius })).attr('fill', d => { if (d.ties > 0) { return d.color ? createColorPattern(defs, d.color) : ('url(#crossPattern)'); } return d.color ? lighten(d.color, .35) : 'url(#gradBlueTie)'; }),
         update => update,
         exit => exit.transition().duration(350).attrTween('d', function (d) {
-          const xStart = this._x1 ?? baseX;
+          const node = this;
+          const x0Start = this._x0 ?? baseX;
+          const x1Start = this._x1 ?? x0Start;
           const yStart = this._yc ?? (y(d.id) + y.bandwidth() / 2);
           const hStart = this._h ?? barHNow;
-          const xEnd = baseX;
-          const yEnd = y(d.id) + y.bandwidth() / 2;
+          const yEnd = yStart;
           const hEnd = barHNow;
           return function (t) {
-            const xi = xStart + (xEnd - xStart) * t;
+            const x0i = x0Start + (baseX - x0Start) * t;
+            const x1i = x1Start + (baseX - x1Start) * t;
             const yi = yStart + (yEnd - yStart) * t;
             const hi = hStart + (hEnd - hStart) * t;
-            return barPath(baseX, xi, yi, hi, d.wins > 0 ? { roundStart: false, baseRadius: responsiveRadius } : { baseRadius: responsiveRadius });
+            const right = Math.max(x0i, x1i);
+            node._x0 = x0i;
+            node._x1 = right;
+            node._yc = yi;
+            node._h = hi;
+            return barPath(x0i, right, yi, hi, d.wins > 0 ? { roundStart: false, baseRadius: responsiveRadius } : { baseRadius: responsiveRadius });
           };
         }).on('end', function () { this.remove(); })
       ).transition().duration(700)
         .attr('fill', d => { if (d.ties > 0) { return d.color ? createColorPattern(defs, d.color) : ('url(#crossPattern)'); } return d.color ? lighten(d.color, .35) : 'url(#gradBlueTie)'; })
         .attrTween('d', function (d) {
-          const xStart = this._x1 ?? baseX;
+          const node = this;
+          const x0Start = this._x0 ?? baseX;
+          const x1Start = this._x1 ?? x0Start;
           const yStart = this._yc ?? (y(d.id) + y.bandwidth() / 2);
           const hStart = this._h ?? barHNow;
-          const xEnd = x(clampValue(d.total));
+          const x0End = x(clampValue(d.wins));
+          const x1End = x(clampValue(d.total));
           const yEnd = y(d.id) + y.bandwidth() / 2;
           const hEnd = getBarHeight(y, chartState.sizeFactor || 1);
           return function (t) {
-            const xi = xStart + (xEnd - xStart) * t;
+            const x0i = x0Start + (x0End - x0Start) * t;
+            const x1i = x1Start + (x1End - x1Start) * t;
             const yi = yStart + (yEnd - yStart) * t;
             const hi = hStart + (hEnd - hStart) * t;
-            const mid = x(clampValue(d.wins));
-            const xi0 = xi < mid ? mid : xi;
-            return barPath(mid, xi0, yi, hi, d.wins > 0 ? { roundStart: false, baseRadius: responsiveRadius } : { baseRadius: responsiveRadius });
+            const right = Math.max(x0i, x1i);
+            node._x0 = x0i;
+            node._x1 = right;
+            node._yc = yi;
+            node._h = hi;
+            return barPath(x0i, right, yi, hi, d.wins > 0 ? { roundStart: false, baseRadius: responsiveRadius } : { baseRadius: responsiveRadius });
           };
         }).on('end', function (d) {
           this._x0 = x(clampValue(d.wins));
@@ -1069,8 +1092,8 @@
       const fmt = getValueFormatter();
       const values = chartState.svg.select('g').selectAll('text.value').data(data, d => d.id);
       values.join(
-        enter => enter.append('text').attr('class', 'value').attr('x', d => x(clampValue(d.total)) - 12).attr('y', d => y(d.id) + y.bandwidth() / 2 + Math.round(4 * (chartState.sizeFactor || 1))).attr('text-anchor', 'end').attr('font-size', (chartState.valueFS || 12) + 'px').attr('font-weight', '600').attr('fill', '#ffffff').attr('opacity', 0).text(d => fmt(d.total)).transition().duration(700).attr('opacity', 1),
-        update => update.transition().duration(700).attr('x', d => x(clampValue(d.total)) - 12).attr('y', d => y(d.id) + y.bandwidth() / 2 + Math.round(4 * (chartState.sizeFactor || 1))).tween('text', function (d) {
+        enter => enter.append('text').attr('class', 'value').attr('x', d => getValueLabelX(x(clampValue(d.total)), barHNow, chartState.sizeFactor || 1)).attr('y', d => y(d.id) + y.bandwidth() / 2 + Math.round(4 * (chartState.sizeFactor || 1))).attr('text-anchor', 'end').attr('font-size', (chartState.valueFS || 12) + 'px').attr('font-weight', '600').attr('fill', '#ffffff').attr('opacity', 0).text(d => fmt(d.total)).transition().duration(700).attr('opacity', 1),
+        update => update.transition().duration(700).attr('x', d => getValueLabelX(x(clampValue(d.total)), barHNow, chartState.sizeFactor || 1)).attr('y', d => y(d.id) + y.bandwidth() / 2 + Math.round(4 * (chartState.sizeFactor || 1))).tween('text', function (d) {
           const that = d3.select(this);
           const parseNum = v => +String(v).replace(/[^0-9eE+.-]/g, '');
           const start = parseNum(that.text());
