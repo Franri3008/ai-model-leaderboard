@@ -632,6 +632,19 @@
         "cost_output": 5
     },
     {
+        "model": "muse-spark-1-1",
+        "name": "Muse Spark 1.1",
+        "logo": "meta",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-07-09",
+        "lma_lookup": "muse-spark-1.1",
+        "aa_lookup": "Muse Spark 1.1 (xhigh)",
+        "lb_lookup": null,
+        "scatter_default": 1,
+        "cost_output": 4.25
+    },
+    {
         "model": "muse-spark",
         "name": "Muse Spark",
         "logo": "meta",
