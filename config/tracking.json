@@ -767,6 +767,18 @@
         "cost-output": 0
     },
     {
+        "model": "kimi-k3",
+        "name": "Kimi K3",
+        "logo": "moonshot",
+        "geo": "China",
+        "os": 1,
+        "release_date": "2026-07-16",
+        "lma_lookup": "kimi-k3",
+        "aa_lookup": "Kimi K3",
+        "lb_lookup": "Kimi K3",
+        "cost_output": 15
+    },
+    {
         "model": "kimi-k2-7-code",
         "name": "Kimi K2.7 Code",
         "logo": "moonshot",
