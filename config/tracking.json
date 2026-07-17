@@ -223,7 +223,7 @@
         "geo": "US",
         "os": 0,
         "release_date": "2026-07-09",
-        "lma_lookup": null,
+        "lma_lookup": "gpt-5.6-sol-xhigh",
         "aa_lookup": "GPT-5.6 Sol (max)",
         "lb_lookup": "GPT-5.6 Sol Max Effort",
         "scatter_default": 1,
