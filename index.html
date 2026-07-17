@@ -528,7 +528,7 @@
       if (active.question === 'LiveBench') { return d3.format('.1f'); }
       return d3.format('.0f');
     }
-    let chartState = { svg: null, g: null, x: null, y: null, yAxisGroup: null, xAxisGroup: null, bgLayer: null, rowBG: null, width: 0, height: 0, margin: null, barsWin: null, barsTie: null, barsTieOverlay: null, logos: null, sizeFactor: 1, axisFS: 12, valueFS: 12, sourceFS: 12, logoWH: 24, logoWidth: 24, logoSize: 24, padding: 16, xDomain: [0, 1], xMin: 0, xMax: 1 };
+    let chartState = { svg: null, g: null, x: null, y: null, yAxisGroup: null, xAxisGroup: null, bgLayer: null, rowBG: null, width: 0, height: 0, margin: null, barsWin: null, barsTie: null, barsTieOverlay: null, logos: null, sizeFactor: 1, axisFS: 12, valueFS: 12, sourceFS: 12, logoWH: 24, logoWidth: 24, logoSize: 24, padding: 16, compactStyleZero: false, xDomain: [0, 1], xMin: 0, xMax: 1 };
     function barPath(x0, x1, yCenter, h, opts) {
       const o = opts || {};
       const roundStart = o.roundStart !== false;
@@ -571,8 +571,8 @@
       path += ' Z';
       return path;
     }
-    function getValueLabelX(xEnd, barHeight, sizeFactor) {
-      const defaultInset = 12;
+    function getValueLabelX(xEnd, barHeight, sizeFactor, compactStyleZero) {
+      const defaultInset = compactStyleZero ? Math.max(5, Math.round(6 * (sizeFactor || 1))) : 12;
       if (styleMode !== 1) return xEnd - defaultInset;
 
       // The style-1 cap is h / 2 wide. At the label baseline, move the
@@ -668,13 +668,15 @@
       const containerWidth = Math.max(320, rect.width);
       const isCompactWidth = containerWidth < 540;
       const containerHeight = Math.max(240, rect.height);
+      const isCompactLayout = window.matchMedia('(max-height:500px), (max-width:640px)').matches;
+      const compactStyleZero = isCompactLayout && styleMode === 0;
       const sizeFactor = Math.max(.6, Math.min(1.15, Math.min(containerWidth / 900, containerHeight / 650)));
 
       const BaseAxisFontSize = isCompactWidth ? 11 : 16;
       const MinAxisFontSize = isCompactWidth ? 9 : 12;
 
       let axisFS = Math.max(MinAxisFontSize, Math.round(BaseAxisFontSize * sizeFactor));
-      const valueFS = Math.max(9, Math.round(12 * sizeFactor));
+      const valueFS = compactStyleZero ? Math.max(8, Math.round(10 * sizeFactor)) : Math.max(9, Math.round(12 * sizeFactor));
       const sourceFS = Math.max(9, Math.round(12 * sizeFactor));
       const logoWH = Math.max(10, Math.round(24 * sizeFactor));
       chartState.sizeFactor = sizeFactor;
@@ -697,7 +699,10 @@
       tempSvg.remove();
       const logoWidth = 24;
       const padding = 16;
-      const dynamicLeftMargin = Math.min(maxLabelWidth + logoWidth + padding, Math.max(150, containerWidth * .35));
+      const maxLeftMargin = compactStyleZero
+        ? Math.max(118, containerWidth * .28)
+        : Math.max(150, containerWidth * .35);
+      const dynamicLeftMargin = Math.min(maxLabelWidth + logoWidth + padding, maxLeftMargin);
       const availForText = Math.max(40, dynamicLeftMargin - logoWidth - padding - 8);
 
       const fitFS = Math.floor(BaseAxisFontSize * (availForText / Math.max(1, maxLabelWidth)));
@@ -746,6 +751,7 @@
       chartState.margin = margin;
       chartState.logoWidth = logoWidth;
       chartState.padding = padding;
+      chartState.compactStyleZero = compactStyleZero;
       const clampValue = v => clampToDomain(v, xDomain);
       const baseValue = xDomain[0];
       const baseX = x(baseValue);
@@ -786,7 +792,7 @@
         this._h = barH;
       });
       const fmt = getValueFormatter();
-      g.selectAll('text.value').data(data, d => d.id).enter().append('text').attr('class', 'value').attr('x', d => getValueLabelX(x(clampValue(d.total)), barH, sizeFactor)).attr('y', d => y(d.id) + y.bandwidth() / 2 + Math.round(4 * sizeFactor)).attr('text-anchor', 'end').attr('font-size', chartState.valueFS + 'px').attr('font-weight', '600').attr('fill', '#ffffff').text(d => fmt(d.total));
+      g.selectAll('text.value').data(data, d => d.id).enter().append('text').attr('class', 'value').attr('x', d => getValueLabelX(x(clampValue(d.total)), barH, sizeFactor, compactStyleZero)).attr('y', d => y(d.id) + y.bandwidth() / 2).attr('dominant-baseline', 'central').attr('text-anchor', 'end').attr('font-size', chartState.valueFS + 'px').attr('font-weight', '600').attr('fill', '#ffffff').text(d => fmt(d.total));
       g.selectAll('image.logo').data(data, d => d.id).enter().append('image').attr('class', 'logo').attr('x', d => x(clampValue(d.total)) + 6).attr('y', d => y(d.id) + (y.bandwidth() - logoSize) / 2).attr('width', logoSize).attr('height', logoSize).attr('href', d => d.logo).attr('xlink:href', d => d.logo);
       chartState.logos = g.selectAll('image.logo');
 
@@ -1092,8 +1098,8 @@
       const fmt = getValueFormatter();
       const values = chartState.svg.select('g').selectAll('text.value').data(data, d => d.id);
       values.join(
-        enter => enter.append('text').attr('class', 'value').attr('x', d => getValueLabelX(x(clampValue(d.total)), barHNow, chartState.sizeFactor || 1)).attr('y', d => y(d.id) + y.bandwidth() / 2 + Math.round(4 * (chartState.sizeFactor || 1))).attr('text-anchor', 'end').attr('font-size', (chartState.valueFS || 12) + 'px').attr('font-weight', '600').attr('fill', '#ffffff').attr('opacity', 0).text(d => fmt(d.total)).transition().duration(700).attr('opacity', 1),
-        update => update.transition().duration(700).attr('x', d => getValueLabelX(x(clampValue(d.total)), barHNow, chartState.sizeFactor || 1)).attr('y', d => y(d.id) + y.bandwidth() / 2 + Math.round(4 * (chartState.sizeFactor || 1))).tween('text', function (d) {
+        enter => enter.append('text').attr('class', 'value').attr('x', d => getValueLabelX(x(clampValue(d.total)), barHNow, chartState.sizeFactor || 1, chartState.compactStyleZero)).attr('y', d => y(d.id) + y.bandwidth() / 2).attr('dominant-baseline', 'central').attr('text-anchor', 'end').attr('font-size', (chartState.valueFS || 12) + 'px').attr('font-weight', '600').attr('fill', '#ffffff').attr('opacity', 0).text(d => fmt(d.total)).transition().duration(700).attr('opacity', 1),
+        update => update.transition().duration(700).attr('x', d => getValueLabelX(x(clampValue(d.total)), barHNow, chartState.sizeFactor || 1, chartState.compactStyleZero)).attr('y', d => y(d.id) + y.bandwidth() / 2).attr('dominant-baseline', 'central').tween('text', function (d) {
           const that = d3.select(this);
           const parseNum = v => +String(v).replace(/[^0-9eE+.-]/g, '');
           const start = parseNum(that.text());
