@@ -544,7 +544,7 @@
         "geo": "US",
         "os": 0,
         "release_date": "2026-07-08",
-        "lma_lookup": null,
+        "lma_lookup": "grok-4.5",
         "aa_lookup": "Grok 4.5 (high)",
         "lb_lookup": "Grok 4.5",
         "scatter_default": 1,
