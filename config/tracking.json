@@ -136,7 +136,7 @@
         "os": 0,
         "release_date": "2026-04-16",
         "lma_lookup": "claude-opus-4-7-thinking",
-        "aa_lookup": "Claude Opus 4.7 (max)",
+        "aa_lookup": "Claude Opus 4.7 (Non-reasoning, high)",
         "lb_lookup": "Claude 4.7 Opus Thinking xHigh Effort",
         "scatter_default": 1,
         "cost_output": 25
@@ -520,7 +520,7 @@
         "os": 1,
         "release_date": "2026-04-24",
         "lma_lookup": "deepseek-v4-pro",
-        "aa_lookup": "DeepSeek V4 Pro (Max)",
+        "aa_lookup": "DeepSeek V4 Pro (high)",
         "lb_lookup": "DeepSeek V4 Pro",
         "scatter_default": 1,
         "cost_output": 0.87
