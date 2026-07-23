@@ -281,7 +281,8 @@
         let modeParam = 0;
         let lineMode = 1; // 0 = regression, 1 = frontier staircase
         let paletteMode = 1;
-        let xMode = 0; // 0 = release date, 1 = output cost
+        // ?view= date (default) | cost — which field the X axis plots
+        let xMode = (new URLSearchParams(location.search).get('view') || 'date').toLowerCase() === 'cost' ? 1 : 0;
         // ?xaxis= log (d3 natural $ ticks, default) | even (evenly-spaced log ticks) | linear (linear positions)
         const xAxisScale = (new URLSearchParams(location.search).get('xaxis') || 'even').toLowerCase();
         let bgColor = '#ffffff';
