@@ -12,7 +12,7 @@ def scrape():
     resp.raise_for_status();
     print_step("Parsing HTML and extracting table...")
     soup = BeautifulSoup(resp.text, "html.parser");
-    table = soup.select_one("table.w-full.caption-bottom.text-sm");
+    table = soup.select_one("table.w-full.caption-bottom");
     if not table:
         raise ValueError("LMArena table not found")
     lma_df = extract_table_data(table, extra_selectors="span.text-text-secondary");
@@ -24,13 +24,12 @@ def scrape():
             continue;
         provider_text = "";
         for cell in cells:
-            for span in cell.select("span.text-text-secondary"):
-                txt = " ".join(span.stripped_strings).strip();
+            el = cell.select_one("svg title") or cell.select_one("span.text-text-secondary");
+            if el:
+                txt = " ".join(el.stripped_strings).strip();
                 if txt and any(c.isalpha() for c in txt):
                     provider_text = txt;
                     break;
-            if provider_text:
-                break;
         providers.append(provider_text);
     if len(providers) == len(lma_df):
         lma_df["Provider"] = providers;
