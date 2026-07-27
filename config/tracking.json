@@ -108,7 +108,7 @@
         "geo": "US",
         "os": 0,
         "release_date": "2026-07-24",
-        "lma_lookup": null,
+        "lma_lookup": "claude-opus-5-high",
         "aa_lookup": "Claude Opus 5 (max)",
         "lb_lookup": "Claude 5 Opus Thinking xHigh Effort",
         "scatter_default": 1,
