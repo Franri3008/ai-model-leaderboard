@@ -80,10 +80,10 @@ def _build_payloads(base_dir):
         with open(s) as f:
             payloads["sources"] = json.load(f)
 
-    u = base / "data/untracked_models.json"
-    if u.exists():
-        with open(u) as f:
-            payloads["untracked_models"] = json.load(f)
+    state = base / "data/alert_state.json"
+    if state.exists():
+        with open(state) as f:
+            payloads["alert_state"] = json.load(f)
 
     m = base / "metadata.json"
     if m.exists():

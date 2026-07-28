@@ -3,11 +3,16 @@ import json
 import pandas as pd
 from datetime import datetime
 from pathlib import Path
-from rapidfuzz import process, fuzz
+from rapidfuzz import fuzz
 
 import scraper_aa
 import scraper_lb
 import scraper_lma
+from scripts.alerting import (
+    coerce_seen_registry,
+    register_untracked_models,
+    select_new_tracking_issues,
+)
 from scraper_common import print_step
 
 BASE_DIR = Path(__file__).parent.absolute()
@@ -261,18 +266,88 @@ def _load_history_from_firebase():
     return df[["date", "model", "lma", "aa", "lb"]]
 
 
-def _load_untracked_from_firebase():
-    import os as _os
-    db_url = _os.environ.get("FIREBASE_DATABASE_URL")
-    if not db_url:
+def _read_alert_state_file(path):
+    if not path.exists():
         return None
-    import sys as _sys
-    _sys.path.insert(0, str(BASE_DIR))
-    from scripts.firebase_upload import _init_firebase
-    from firebase_admin import db
-    _init_firebase(db_url)
-    raw = db.reference("untracked_models").get()
-    return raw if isinstance(raw, dict) else {}
+    try:
+        with open(path) as f:
+            raw = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return None
+    return raw if isinstance(raw, dict) else None
+
+
+def _load_alert_state(state_file, legacy_untracked_file, seen_seed_file):
+    state = _read_alert_state_file(state_file) or {}
+    tracking_baseline = "tracking_issues" in state
+    untracked_baseline = "seen_untracked" in state
+    remote_db = None
+    remote_ok = True
+
+    seen_untracked = coerce_seen_registry(state.get("seen_untracked"))
+
+    seed_seen = _read_alert_state_file(seen_seed_file)
+    if seed_seen is not None:
+        seen_untracked = {**seed_seen, **seen_untracked}
+        untracked_baseline = True
+
+    legacy_local = _read_alert_state_file(legacy_untracked_file)
+    if legacy_local is not None:
+        seen_untracked = {**legacy_local, **seen_untracked}
+        untracked_baseline = True
+
+    import os as _os_alert
+    firebase_url = _os_alert.environ.get("FIREBASE_DATABASE_URL")
+    if _os_alert.environ.get("GITHUB_ACTIONS") == "true" and not firebase_url:
+        remote_ok = False
+        print_step(
+            "⚠ FIREBASE_DATABASE_URL is missing in GitHub Actions; email suppressed for safety",
+            "WARN",
+        )
+    elif firebase_url:
+        try:
+            import sys as _sys_alert
+            _sys_alert.path.insert(0, str(BASE_DIR))
+            from scripts.firebase_upload import _init_firebase as _init_alert_fb
+            from firebase_admin import db as _alert_db
+            _init_alert_fb(firebase_url)
+            remote_db = _alert_db
+
+            remote_state = _alert_db.reference("alert_state").get()
+            if isinstance(remote_state, dict):
+                state = remote_state
+                tracking_baseline = True
+                remote_seen = coerce_seen_registry(remote_state.get("seen_untracked"))
+                if remote_seen:
+                    seen_untracked = {**seen_untracked, **remote_seen}
+                    untracked_baseline = True
+            else:
+                legacy_tracking = _alert_db.reference("previous_alerts/tracking_issues").get()
+                if isinstance(legacy_tracking, list):
+                    state["tracking_issues"] = legacy_tracking
+                    tracking_baseline = True
+                elif isinstance(legacy_tracking, dict):
+                    state["tracking_issues"] = list(legacy_tracking.values())
+                    tracking_baseline = True
+
+                legacy_remote = _alert_db.reference("untracked_models").get()
+                if isinstance(legacy_remote, dict):
+                    seen_untracked = {**seen_untracked, **legacy_remote}
+                    untracked_baseline = True
+        except Exception as exc:
+            remote_ok = False
+            print_step(f"⚠ Alert state unavailable; email suppressed for safety: {exc}", "WARN")
+
+    tracking = state.get("tracking_issues")
+    if not isinstance(tracking, (list, dict)):
+        tracking = []
+    elif isinstance(tracking, dict):
+        tracking = list(tracking.values())
+
+    return {
+        "tracking_issues": [str(sig) for sig in tracking],
+        "seen_untracked": seen_untracked,
+    }, tracking_baseline, untracked_baseline, remote_db, remote_ok
 
 def append_history(result, history_file):
     today = datetime.now().strftime("%Y-%m-%d");
@@ -428,11 +503,18 @@ print_step("GENERATING ALERTS", "START")
 print("=" * 80)
 
 today_str = datetime.now().strftime("%Y-%m-%d");
-today_date = datetime.strptime(today_str, "%Y-%m-%d");
 
 alerts_output = [];
 alerts_output.append("LEADERBOARD ALERTS REPORT");
 alerts_output.append("=" * 70);
+
+alert_state_file = BASE_DIR / "data/alert_state.json";
+untracked_file = BASE_DIR / "data/untracked_models.json";
+alert_state, tracking_baseline, untracked_baseline, alert_db, alert_state_ok = _load_alert_state(
+    alert_state_file,
+    untracked_file,
+    BASE_DIR / "config/alert_seen_seed.json",
+);
 
 source_labels = {"lma": "LMArena", "aa": "Artificial Analysis", "lb": "LiveBench"};
 
@@ -459,36 +541,22 @@ def _sig(t):
     return f"{t['model_id']}|{t['source']}|{t['lookup']}"
 
 today_tracking_sigs = [_sig(t) for t in tracking_issues]
-previous_tracking_sigs = set()
+previous_tracking_sigs = set(alert_state["tracking_issues"])
+new_tracking_issues = select_new_tracking_issues(
+    tracking_issues,
+    previous_tracking_sigs,
+    _sig,
+    baseline_ready=tracking_baseline and alert_state_ok,
+)
 
-import os as _os_a
-if _os_a.environ.get("FIREBASE_DATABASE_URL"):
-    try:
-        import sys as _sys_a
-        _sys_a.path.insert(0, str(BASE_DIR))
-        from scripts.firebase_upload import _init_firebase as _init_fb
-        from firebase_admin import db as _db
-        _init_fb(_os_a.environ["FIREBASE_DATABASE_URL"])
-        prev = _db.reference("previous_alerts/tracking_issues").get()
-        if isinstance(prev, list):
-            previous_tracking_sigs = {str(s) for s in prev}
-        elif isinstance(prev, dict):
-            previous_tracking_sigs = {str(s) for s in prev.values()}
-        _db.reference("previous_alerts/tracking_issues").set(today_tracking_sigs)
-    except Exception as _e:
-        print_step(f"⚠ previous_alerts roundtrip skipped: {_e}", "WARN")
-
-new_tracking_sigs = {sig for sig in today_tracking_sigs if sig not in previous_tracking_sigs}
-
-if new_tracking_sigs:
+if new_tracking_issues:
     alerts_output.append("");
     alerts_output.append("─" * 70);
-    alerts_output.append("TRACKING ISSUES — models with lookups that returned no match");
+    alerts_output.append("NEW TRACKING ISSUES — lookups that stopped matching");
     alerts_output.append("─" * 70);
     alerts_output.append("");
-    for t in tracking_issues:
-        marker = " [NEW]" if _sig(t) in new_tracking_sigs else "";
-        alerts_output.append(f"  • {t['model']}{marker} — {t['source']} lookup \"{t['lookup']}\" returned nothing");
+    for t in new_tracking_issues:
+        alerts_output.append(f"  • {t['model']} — {t['source']} lookup \"{t['lookup']}\" returned nothing");
 
 # --- Section 3: NEW UNTRACKED MODELS ---
 print_step("Collecting untracked models across sources...")
@@ -530,30 +598,22 @@ for group in grouped_models:
 
 grouped_models = filtered_groups;
 
-untracked_file = BASE_DIR / "data/untracked_models.json";
-history_untracked = _load_untracked_from_firebase();
-if history_untracked is None:
-    if untracked_file.exists():
-        with open(untracked_file, "r") as f:
-            history_untracked = json.load(f);
-    else:
-        history_untracked = {};
+history_untracked = alert_state["seen_untracked"];
+new_untracked_groups = register_untracked_models(
+    grouped_models,
+    history_untracked,
+    today_str,
+    baseline_ready=untracked_baseline and alert_state_ok,
+);
 
-alerts_output.append("");
-alerts_output.append("─" * 70);
-alerts_output.append("UNTRACKED MODELS — top 30 models not in tracking.json");
-alerts_output.append("─" * 70);
-
-new_models_count = 0;
-
-if grouped_models:
+if new_untracked_groups:
     alerts_output.append("");
-    for group in grouped_models:
+    alerts_output.append("─" * 70);
+    alerts_output.append("NEW UNTRACKED MODELS — newly entered a source top 30");
+    alerts_output.append("─" * 70);
+    alerts_output.append("");
+    for group in new_untracked_groups:
         norm_name = group["norm_name"];
-        if norm_name not in history_untracked:
-            history_untracked[norm_name] = today_str;
-            new_models_count += 1;
-
         display_name = group["instances"][0]["raw_name"];
         sources_info = ", ".join([f"{inst['source']}: '{inst['raw_name']}'" for inst in group["instances"]]);
 
@@ -561,14 +621,9 @@ if grouped_models:
         alerts_output.append(f"    First seen: {history_untracked[norm_name]}");
         alerts_output.append(f"    Sources: {sources_info}");
         alerts_output.append("");
-else:
+elif not new_tracking_issues:
     alerts_output.append("");
-    alerts_output.append("  No untracked models found in the top 30 of any leaderboard.");
-
-current_norms = {g["norm_name"] for g in grouped_models};
-stale_keys = [k for k in history_untracked if k not in current_norms];
-for k in stale_keys:
-    del history_untracked[k];
+    alerts_output.append("No new alerts.");
 
 alert_file = BASE_DIR / "alerts.txt";
 with open(alert_file, "w") as f:
@@ -576,6 +631,27 @@ with open(alert_file, "w") as f:
 
 with open(untracked_file, "w") as f:
     json.dump(history_untracked, f, indent=4);
+
+next_alert_state = {
+    "version": 1,
+    "tracking_issues": today_tracking_sigs,
+    # Store records as a list so model names containing Firebase-forbidden key
+    # characters (such as "/" or "#") remain valid values, not object keys.
+    "seen_untracked": [
+        {"key": key, "first_seen": first_seen}
+        for key, first_seen in sorted(history_untracked.items())
+    ],
+};
+with open(alert_state_file, "w") as f:
+    json.dump(next_alert_state, f, indent=4);
+
+alert_state_persisted = alert_state_ok
+if alert_db is not None and alert_state_ok:
+    try:
+        alert_db.reference("alert_state").set(next_alert_state)
+    except Exception as exc:
+        alert_state_persisted = False
+        print_step(f"⚠ Alert state could not be saved; email suppressed for safety: {exc}", "WARN")
 
 print_step(f"✓ Alerts saved to: {alert_file.absolute()}", "SUCCESS")
 
@@ -601,55 +677,49 @@ html.append('<!DOCTYPE html><html><body style="font-family:-apple-system,BlinkMa
 html.append(f'<h2 style="margin:0 0 4px 0;">Leaderboard alerts</h2>')
 html.append(f'<div style="color:#666;font-size:13px;margin-bottom:18px;">{today_str}</div>')
 
-if new_tracking_sigs:
-    html.append('<h3 style="margin:18px 0 6px 0;font-size:15px;color:#444;border-bottom:1px solid #ddd;padding-bottom:4px;">Tracking issues — lookups returning no match</h3>')
+if new_tracking_issues:
+    html.append('<h3 style="margin:18px 0 6px 0;font-size:15px;color:#444;border-bottom:1px solid #ddd;padding-bottom:4px;">New tracking issues — lookups that stopped matching</h3>')
     html.append('<table style="width:100%;border-collapse:collapse;font-size:13px;">')
     html.append('<thead><tr>'
                 '<th style="text-align:left;padding:6px 8px;background:#f5f5f5;border-bottom:1px solid #ddd;">Model</th>'
                 '<th style="text-align:left;padding:6px 8px;background:#f5f5f5;border-bottom:1px solid #ddd;">Source</th>'
                 '<th style="text-align:left;padding:6px 8px;background:#f5f5f5;border-bottom:1px solid #ddd;">Lookup</th>'
                 '</tr></thead><tbody>')
-    for t in tracking_issues:
-        is_new = _sig(t) in new_tracking_sigs
-        row_style = f'background:{NEW_BG};border-left:{NEW_BORDER_L};' if is_new else ''
-        badge = NEW_BADGE if is_new else ''
+    for t in new_tracking_issues:
         html.append(
-            f'<tr style="{row_style}">'
-            f'<td style="padding:6px 8px;border-bottom:1px solid #eee;">{_esc(t["model"])}{badge}</td>'
+            f'<tr style="background:{NEW_BG};border-left:{NEW_BORDER_L};">'
+            f'<td style="padding:6px 8px;border-bottom:1px solid #eee;">{_esc(t["model"])}{NEW_BADGE}</td>'
             f'<td style="padding:6px 8px;border-bottom:1px solid #eee;color:#555;">{_esc(t["source"])}</td>'
             f'<td style="padding:6px 8px;border-bottom:1px solid #eee;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#333;">{_esc(t["lookup"])}</td>'
             f'</tr>'
         )
     html.append('</tbody></table>')
 
-# Section 2: Untracked models (top 30 by appearance order)
-top_untracked = grouped_models[:30]
-html.append('<h3 style="margin:24px 0 6px 0;font-size:15px;color:#444;border-bottom:1px solid #ddd;padding-bottom:4px;">Untracked models — top 30 not in tracking.json</h3>')
-if top_untracked:
+# Section 2: only models that have never been alerted before.
+if new_untracked_groups:
+    html.append('<h3 style="margin:24px 0 6px 0;font-size:15px;color:#444;border-bottom:1px solid #ddd;padding-bottom:4px;">New untracked models — newly entered a source top 30</h3>')
     html.append('<table style="width:100%;border-collapse:collapse;font-size:13px;">')
     html.append('<thead><tr>'
                 '<th style="text-align:left;padding:6px 8px;background:#f5f5f5;border-bottom:1px solid #ddd;">Model</th>'
                 '<th style="text-align:left;padding:6px 8px;background:#f5f5f5;border-bottom:1px solid #ddd;">First seen</th>'
                 '<th style="text-align:left;padding:6px 8px;background:#f5f5f5;border-bottom:1px solid #ddd;">Sources</th>'
                 '</tr></thead><tbody>')
-    for group in top_untracked:
+    for group in new_untracked_groups:
         norm = group["norm_name"]
         first_seen = history_untracked.get(norm, today_str)
-        is_new = first_seen == today_str
-        row_style = f'background:{NEW_BG};border-left:{NEW_BORDER_L};' if is_new else ''
-        badge = NEW_BADGE if is_new else ''
         display = group["instances"][0]["raw_name"]
         srcs = ", ".join(f"{i['source']}: {i['raw_name']}" for i in group["instances"])
         html.append(
-            f'<tr style="{row_style}">'
-            f'<td style="padding:6px 8px;border-bottom:1px solid #eee;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">{_esc(display)}{badge}</td>'
+            f'<tr style="background:{NEW_BG};border-left:{NEW_BORDER_L};">'
+            f'<td style="padding:6px 8px;border-bottom:1px solid #eee;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">{_esc(display)}{NEW_BADGE}</td>'
             f'<td style="padding:6px 8px;border-bottom:1px solid #eee;color:#555;">{_esc(first_seen)}</td>'
             f'<td style="padding:6px 8px;border-bottom:1px solid #eee;color:#666;font-size:12px;">{_esc(srcs)}</td>'
             f'</tr>'
         )
     html.append('</tbody></table>')
-else:
-    html.append('<p style="color:#666;font-style:italic;">No untracked models in the top 30 of any leaderboard.</p>')
+
+if not new_tracking_issues and not new_untracked_groups:
+    html.append('<p style="color:#666;font-style:italic;">No new alerts.</p>')
 
 html.append('</body></html>')
 
@@ -678,9 +748,12 @@ metadata = {
     },
     "alerts_summary": {
         "tracking_issues": len(tracking_issues),
-        "new_tracking_issues": len(new_tracking_sigs),
-        "new_untracked_models": new_models_count,
-        "send_email": bool(new_models_count or new_tracking_sigs)
+        "new_tracking_issues": len(new_tracking_issues),
+        "new_untracked_models": len(new_untracked_groups),
+        "state_persisted": alert_state_persisted,
+        "send_email": bool(
+            alert_state_persisted and (new_untracked_groups or new_tracking_issues)
+        )
     },
     "history_changes": changes_count
 };

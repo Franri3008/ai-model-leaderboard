@@ -6,8 +6,19 @@ on:
   push:
     branches: [main]
     paths:
+      - '.github/workflows/update.yml'
       - 'config/tracking.json'
+      - 'config/alert_seen_seed.json'
+      - 'requirements.txt'
+      - 'scraper_*.py'
+      - 'scripts/alerting.py'
+      - 'scripts/firebase_upload.py'
+      - 'update.py'
   workflow_dispatch:
+
+concurrency:
+  group: leaderboard-update
+  cancel-in-progress: false
 
 jobs:
   update:
@@ -36,15 +47,15 @@ jobs:
 
       - name: Build email subject
         id: subj
-        if: always() && hashFiles('metadata.json') != ''
+        if: success() && hashFiles('metadata.json') != ''
         run: |
           S=$(python -c "import json; a=json.load(open('metadata.json'))['alerts_summary']; print(a['send_email'], a['new_untracked_models'], a['new_tracking_issues'])")
           read SEND NEW NEWTRACK <<< "$S"
           echo "send=$SEND" >> "$GITHUB_OUTPUT"
-          echo "subject=Leaderboard $(date -u +%Y-%m-%d) — ${NEW} new untracked, ${NEWTRACK} dropped from tracking" >> "$GITHUB_OUTPUT"
+          echo "subject=Leaderboard $(date -u +%Y-%m-%d) — ${NEW} new model(s), ${NEWTRACK} new tracking issue(s)" >> "$GITHUB_OUTPUT"
 
       - name: Email the alerts
-        if: always() && steps.subj.outputs.send == 'True' && hashFiles('alerts.html') != ''
+        if: success() && steps.subj.outputs.send == 'True' && hashFiles('alerts.html') != ''
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.MAIL_SERVER }}

@@ -79,3 +79,12 @@ date;model;lma;aa;lb
 ```
 
 To reconstruct scores for any past date, take the latest entry per model on or before that date.
+
+## Email alerts
+
+Alert emails are delta-only:
+
+- A tracking issue is included only when a configured lookup has newly stopped matching.
+- An untracked model is included only the first time it enters a source's top 30.
+- Previously seen models are remembered permanently, even after leaving the top 30.
+- No email is sent when there is no new alert or when the Firebase alert state cannot be read or saved.
