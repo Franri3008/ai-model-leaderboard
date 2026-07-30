@@ -110,7 +110,7 @@
         "release_date": "2026-07-24",
         "lma_lookup": "claude-opus-5-max",
         "aa_lookup": "Claude Opus 5 (max)",
-        "lb_lookup": "Claude 5 Opus Thinking xHigh Effort",
+        "lb_lookup": "Claude 5 Opus Thinking Max Effort",
         "scatter_default": 1,
         "cost_output": 25
     },
