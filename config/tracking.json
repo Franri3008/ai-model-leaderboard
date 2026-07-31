@@ -266,7 +266,7 @@
         "aa_lookup": "GPT-5.6 Terra (max)",
         "lb_lookup": "GPT-5.6 Terra Max Effort",
         "scatter_default": 1,
-        "cost_output": 15
+        "cost_output": 12
     },
     {
         "model": "gpt-5-6-luna",
@@ -279,7 +279,7 @@
         "aa_lookup": "GPT-5.6 Luna (max)",
         "lb_lookup": "GPT-5.6 Luna Max Effort",
         "scatter_default": 1,
-        "cost_output": 6
+        "cost_output": 1.20
     },
     {
         "model": "gpt-5-5",
