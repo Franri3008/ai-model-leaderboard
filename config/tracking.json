@@ -482,8 +482,8 @@
         "os": 0,
         "release_date": "2026-05-19",
         "lma_lookup": "qwen3.8-max",
-        "aa_lookup": "Qwen3.8 Max",
-        "lb_lookup": null,
+        "aa_lookup": "Qwen 3.8 Max",
+        "lb_lookup": "Qwen 3.8 Max",
         "scatter_default": 1,
         "cost_output": 6
     },
