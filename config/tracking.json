@@ -548,7 +548,7 @@
         "release_date": "2026-04-24",
         "lma_lookup": "deepseek-v4-flash-thinking",
         "aa_lookup": "DeepSeek V4 Flash 0731 (max)",
-        "lb_lookup": "DeepSeek V4 Flash",
+        "lb_lookup": "DeepSeek V4 Flash 0731",
         "cost_output": 0.28
     },
     {
