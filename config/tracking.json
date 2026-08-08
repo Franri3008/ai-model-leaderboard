@@ -671,6 +671,19 @@
         "cost_output": 5
     },
     {
+        "model": "muse-spark-1-2",
+        "name": "Muse Spark 1.2",
+        "logo": "meta",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-08-05",
+        "lma_lookup": null,
+        "aa_lookup": "Muse Spark 1.2 (xhigh)",
+        "lb_lookup": null,
+        "scatter_default": 1,
+        "cost_output": 4.25
+    },
+    {
         "model": "muse-spark-1-1",
         "name": "Muse Spark 1.1",
         "logo": "meta",
@@ -813,7 +826,7 @@
         "os": 1,
         "release_date": "2026-07-16",
         "lma_lookup": "kimi-k3-max",
-        "aa_lookup": "Kimi K3",
+        "aa_lookup": "Kimi K3 (max)",
         "lb_lookup": "Kimi K3",
         "cost_output": 15
     },
