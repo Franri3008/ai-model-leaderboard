@@ -577,6 +577,19 @@
         "scatter_default": 1
     },
     {
+        "model": "grok-4-6",
+        "name": "Grok 4.6",
+        "logo": "grok",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-08-12",
+        "lma_lookup": "grok-4.6-high",
+        "aa_lookup": "Grok 4.6 (high)",
+        "lb_lookup": "Grok 4.6 xHigh Effort",
+        "scatter_default": 1,
+        "cost_output": 6.0
+    },
+    {
         "model": "grok-4-5",
         "name": "Grok 4.5",
         "logo": "grok",
