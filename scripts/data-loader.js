@@ -83,20 +83,31 @@
       const modelToCost = {};
       const modelToDeactivated = {};
       const trackingMap = {};
+      const modelIcons = {};
+      const modelToLogo = {};
+      const modelToOrg = {};
       if (trackingData) {
         trackingData.forEach(t => {
-          modelToOs[t.model] = t.os;
-          if (t.geo) modelToGeo[t.model] = t.geo === 'USA' ? 'US' : t.geo;
-          if (Number(t.deactivated) === 1) modelToDeactivated[t.model] = true;
+          const model = String(t.model || '').trim();
+          const logo = String(t.logo || '').trim();
+          if (!model) return;
+          modelToOs[model] = t.os;
+          if (t.geo) modelToGeo[model] = t.geo === 'USA' ? 'US' : t.geo;
+          if (Number(t.deactivated) === 1) modelToDeactivated[model] = true;
           if (t.release_date) {
             const rd = new Date(t.release_date);
-            if (!isNaN(rd.getTime())) modelToReleaseDate[t.model] = rd;
+            if (!isNaN(rd.getTime())) modelToReleaseDate[model] = rd;
           }
           if (t.cost_output != null && t.cost_output !== '') {
             const c = Number(t.cost_output);
-            if (!isNaN(c) && c > 0) modelToCost[t.model] = c;
+            if (!isNaN(c) && c > 0) modelToCost[model] = c;
           }
-          trackingMap[t.model] = t;
+          if (logo) {
+            modelIcons[model] = `logos/${logo}.png`;
+            modelToLogo[model] = logo;
+            if (idToOrg[logo]) modelToOrg[model] = idToOrg[logo];
+          }
+          trackingMap[model] = t;
         });
         if (snapshotParam) {
           rawData.forEach(d => {
@@ -110,9 +121,6 @@
         }
       }
 
-      const modelIcons = {};
-      const modelToLogo = {};
-      const modelToOrg = {};
       rawData.forEach(d => {
         const model = String(d.model || '').trim();
         const name = String(d.name || '').trim();
