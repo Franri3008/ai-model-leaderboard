@@ -610,7 +610,7 @@
         "os": 0,
         "release_date": "2026-08-12",
         "lma_lookup": "grok-4.6-high",
-        "aa_lookup": "Grok 4.6 (high)",
+        "aa_lookup": "Grok 4.6 (xhigh)",
         "lb_lookup": "Grok 4.6",
         "scatter_default": 1,
         "cost_output": 6.0
