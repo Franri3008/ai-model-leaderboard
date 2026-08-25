@@ -15,6 +15,11 @@ def select_new_tracking_issues(issues, previous_signatures, signature, baseline_
     previous = {str(value) for value in previous_signatures}
     return [issue for issue in issues if signature(issue) not in previous]
 
+
+def count_broken_models(issues):
+    return len({str(issue["model_id"]) for issue in issues})
+
+
 def register_untracked_models(groups, seen, today, baseline_ready):
     new_groups = []
     for group in groups:

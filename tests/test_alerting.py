@@ -5,6 +5,7 @@ from pathlib import Path
 
 from scripts.alerting import (
     coerce_seen_registry,
+    count_broken_models,
     register_untracked_models,
     select_new_tracking_issues,
 )
@@ -85,6 +86,15 @@ class AlertDeltaTests(unittest.TestCase):
             coerce_seen_registry(records),
             {"vendor/model#preview": "2026-07-28"},
         )
+
+    def test_broken_model_count_deduplicates_source_lookups(self):
+        issues = [
+            {"model_id": "model-a", "source": "LMArena"},
+            {"model_id": "model-a", "source": "LiveBench"},
+            {"model_id": "model-b", "source": "Artificial Analysis"},
+        ]
+
+        self.assertEqual(count_broken_models(issues), 2)
 
 
 if __name__ == "__main__":

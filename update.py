@@ -1,7 +1,7 @@
 import re
 import json
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from rapidfuzz import fuzz
 
@@ -10,6 +10,7 @@ import scraper_lb
 import scraper_lma
 from scripts.alerting import (
     coerce_seen_registry,
+    count_broken_models,
     register_untracked_models,
     select_new_tracking_issues,
 )
@@ -736,7 +737,9 @@ print_step("SAVING METADATA", "START")
 print("=" * 80)
 
 metadata = {
-    "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    "last_updated": datetime.now(timezone.utc)
+    .isoformat(timespec="milliseconds")
+    .replace("+00:00", "Z"),
     "stats": {
         "models_tracked": len(fixed_df),
         "matches_found": matches_found,
@@ -748,6 +751,7 @@ metadata = {
     },
     "alerts_summary": {
         "tracking_issues": len(tracking_issues),
+        "broken_models": count_broken_models(tracking_issues),
         "new_tracking_issues": len(new_tracking_issues),
         "new_untracked_models": len(new_untracked_groups),
         "state_persisted": alert_state_persisted,
