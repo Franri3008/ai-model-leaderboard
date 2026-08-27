@@ -423,6 +423,19 @@
         "cost_output": 0.6
     },
     {
+        "model": "glm-5-3-flash",
+        "name": "GLM 5.3 Flash",
+        "logo": "zai",
+        "geo": "China",
+        "os": 1,
+        "release_date": "2026-08-26",
+        "lma_lookup": null,
+        "aa_lookup": "GLM-5.3-Flash",
+        "lb_lookup": "GLM-5.3 Flash",
+        "scatter_default": 0,
+        "cost_output": 0.25
+    },
+    {
         "model": "glm-5-3",
         "name": "GLM 5.3",
         "logo": "zai",
@@ -431,7 +444,7 @@
         "release_date": "2026-08-19",
         "lma_lookup": "glm-5.3-max",
         "aa_lookup": "GLM-5.3 (max)",
-        "lb_lookup": null,
+        "lb_lookup": "GLM-5.3",
         "scatter_default": 1,
         "cost_output": 4.4
     },
