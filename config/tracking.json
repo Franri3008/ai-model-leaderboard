@@ -433,7 +433,7 @@
         "aa_lookup": "GLM-5.3-Flash",
         "lb_lookup": "GLM-5.3 Flash",
         "scatter_default": 0,
-        "cost_output": 0.25
+        "cost_output": 0.5
     },
     {
         "model": "glm-5-3",
