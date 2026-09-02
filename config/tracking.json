@@ -115,6 +115,20 @@
         "cost_output": 2.5
     },
     {
+        "model": "claude-fable-5-1",
+        "name": "Claude Fable 5.1",
+        "logo": "claude",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-09-01",
+        "lma_lookup": null,
+        "aa_lookup": "Claude Fable 5.1 (max with fallback)",
+        "lb_lookup": "Claude Fable 5.1 Max Effort",
+        "scatter_default": 1,
+        "deactivated": 0,
+        "cost_output": 50
+    },
+    {
         "model": "claude-opus-5",
         "name": "Claude Opus 5",
         "logo": "claude",
