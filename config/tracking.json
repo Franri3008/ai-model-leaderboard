@@ -1,5 +1,18 @@
 [
     {
+        "model": "gemini-3-8-flash",
+        "name": "Gemini 3.8 Flash",
+        "logo": "gemini",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-09-02",
+        "lma_lookup": "gemini-3.8-flash-high",
+        "aa_lookup": "Gemini 3.8 Flash (high)",
+        "lb_lookup": "Gemini 3.8 Flash High",
+        "scatter_default": 1,
+        "cost_output": 3.75
+    },
+    {
         "model": "gemini-3-7-flash",
         "name": "Gemini 3.7 Flash",
         "logo": "gemini",
@@ -10,7 +23,7 @@
         "aa_lookup": "Gemini 3.7 Flash (high)",
         "lb_lookup": "Gemini 3.7 Flash High",
         "scatter_default": 1,
-        "cost_output": 0.94
+        "cost_output": 3.75
     },
     {
         "model": "gemini-3-6-flash",
@@ -735,6 +748,19 @@
         "aa_lookup": "Magistral Medium 1.2",
         "lb_lookup": null,
         "cost_output": 5
+    },
+    {
+        "model": "muse-spark-1-3",
+        "name": "Muse Spark 1.3",
+        "logo": "meta",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-09-02",
+        "lma_lookup": null,
+        "aa_lookup": "Muse Spark 1.3 (max)",
+        "lb_lookup": "Muse Spark 1.3 xHigh Effort",
+        "scatter_default": 1,
+        "cost_output": 4.25
     },
     {
         "model": "muse-spark-1-2",
