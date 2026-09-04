@@ -283,6 +283,19 @@
         "cost_output": 5
     },
     {
+        "model": "gpt-6-astra",
+        "name": "GPT 6 Astra",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-09-03",
+        "lma_lookup": null,
+        "aa_lookup": "GPT-6 Astra (max)",
+        "lb_lookup": null,
+        "scatter_default": 1,
+        "cost_output": 50
+    },
+    {
         "model": "gpt-5-6-sol",
         "name": "GPT 5.6 Sol",
         "logo": "gpt",
@@ -302,7 +315,7 @@
         "geo": "US",
         "os": 0,
         "release_date": "2026-07-09",
-        "lma_lookup": null,
+        "lma_lookup": "gpt-5.6-terra-xhigh",
         "aa_lookup": "GPT-5.6 Terra (max)",
         "lb_lookup": "GPT-5.6 Terra Max Effort",
         "scatter_default": 1,
@@ -315,7 +328,7 @@
         "geo": "US",
         "os": 0,
         "release_date": "2026-07-09",
-        "lma_lookup": null,
+        "lma_lookup": "gpt-5.6-luna-xhigh",
         "aa_lookup": "GPT-5.6 Luna (max)",
         "lb_lookup": "GPT-5.6 Luna Max Effort",
         "scatter_default": 1,
