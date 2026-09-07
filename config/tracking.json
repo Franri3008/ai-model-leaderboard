@@ -291,7 +291,7 @@
         "release_date": "2026-09-03",
         "lma_lookup": null,
         "aa_lookup": "GPT-6 Astra (max)",
-        "lb_lookup": null,
+        "lb_lookup": "GPT-6 Astra Max Effort",
         "scatter_default": 1,
         "cost_output": 50
     },
