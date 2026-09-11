@@ -17,6 +17,8 @@ from scripts.alerting import (
 from scraper_common import print_step
 
 BASE_DIR = Path(__file__).parent.absolute()
+AA_METADATA = ["aa_estimated", "aa_version", "aa_slug"]
+HISTORY_COLUMNS = ["date", "model", "lma", "aa", "lb", *AA_METADATA]
 
 def normalize_model_name(name):
     norm = str(name).lower();
@@ -238,6 +240,9 @@ def build_sources_json(lma_df, aa_df, lb_df, fixed_df, models_json_path, output_
                     "tracked": False,
                 });
 
+            if key == "aa":
+                rows[-1].update({"aa_estimated": int(r["aa_estimated"]), "aa_version": r["aa_version"], "aa_slug": r["aa_slug"]});
+
         sources[key] = rows;
 
     with open(output_path, "w") as f:
@@ -259,12 +264,12 @@ def _load_history_from_firebase():
     if isinstance(raw, dict):
         raw = list(raw.values())
     if not raw:
-        return pd.DataFrame(columns=["date", "model", "lma", "aa", "lb"])
+        return pd.DataFrame(columns=HISTORY_COLUMNS)
     df = pd.DataFrame([r for r in raw if r])
-    for col in ["date", "model", "lma", "aa", "lb"]:
+    for col in HISTORY_COLUMNS:
         if col not in df.columns:
             df[col] = None
-    return df[["date", "model", "lma", "aa", "lb"]]
+    return df[HISTORY_COLUMNS]
 
 
 def _read_alert_state_file(path):
@@ -358,17 +363,20 @@ def append_history(result, history_file):
         if history_file.exists():
             history = pd.read_csv(history_file, sep=";");
         else:
-            history = pd.DataFrame(columns=["date", "model", "lma", "aa", "lb"]);
+            history = pd.DataFrame(columns=HISTORY_COLUMNS);
 
+    for col in AA_METADATA:
+        if col not in history:
+            history[col] = None
     new_rows = [];
     for _, row in result.iterrows():
         prev = history[history["model"] == row["model"]];
         if prev.empty:
-            new_rows.append({"date": today, "model": row["model"], "lma": row["lma"], "aa": row["aa"], "lb": row["lb"]});
+            new_rows.append({"date": today, **{col: row[col] for col in HISTORY_COLUMNS if col != "date"}});
         else:
             last = prev.iloc[-1];
             changed = False;
-            for col in ["lma", "aa", "lb"]:
+            for col in ["lma", "aa", "lb", *AA_METADATA]:
                 old_val = last[col];
                 new_val = row[col];
                 if pd.isna(old_val) and pd.isna(new_val):
@@ -376,11 +384,12 @@ def append_history(result, history_file):
                 if pd.isna(old_val) != pd.isna(new_val):
                     changed = True;
                     break;
-                if float(old_val) != float(new_val):
+                values_differ = (str(old_val) != str(new_val)) if col in ["aa_version", "aa_slug"] else (float(old_val) != float(new_val))
+                if values_differ:
                     changed = True;
                     break;
             if changed:
-                new_rows.append({"date": today, "model": row["model"], "lma": row["lma"], "aa": row["aa"], "lb": row["lb"]});
+                new_rows.append({"date": today, **{col: row[col] for col in HISTORY_COLUMNS if col != "date"}});
 
     if new_rows:
         history = pd.concat([history, pd.DataFrame(new_rows)], ignore_index=True);
@@ -442,6 +451,8 @@ result = fixed_df[['model', 'name', 'logo', 'geo']].copy();
 result['lma'] = None;
 result['aa'] = None;
 result['lb'] = None;
+for column in AA_METADATA:
+    result[column] = None
 
 SOURCES = [
     {"key": "lma", "df": lma_df, "lookup_col": "lma_lookup", "model_kw": ["model"], "score_kw": ["arena", "elo", "score", "rating"], "type": "int"},
@@ -458,6 +469,10 @@ for idx, row in fixed_df.iterrows():
         if score is not None:
             result.at[idx, src["key"]] = score;
             matches_found[src["key"]] += 1;
+            if src["key"] == "aa":
+                matched = aa_df[aa_df["Model"].str.strip().str.lower() == str(row["aa_lookup"]).strip().lower()].iloc[0]
+                for column in AA_METADATA:
+                    result.at[idx, column] = matched[column]
 
 print_step(f"Matches found - LMArena: {matches_found['lma']}, AA: {matches_found['aa']}, LiveBench: {matches_found['lb']}")
 

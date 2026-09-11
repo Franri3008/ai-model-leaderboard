@@ -93,6 +93,7 @@
           name: String(d.name || '').trim(),
           score: parseNum(d.score),
           untracked: !d.tracked,
+          providerEstimated: key === 'aa' && Number(d.aa_estimated) === 1,
           deactivated: !!(modelToDeactivated && modelToDeactivated[String(d.id || '').trim()])
         }));
       } else {
@@ -108,7 +109,10 @@
               untracked = true;
             }
           }
-          return { model, name: String(d.name || '').trim(), score, untracked, deactivated: !!(modelToDeactivated && modelToDeactivated[model]) };
+          const historical = lastTrackedScores && lastTrackedScores[model] && lastTrackedScores[model][key];
+          const providerEstimated = key === 'aa' && (cur > 0
+            ? Number(d.aa_estimated) === 1 : !!(historical && historical.providerEstimated));
+          return { model, name: String(d.name || '').trim(), score, untracked, providerEstimated, deactivated: !!(modelToDeactivated && modelToDeactivated[model]) };
         });
       }
     } else {

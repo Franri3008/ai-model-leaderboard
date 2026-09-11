@@ -10,8 +10,8 @@ ALERTS_RETENTION_DAYS = 7
 
 
 _NUMERIC_COLUMNS = {
-    "processed": {"lma": "int", "aa": "int", "lb": "float"},
-    "history":   {"lma": "int", "aa": "int", "lb": "float"},
+    "processed": {"lma": "int", "aa": "int", "lb": "float", "aa_estimated": "int"},
+    "history":   {"lma": "int", "aa": "int", "lb": "float", "aa_estimated": "int"},
 }
 
 

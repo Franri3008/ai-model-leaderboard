@@ -552,6 +552,8 @@
                     logo: modelToLogo[d.model] || '',
                     os: modelToOs[d.model] !== undefined ? modelToOs[d.model] : 0,
                     untracked: !!d.untracked,
+                    providerEstimated: !!d.providerEstimated,
+                    estimates: d.estimates,
                     deactivated: isDeactivationActive(d.model)
                 };
             }).filter(Boolean);
@@ -916,7 +918,7 @@
                 .style('opacity', 1);
 
             const renderCell = (model, key, currentScore, formatter, estimate) =>
-                LB.tooltip.renderScoreCell(model, key, currentScore, formatter, lastTrackedScores, estimate);
+                LB.tooltip.renderScoreCell(model, key, currentScore, formatter, lastTrackedScores, estimate, key === 'aa' && rawData.some(r => r.model === model && Number(r.aa_estimated) === 1));
 
             layers.dots.selectAll('circle')
                 .on('mouseover', function (event, d) {
@@ -951,7 +953,9 @@
                             + relRow + costRow
                             + `</table>`;
                     } else {
-                        const scoreCell = d.untracked
+                        const scoreCell = d.providerEstimated
+                            ? `${fmt(d.score)} (AA estimate)`
+                            : d.untracked
                             ? `<span style="color:#888;">${fmt(d.score)}</span> ${LB.tooltip.badgeHtml}`
                             : fmt(d.score);
                         anyUntracked = !!d.untracked;

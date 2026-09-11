@@ -548,6 +548,8 @@
       }
 
       scored.forEach(d => {
+        const raw = snapshotRows.find(r => String(r.model || '').trim() === d.model);
+        d.providerEstimated = !!raw && Number(raw.aa_estimated) === 1;
         d.name = modelNames[d.model] || d.model;
         d.icon = modelIcons[d.model] || '';
         d.deactivated = !ignoreDeact && !!(trackingMap[d.model] && Number(trackingMap[d.model].deactivated) === 1);
@@ -737,7 +739,7 @@
         html += `<table style="width:100%;margin-top:4px;border-spacing:0;">`;
         html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Date</td><td style="text-align:right;padding:2px 0;">${dateLabel}</td></tr>`;
         html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LMArena</td><td style="text-align:right;padding:2px 0;">${d.lma > 0 ? Math.round(d.lma).toLocaleString() : '—'}</td></tr>`;
-        html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Artificial Analysis</td><td style="text-align:right;padding:2px 0;">${d.aa > 0 ? Math.round(d.aa) : '—'}</td></tr>`;
+        html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Artificial Analysis</td><td style="text-align:right;padding:2px 0;">${d.aa > 0 ? Math.round(d.aa) + (d.providerEstimated ? ' (AA estimate)' : '') : '—'}</td></tr>`;
         html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LiveBench</td><td style="text-align:right;padding:2px 0;">${d.lb > 0 ? d.lb.toFixed(2) : '—'}</td></tr>`;
         html += `</table>`;
         if (d.deactivated) {

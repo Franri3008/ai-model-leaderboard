@@ -134,7 +134,7 @@
         "geo": "US",
         "os": 0,
         "release_date": "2026-09-01",
-        "lma_lookup": null,
+        "lma_lookup": "claude-fable-5.1-max",
         "aa_lookup": "Claude Fable 5.1 (max with fallback)",
         "lb_lookup": "Claude Fable 5.1 Max Effort",
         "scatter_default": 1,
@@ -835,7 +835,7 @@
         "os": 1,
         "release_date": "2026-03-14",
         "lma_lookup": "nvidia-nemotron-3-super-120b-a12b",
-        "aa_lookup": "NVIDIA Nemotron 3 Super",
+        "aa_lookup": "Nemotron 3 Super",
         "lb_lookup": null,
         "scatter_default": 1
     },
@@ -870,7 +870,7 @@
         "os": 1,
         "release_date": "2025-12-15",
         "lma_lookup": "nvidia-nemotron-3-nano-30b-a3b-bf16",
-        "aa_lookup": "NVIDIA Nemotron 3 Nano",
+        "aa_lookup": "Nemotron 3 Nano",
         "lb_lookup": null
     },
     {

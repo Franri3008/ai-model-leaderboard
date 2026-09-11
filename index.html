@@ -290,7 +290,8 @@
     const lighten = LB.util.lighten;
     const clampToDomain = LB.util.clampToDomain;
     function renderScoreCell(model, key, currentScore, formatter, estimate) {
-      return LB.tooltip.renderScoreCell(model, key, currentScore, formatter, lastTrackedScores, estimate);
+      const raw = rawData.find(r => r.model === model);
+      return LB.tooltip.renderScoreCell(model, key, currentScore, formatter, lastTrackedScores, estimate, key === 'aa' && raw && Number(raw.aa_estimated) === 1);
     }
     function isDeactivated(model) {
       return !!(modelToDeactivated && modelToDeactivated[model]);
@@ -493,6 +494,8 @@
         aaSegment: d.aaSegment || 0,
         lbSegment: d.lbSegment || 0,
         untracked: !!d.untracked,
+        providerEstimated: !!d.providerEstimated,
+        estimates: d.estimates,
         deactivated: isDeactivationActive(d.model)
       }));
     }
@@ -845,7 +848,9 @@
             html += LB.tooltip.deactivatedDisclaimerHtml;
           }
         } else {
-          const scoreHtml = d.untracked
+          const scoreHtml = d.providerEstimated
+            ? `${fmt(d.total)} (AA estimate)`
+            : d.untracked
             ? `<span style="color:#888;">${fmt(d.total)}</span> <span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#888;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;vertical-align:middle;">!</span>`
             : fmt(d.total);
           html = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name || d.id}</b>${modelToOrg[d.model] ? '<br><span style="font-size:0.9em;">' + modelToOrg[d.model] + '</span>' : ''}</div>`;
@@ -1156,7 +1161,9 @@
             html += LB.tooltip.deactivatedDisclaimerHtml;
           }
         } else {
-          const scoreHtml = d.untracked
+          const scoreHtml = d.providerEstimated
+            ? `${fmt(d.total)} (AA estimate)`
+            : d.untracked
             ? `<span style="color:#888;">${fmt(d.total)}</span> <span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#888;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;vertical-align:middle;">!</span>`
             : fmt(d.total);
           html = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name || d.id}</b>${modelToOrg[d.model] ? '<br><span style="font-size:0.9em;">' + modelToOrg[d.model] + '</span>' : ''}</div>`;

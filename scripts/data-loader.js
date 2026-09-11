@@ -30,7 +30,7 @@
         if (v <= 0) return;
         const existing = out[m][k];
         if (!existing || row.date >= existing.date) {
-          out[m][k] = { value: v, date: row.date };
+          out[m][k] = { value: v, date: row.date, providerEstimated: k === 'aa' && Number(row.aa_estimated) === 1 };
         }
       });
     });
@@ -71,7 +71,7 @@
       fetchHistory(),
       fetchSources()
     ]).then(([rawData, modelsData, trackingData, historyData, sourcesData]) => {
-      const lastTrackedScores = buildLastTrackedScores(historyData);
+      const lastTrackedScores = buildLastTrackedScores(snapshotParam ? historyData.filter(row => row.date <= normalizeSnapshotDate(snapshotParam)) : historyData);
 
       const idToColor = {};
       const idToOrg = {};
