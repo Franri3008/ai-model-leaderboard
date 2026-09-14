@@ -953,9 +953,7 @@
                             + relRow + costRow
                             + `</table>`;
                     } else {
-                        const scoreCell = d.providerEstimated
-                            ? `${fmt(d.score)} (AA estimate)`
-                            : d.untracked
+                        const scoreCell = d.untracked
                             ? `<span style="color:#888;">${fmt(d.score)}</span> ${LB.tooltip.badgeHtml}`
                             : fmt(d.score);
                         anyUntracked = !!d.untracked;

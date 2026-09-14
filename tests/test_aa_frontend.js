@@ -5,9 +5,9 @@ require('../scripts/aggregation.js');
 require('../scripts/tooltip.js');
 require('../scripts/data-loader.js');
 
-test('AA provider estimates are distinct from our imputed estimates', () => {
+test('AA scores display without provider labels while our imputed estimates stay labelled', () => {
   const cell = LB.tooltip.renderScoreCell('gpt', 'aa', 39, String, {}, null, true);
-  assert.equal(cell.html, '39 (AA estimate)');
+  assert.equal(cell.html, '39');
   assert.equal(cell.estimated, undefined);
   const imputed = LB.tooltip.renderScoreCell('gpt', 'aa', 0, String, {}, 39);
   assert.equal(imputed.estimated, true);
@@ -38,5 +38,7 @@ test('snapshot fallbacks cannot leak future AA scores or estimate status', async
   assert.equal(state.lastTrackedScores.gpt.aa.providerEstimated, false);
   const cell = LB.tooltip.renderScoreCell('gpt', 'aa', 0, String,
     {gpt: {aa: {value: 39, providerEstimated: true}}});
-  assert.ok(cell.html.includes('AA estimate'));
+  assert.ok(!cell.html.includes('AA estimate'));
+  assert.ok(cell.html.includes('39'));
+  assert.equal(cell.untracked, true);
 });

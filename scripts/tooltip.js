@@ -16,11 +16,11 @@
   const DEACTIVATED_COLOR = '#9ca3af';
 
   function renderScoreCell(model, key, currentScore, formatter, lastTrackedScores, estimate, providerEstimated) {
-    if (currentScore > 0) return { html: formatter(currentScore) + (providerEstimated ? ' (AA estimate)' : ''), untracked: false };
+    if (currentScore > 0) return { html: formatter(currentScore), untracked: false };
     const last = lastTrackedScores && lastTrackedScores[model] && lastTrackedScores[model][key];
     if (last && last.value > 0) {
       return {
-        html: '<span style="color:#888;">' + formatter(last.value) + (last.providerEstimated ? ' (AA estimate)' : '') + '</span> ' + UNTRACKED_BADGE_HTML,
+        html: '<span style="color:#888;">' + formatter(last.value) + '</span> ' + UNTRACKED_BADGE_HTML,
         untracked: true
       };
     }
