@@ -60,7 +60,7 @@
         "release_date": "2026-04-02",
         "lma_lookup": "gemma-4-31b",
         "aa_lookup": "Gemma 4 31B",
-        "lb_lookup": "Gemma 4 31B",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 0.4
     },
@@ -86,7 +86,7 @@
         "release_date": "2025-11-18",
         "lma_lookup": "gemini-3-pro",
         "aa_lookup": "Gemini 3 Pro Preview (low)",
-        "lb_lookup": "Gemini 3 Pro Preview High",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 12
     },
@@ -99,7 +99,7 @@
         "release_date": "2025-12-17",
         "lma_lookup": "gemini-3-flash",
         "aa_lookup": "Gemini 3 Flash",
-        "lb_lookup": "Gemini 3 Flash Preview High",
+        "lb_lookup": null,
         "cost_output": 3
     },
     {
@@ -111,7 +111,7 @@
         "release_date": "2025-06-17",
         "lma_lookup": "gemini-2.5-pro",
         "aa_lookup": "Gemini 2.5 Pro",
-        "lb_lookup": "Gemini 2.5 Pro (Max Thinking)",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 10
     },
@@ -124,7 +124,7 @@
         "release_date": "2025-09-25",
         "lma_lookup": "gemini-2.5-flash",
         "aa_lookup": "Gemini 2.5 Flash (Sep)",
-        "lb_lookup": "Gemini 2.5 Flash (Max Thinking) (2025-09-25)",
+        "lb_lookup": null,
         "cost_output": 2.5
     },
     {
@@ -254,7 +254,7 @@
         "release_date": "2025-09-29",
         "lma_lookup": "claude-sonnet-4-5-20250929-high-32k",
         "aa_lookup": "Claude 4.5 Sonnet",
-        "lb_lookup": "Claude Sonnet 4.5 Thinking",
+        "lb_lookup": null,
         "cost_output": 15
     },
     {
@@ -266,7 +266,7 @@
         "release_date": "2025-08-05",
         "lma_lookup": "claude-opus-4-1-20250805",
         "aa_lookup": "Claude 4.1 Opus",
-        "lb_lookup": "Claude 4.1 Opus Thinking",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 75
     },
@@ -279,7 +279,7 @@
         "release_date": "2025-10-15",
         "lma_lookup": "claude-haiku-4-5-20251001",
         "aa_lookup": "Claude 4.5 Haiku",
-        "lb_lookup": "Claude Haiku 4.5 Thinking",
+        "lb_lookup": null,
         "cost_output": 5
     },
     {
@@ -395,7 +395,7 @@
         "release_date": "2025-11-12",
         "lma_lookup": "gpt-5.1-high",
         "aa_lookup": "GPT-5.1 (high)",
-        "lb_lookup": "GPT-5.1 High",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 10
     },
@@ -408,7 +408,7 @@
         "release_date": "2025-08-07",
         "lma_lookup": "gpt-5-high",
         "aa_lookup": "GPT-5 (high)",
-        "lb_lookup": "GPT-5 Pro",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 10
     },
@@ -434,7 +434,7 @@
         "release_date": "2025-08-07",
         "lma_lookup": "gpt-5-mini-high",
         "aa_lookup": "GPT-5 mini (high)",
-        "lb_lookup": "GPT-5 Mini High",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 2
     },
@@ -447,7 +447,7 @@
         "release_date": "2025-08-07",
         "lma_lookup": "gpt-5-nano-high",
         "aa_lookup": "GPT-5 nano (high)",
-        "lb_lookup": "GPT-5 Nano High",
+        "lb_lookup": null,
         "cost_output": 0.4
     },
     {
@@ -459,7 +459,7 @@
         "release_date": "2025-08-07",
         "lma_lookup": "gpt-oss-120b",
         "aa_lookup": "gpt-oss-120B (high)",
-        "lb_lookup": "GPT OSS 120b",
+        "lb_lookup": null,
         "cost_output": 0.6
     },
     {
@@ -510,7 +510,7 @@
         "release_date": "2026-04-07",
         "lma_lookup": "glm-5.1",
         "aa_lookup": "GLM-5.1",
-        "lb_lookup": "GLM 5.1",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 4.4
     },
@@ -523,7 +523,7 @@
         "release_date": "2026-02-11",
         "lma_lookup": "glm-5",
         "aa_lookup": "GLM-5",
-        "lb_lookup": "GLM 5",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 3.2
     },
@@ -536,7 +536,7 @@
         "release_date": "2025-12-22",
         "lma_lookup": "glm-4.7",
         "aa_lookup": "GLM-4.7",
-        "lb_lookup": "GLM 4.7",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 2.2
     },
@@ -549,7 +549,7 @@
         "release_date": "2025-09-30",
         "lma_lookup": "glm-4.6",
         "aa_lookup": "GLM-4.6",
-        "lb_lookup": "GLM 4.6",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 2.2
     },
@@ -614,7 +614,7 @@
         "release_date": "2025-09-24",
         "lma_lookup": "qwen3-max-2025-09-23",
         "aa_lookup": "Qwen3 235B A22B 2507",
-        "lb_lookup": "Qwen 3 235B A22B Thinking 2507",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 3.9
     },
@@ -652,7 +652,7 @@
         "release_date": "2025-12-01",
         "lma_lookup": "deepseek-v3.2-thinking",
         "aa_lookup": "DeepSeek V3.2",
-        "lb_lookup": "DeepSeek V3.2 Thinking",
+        "lb_lookup": null,
         "scatter_default": 1
     },
     {
@@ -703,7 +703,7 @@
         "release_date": "2026-02-17",
         "lma_lookup": "grok-4.20-beta1",
         "aa_lookup": "Grok 4.20 0309 v2",
-        "lb_lookup": "Grok 4.20 Beta",
+        "lb_lookup": null,
         "cost_output": 6
     },
     {
@@ -726,7 +726,7 @@
         "release_date": "2025-11-19",
         "lma_lookup": "grok-4-1-fast-reasoning",
         "aa_lookup": "Grok 4.1 Fast",
-        "lb_lookup": "Grok 4.1 Fast"
+        "lb_lookup": null
     },
     {
         "model": "grok-4",
@@ -895,7 +895,7 @@
         "release_date": "2026-03-17",
         "lma_lookup": "minimax-m2.7",
         "aa_lookup": "MiniMax-M2.7",
-        "lb_lookup": "Minimax M2.7",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 1.2
     },
@@ -908,7 +908,7 @@
         "release_date": "2026-02-12",
         "lma_lookup": "minimax-m2.5",
         "aa_lookup": "Minimax-M2.5",
-        "lb_lookup": "Minimax M2.5",
+        "lb_lookup": null,
         "cost_output": 1.2
     },
     {
@@ -968,7 +968,7 @@
         "release_date": "2026-01-27",
         "lma_lookup": "kimi-k2.5-thinking",
         "aa_lookup": "Kimi K2.5",
-        "lb_lookup": "Kimi K2.5 Thinking",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 3
     },
@@ -981,7 +981,7 @@
         "release_date": "2025-11-06",
         "lma_lookup": "kimi-k2-thinking-turbo",
         "aa_lookup": "Kimi K2 Thinking",
-        "lb_lookup": "Kimi K2 Thinking",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 2.5
     },
@@ -1007,7 +1007,7 @@
         "release_date": "2026-03-18",
         "lma_lookup": "mimo-v2-pro",
         "aa_lookup": "MiMo-V2-Pro",
-        "lb_lookup": "MiMo V2 Pro",
+        "lb_lookup": null,
         "cost_output": 3
     },
     {
