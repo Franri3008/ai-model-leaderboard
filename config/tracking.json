@@ -343,7 +343,7 @@
         "release_date": "2026-04-23",
         "lma_lookup": "gpt-5.5-high",
         "aa_lookup": "GPT-5.5 (xhigh)",
-        "lb_lookup": "GPT-5.5 Thinking High Effort",
+        "lb_lookup": "GPT-5.5 Thinking xHigh Effort",
         "scatter_default": 1,
         "cost_output": 30
     },
