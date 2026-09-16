@@ -469,7 +469,7 @@
         "geo": "China",
         "os": 1,
         "release_date": "2026-08-26",
-        "lma_lookup": null,
+        "lma_lookup": "glm-5.3-flash",
         "aa_lookup": "GLM-5.3-Flash",
         "lb_lookup": "GLM-5.3 Flash",
         "scatter_default": 0,
@@ -586,7 +586,7 @@
         "geo": "China",
         "os": 1,
         "release_date": "2026-04-02",
-        "lma_lookup": null,
+        "lma_lookup": "qwen3.6-plus",
         "aa_lookup": "Qwen3.6 Plus",
         "lb_lookup": "Qwen 3.6 Plus",
         "scatter_default": 1,
@@ -735,8 +735,8 @@
         "geo": "US",
         "os": 0,
         "release_date": "2025-07-09",
-        "lma_lookup": null,
-        "aa_lookup": null,
+        "lma_lookup": "grok-4-0709",
+        "aa_lookup": "Grok 4",
         "lb_lookup": null
     },
     {
@@ -746,7 +746,7 @@
         "geo": "France",
         "os": 0,
         "release_date": "2025-08-12",
-        "lma_lookup": null,
+        "lma_lookup": "mistral-medium-2508",
         "aa_lookup": null,
         "lb_lookup": null
     },
@@ -823,7 +823,7 @@
         "release_date": "2026-06-04",
         "lma_lookup": "nvidia-nemotron-3-ultra-550b-a55b-nvfp4",
         "aa_lookup": "Nemotron 3 Ultra",
-        "lb_lookup": null,
+        "lb_lookup": "Nemotron 3 Ultra 550B A55B",
         "scatter_default": 1,
         "cost_output": 3.27
     },
