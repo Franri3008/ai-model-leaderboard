@@ -190,7 +190,7 @@
         "release_date": "2026-05-28",
         "lma_lookup": "claude-opus-4-8-high",
         "aa_lookup": "Claude Opus 4.8 (max)",
-        "lb_lookup": "Claude 4.8 Opus Thinking xHigh Effort",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 25
     },
