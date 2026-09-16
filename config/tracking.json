@@ -625,7 +625,7 @@
         "geo": "China",
         "os": 1,
         "release_date": "2026-04-24",
-        "lma_lookup": "deepseek-v4-flash-thinking",
+        "lma_lookup": "deepseek-v4-flash-high-preview",
         "aa_lookup": "DeepSeek V4 Flash 0731 (max)",
         "lb_lookup": "DeepSeek V4 Flash 0731",
         "cost_output": 0.28
@@ -637,7 +637,7 @@
         "geo": "China",
         "os": 1,
         "release_date": "2026-04-24",
-        "lma_lookup": "deepseek-v4-pro",
+        "lma_lookup": "deepseek-v4-pro-high-20260813",
         "aa_lookup": "DeepSeek V4 Pro 0813 (max)",
         "lb_lookup": "DeepSeek V4 Pro 0813",
         "scatter_default": 1,
