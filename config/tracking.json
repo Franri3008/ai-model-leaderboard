@@ -782,7 +782,7 @@
         "geo": "US",
         "os": 0,
         "release_date": "2026-08-05",
-        "lma_lookup": null,
+        "lma_lookup": "muse-spark-1.2 (xHigh)",
         "aa_lookup": "Muse Spark 1.2 (xhigh)",
         "lb_lookup": "Muse Spark 1.2 xHigh Effort",
         "scatter_default": 1,
