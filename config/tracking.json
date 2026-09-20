@@ -1022,5 +1022,18 @@
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 0.3
+    },
+    {
+        "model": "step-5-preview",
+        "name": "Step 5 Preview",
+        "logo": "stepfun",
+        "geo": "China",
+        "os": 1,
+        "release_date": null,
+        "lma_lookup": null,
+        "aa_lookup": "Step 5 Preview",
+        "lb_lookup": null,
+        "scatter_default": 1,
+        "cost_output": null
     }
 ]
