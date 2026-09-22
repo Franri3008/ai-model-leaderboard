@@ -656,6 +656,19 @@
         "scatter_default": 1
     },
     {
+        "model": "grok-4-7",
+        "name": "Grok 4.7",
+        "logo": "grok",
+        "geo": "US",
+        "os": 0,
+        "release_date": null,
+        "lma_lookup": null,
+        "aa_lookup": "Grok 4.7 (xhigh)",
+        "lb_lookup": "Grok 4.7 xHigh",
+        "scatter_default": 1,
+        "cost_output": 6.0
+    },
+    {
         "model": "grok-4-6",
         "name": "Grok 4.6",
         "logo": "grok",
