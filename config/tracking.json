@@ -128,6 +128,19 @@
         "cost_output": 2.5
     },
     {
+        "model": "claude-opus-5-5",
+        "name": "Claude Opus 5.5",
+        "logo": "claude",
+        "geo": "US",
+        "os": 0,
+        "release_date": null,
+        "lma_lookup": null,
+        "aa_lookup": "Claude Opus 5.5 (max with fallback)",
+        "lb_lookup": "Claude 5.5 Opus Thinking Max Effort",
+        "scatter_default": 1,
+        "cost_output": null
+    },
+    {
         "model": "claude-fable-5-1",
         "name": "Claude Fable 5.1",
         "logo": "claude",
@@ -281,6 +294,19 @@
         "aa_lookup": "Claude 4.5 Haiku",
         "lb_lookup": null,
         "cost_output": 5
+    },
+    {
+        "model": "gpt-6-sol",
+        "name": "GPT 6 Sol",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 0,
+        "release_date": null,
+        "lma_lookup": null,
+        "aa_lookup": "GPT-6 Sol (max)",
+        "lb_lookup": "GPT-6 Sol Max Effort",
+        "scatter_default": 1,
+        "cost_output": null
     },
     {
         "model": "gpt-6-astra",
