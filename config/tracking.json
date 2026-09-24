@@ -133,12 +133,12 @@
         "logo": "claude",
         "geo": "US",
         "os": 0,
-        "release_date": null,
+        "release_date": "2026-09-22",
         "lma_lookup": null,
         "aa_lookup": "Claude Opus 5.5 (max with fallback)",
         "lb_lookup": "Claude 5.5 Opus Thinking Max Effort",
         "scatter_default": 1,
-        "cost_output": null
+        "cost_output": 20
     },
     {
         "model": "claude-fable-5-1",
@@ -301,12 +301,12 @@
         "logo": "gpt",
         "geo": "US",
         "os": 0,
-        "release_date": null,
+        "release_date": "2026-09-22",
         "lma_lookup": null,
         "aa_lookup": "GPT-6 Sol (max)",
         "lb_lookup": "GPT-6 Sol Max Effort",
         "scatter_default": 1,
-        "cost_output": null
+        "cost_output": 10
     },
     {
         "model": "gpt-6-astra",
@@ -679,7 +679,8 @@
         "lma_lookup": "deepseek-v3.2-thinking",
         "aa_lookup": "DeepSeek V3.2",
         "lb_lookup": null,
-        "scatter_default": 1
+        "scatter_default": 1,
+        "cost_output": 0.42
     },
     {
         "model": "grok-4-7",
@@ -687,7 +688,7 @@
         "logo": "grok",
         "geo": "US",
         "os": 0,
-        "release_date": null,
+        "release_date": "2026-09-21",
         "lma_lookup": null,
         "aa_lookup": "Grok 4.7 (xhigh)",
         "lb_lookup": "Grok 4.7 xHigh",
