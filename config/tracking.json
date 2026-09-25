@@ -877,7 +877,8 @@
         "lma_lookup": "nvidia-nemotron-3-super-120b-a12b",
         "aa_lookup": "Nemotron 3 Super",
         "lb_lookup": null,
-        "scatter_default": 1
+        "scatter_default": 1,
+        "cost_output": 0.9
     },
     {
         "model": "nemotron-ultra-v1",
@@ -911,7 +912,8 @@
         "release_date": "2025-12-15",
         "lma_lookup": "nvidia-nemotron-3-nano-30b-a3b-bf16",
         "aa_lookup": "Nemotron 3 Nano",
-        "lb_lookup": null
+        "lb_lookup": null,
+        "cost_output": 0.2
     },
     {
         "model": "minimax-m3",
@@ -1069,11 +1071,11 @@
         "logo": "stepfun",
         "geo": "China",
         "os": 1,
-        "release_date": null,
+        "release_date": "2026-09-18",
         "lma_lookup": null,
         "aa_lookup": "Step 5 Preview",
         "lb_lookup": null,
         "scatter_default": 1,
-        "cost_output": null
+        "cost_output": 2.7
     }
 ]
