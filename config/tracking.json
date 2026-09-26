@@ -777,7 +777,8 @@
         "release_date": "2025-07-09",
         "lma_lookup": "grok-4-0709",
         "aa_lookup": "Grok 4",
-        "lb_lookup": null
+        "lb_lookup": null,
+        "cost_output": 15
     },
     {
         "model": "mistral-medium-2508",
