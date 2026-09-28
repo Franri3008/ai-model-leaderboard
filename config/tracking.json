@@ -134,7 +134,7 @@
         "geo": "US",
         "os": 0,
         "release_date": "2026-09-22",
-        "lma_lookup": null,
+        "lma_lookup": "claude-opus-5.5-high",
         "aa_lookup": "Claude Opus 5.5 (max with fallback)",
         "lb_lookup": "Claude 5.5 Opus Thinking Max Effort",
         "scatter_default": 1,
