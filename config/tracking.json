@@ -309,6 +309,19 @@
         "cost_output": 5
     },
     {
+        "model": "gpt-6-1-sol",
+        "name": "GPT 6.1 Sol",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-09-29",
+        "lma_lookup": null,
+        "aa_lookup": "GPT-6.1 Sol (max)",
+        "lb_lookup": "GPT-6.1 Sol Max Effort",
+        "scatter_default": 1,
+        "cost_output": 10
+    },
+    {
         "model": "gpt-6-sol",
         "name": "GPT 6 Sol",
         "logo": "gpt",
