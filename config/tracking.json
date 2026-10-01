@@ -46,7 +46,7 @@
         "os": 0,
         "release_date": "2026-07-22",
         "lma_lookup": "gemini-3.6-flash-high",
-        "aa_lookup": "Gemini 3.6 Flash",
+        "aa_lookup": "Gemini 3.6 Flash (high)",
         "lb_lookup": "Gemini 3.6 Flash High",
         "scatter_default": 1,
         "cost_output": 1.88
@@ -59,7 +59,7 @@
         "os": 0,
         "release_date": "2026-05-19",
         "lma_lookup": "gemini-3.5-flash-high",
-        "aa_lookup": "Gemini 3.5 Flash",
+        "aa_lookup": "Gemini 3.5 Flash (high)",
         "lb_lookup": "Gemini 3.5 Flash High",
         "scatter_default": 1,
         "cost_output": 4.50
