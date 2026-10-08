@@ -44,9 +44,10 @@ def parse_models(page_source):
     if not candidates:
         raise RuntimeError("AA embedded intelligence dataset not found; refusing a partial table fallback")
     models = max(candidates, key=len)
+    # The version label is metadata only. AA dropped it from the page on 2026-10-08, so a missing label stays empty.
     version = re.search(r"Intelligence Index\s+(v\d+(?:\.\d+)+)", soup.get_text(" ", strip=True) + " " + stream)
     if not version:
-        raise RuntimeError("AA Intelligence Index version not found")
+        print_step("AA Intelligence Index version not found, aa_version left empty")
 
     rows = []
     seen = set()
@@ -71,7 +72,7 @@ def parse_models(page_source):
             "Creator": model.get("modelCreatorName", ""),
             "aa_slug": slug,
             "aa_estimated": int(model["intelligenceIndexIsEstimated"]),
-            "aa_version": version.group(1),
+            "aa_version": version.group(1) if version else "",
         })
     if not rows:
         raise RuntimeError("AA dataset contains no intelligence scores")

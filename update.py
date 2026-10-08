@@ -379,6 +379,9 @@ def append_history(result, history_file):
             for col in ["lma", "aa", "lb", *AA_METADATA]:
                 old_val = last[col];
                 new_val = row[col];
+                # AA may not publish a version label. An empty one is not a change.
+                if col == "aa_version" and (pd.isna(new_val) or new_val == ""):
+                    continue;
                 if pd.isna(old_val) and pd.isna(new_val):
                     continue;
                 if pd.isna(old_val) != pd.isna(new_val):

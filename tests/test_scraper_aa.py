@@ -53,6 +53,12 @@ class ArtificialAnalysisTests(unittest.TestCase):
         self.assertEqual(df.aa_version.tolist(), ['v4.3'] * 3)
         self.assertEqual(df.aa_slug.tolist(), ['gpt-5-4', 'mini', 'zero'])
 
+    def test_missing_version_label_leaves_version_empty(self):
+        html = page([model()]).replace('<h1>Updated to Intelligence Index v4.3</h1>', '')
+        df = scraper_aa.parse_models(html)
+        self.assertEqual(df['Intelligence Index'].tolist(), [39])
+        self.assertEqual(df.aa_version.tolist(), [''])
+
     def test_invalid_scores_fail(self):
         for value in [True, '39', -1, 101, float('nan'), float('inf')]:
             with self.subTest(value=value), self.assertRaises(RuntimeError):
@@ -65,7 +71,7 @@ class ArtificialAnalysisTests(unittest.TestCase):
                 scraper_aa.parse_models(page(models))
 
     def test_schema_change_does_not_fall_back_to_visible_table(self):
-        for html in ['<table><tr><td>39</td></tr></table>', page([model()]).replace('intelligenceIndex', 'newIndex'), page([model()]).replace('v4.3', '')]:
+        for html in ['<table><tr><td>39</td></tr></table>', page([model()]).replace('intelligenceIndex', 'newIndex')]:
             with self.subTest(html=html[:60]), self.assertRaises(RuntimeError):
                 scraper_aa.parse_models(html)
 
@@ -108,6 +114,10 @@ class ArtificialAnalysisTests(unittest.TestCase):
             self.assertEqual(append(result, history), 1)
             result.loc[0, 'aa_version'] = 'v4.4'
             self.assertEqual(append(result, history), 1)
+            result.loc[0, 'aa_version'] = ''
+            self.assertEqual(append(result, history), 0)
+            self.assertEqual(append(result, history), 0)
+            result.loc[0, 'aa_version'] = 'v4.4'
             result.to_csv(base / 'data/processed.csv', sep=';', index=False)
             payloads = _build_payloads(base)
             self.assertIsNone(payloads['history'][0]['aa_estimated'])
