@@ -827,7 +827,7 @@
         "os": 0,
         "release_date": "2025-08-12",
         "lma_lookup": "mistral-medium-2508",
-        "aa_lookup": null,
+        "aa_lookup": "Mistral Medium 3.1",
         "lb_lookup": null
     },
     {
