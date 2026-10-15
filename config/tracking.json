@@ -849,7 +849,7 @@
         "geo": "US",
         "os": 0,
         "release_date": "2026-10-12",
-        "lma_lookup": null,
+        "lma_lookup": "muse-wonder-max",
         "aa_lookup": "Muse Wonder (max)",
         "lb_lookup": "Muse Wonder 1.0 Max Effort",
         "scatter_default": 1,
