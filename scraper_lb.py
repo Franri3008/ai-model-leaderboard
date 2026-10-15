@@ -8,32 +8,32 @@ import requests
 from scraper_common import USER_AGENTS, print_step
 
 def _parse_model_metadata(bundle):
-    map_match = re.search(r'=\{"[^"]+":\{url:"', bundle);
-    if not map_match:
-        raise RuntimeError("LiveBench model metadata map not found in JS bundle")
-    map_start = map_match.start() + 1;
-    depth = 0;
-    map_end = None;
-    for j in range(map_start, len(bundle)):
-        if bundle[j] == '{':
-            depth += 1;
-        elif bundle[j] == '}':
-            depth -= 1;
-            if depth == 0:
-                map_end = j + 1;
-                break;
-    if map_end is None:
-        raise RuntimeError("LiveBench model metadata map not found in JS bundle")
-    map_js = bundle[map_start:map_end];
-    map_js = re.sub(r'([{,])([A-Za-z_$][\w$]*):', r'\1"\2":', map_js).replace('!0', 'true').replace('!1', 'false');
-    meta = json.loads(map_js);
     names, orgs = {}, {};
-    for model_id, info in meta.items():
-        names[model_id] = info.get("displayName", model_id);
-        orgs[model_id] = info.get("organization", "");
-        for v in info.get("variants", []):
-            names[v.get("rawName", "")] = v.get("displayName", v.get("rawName", ""));
-            orgs[v.get("rawName", "")] = info.get("organization", "");
+    for map_match in re.finditer(r'=\{"[^"]+":\{url:"', bundle):
+        map_start = map_match.start() + 1;
+        depth = 0;
+        map_end = None;
+        for j in range(map_start, len(bundle)):
+            if bundle[j] == '{':
+                depth += 1;
+            elif bundle[j] == '}':
+                depth -= 1;
+                if depth == 0:
+                    map_end = j + 1;
+                    break;
+        if map_end is None:
+            continue;
+        map_js = bundle[map_start:map_end];
+        map_js = re.sub(r'([{,])([A-Za-z_$][\w$]*):', r'\1"\2":', map_js).replace('!0', 'true').replace('!1', 'false');
+        meta = json.loads(map_js);
+        for model_id, info in meta.items():
+            names[model_id] = info.get("displayName", model_id);
+            orgs[model_id] = info.get("organization", "");
+            for v in info.get("variants", []):
+                names[v.get("rawName", "")] = v.get("displayName", v.get("rawName", ""));
+                orgs[v.get("rawName", "")] = info.get("organization", "");
+    if not names:
+        raise RuntimeError("LiveBench model metadata map not found in JS bundle")
     return names, orgs
 
 def scrape():
