@@ -52,10 +52,10 @@ def scrape():
     release = max(json.loads(releases_match.group(0))).replace("-", "_");
     print_step(f"Latest LiveBench release: {release}")
 
-    resp = requests.get(f"https://livebench.ai/table_{release}.csv", headers=headers, timeout=30);
+    resp = requests.get(f"https://livebench.ai/v1/table_{release}.csv", headers=headers, timeout=30);
     resp.raise_for_status();
     raw_df = pd.read_csv(StringIO(resp.text));
-    resp = requests.get(f"https://livebench.ai/categories_{release}.json", headers=headers, timeout=30);
+    resp = requests.get(f"https://livebench.ai/v1/categories_{release}.json", headers=headers, timeout=30);
     resp.raise_for_status();
     categories = resp.json();
 

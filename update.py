@@ -83,7 +83,7 @@ def check_tracking_status(model_name, fixed_df, lookup_col):
                 return True, row['name'];
     return False, None
 
-def get_untracked_models(df, source_name, score_keywords, fixed_df, lookup_col, top_n=30):
+def get_untracked_models(df, source_name, score_keywords, fixed_df, lookup_col, top_n=30, match_col=None):
     untracked = [];
     if df is None or df.empty:
         return untracked
@@ -112,7 +112,8 @@ def get_untracked_models(df, source_name, score_keywords, fixed_df, lookup_col, 
 
     for rank, (idx, row) in enumerate(top_models.iterrows(), 1):
         raw_name = str(row[model_col]).strip();
-        is_tracked, _ = check_tracking_status(raw_name, fixed_df, lookup_col);
+        match_value = str(row[match_col]).strip() if match_col else raw_name;
+        is_tracked, _ = check_tracking_status(match_value, fixed_df, lookup_col);
 
         if not is_tracked:
             untracked.append({
@@ -148,7 +149,8 @@ def build_sources_json(lma_df, aa_df, lb_df, fixed_df, models_json_path, output_
             "score_kw": ["quality", "score", "index"],
             "provider_kw": ["creator", "organization", "provider"],
             "score_type": "int",
-            "lookup_col": "aa_lookup",
+            "lookup_col": "aa_slug",
+            "match_col": "aa_slug",
         },
         "lb": {
             "df": lb_df,
@@ -190,7 +192,7 @@ def build_sources_json(lma_df, aa_df, lb_df, fixed_df, models_json_path, output_
             if provider_col is not None and not pd.isna(r[provider_col]):
                 provider_text = str(r[provider_col]).strip();
 
-            raw_lower = raw_name.lower();
+            raw_lower = str(r[spec["match_col"]]).strip().lower() if spec.get("match_col") else raw_name.lower();
             tracked_match = None;
             best_len = -1;
             for _, t in fixed_df.iterrows():
@@ -241,7 +243,7 @@ def build_sources_json(lma_df, aa_df, lb_df, fixed_df, models_json_path, output_
                 });
 
             if key == "aa":
-                rows[-1].update({"aa_estimated": int(r["aa_estimated"]), "aa_version": r["aa_version"], "aa_slug": r["aa_slug"]});
+                rows[-1].update({"aa_estimated": None if pd.isna(r["aa_estimated"]) else int(r["aa_estimated"]), "aa_version": r["aa_version"], "aa_slug": r["aa_slug"]});
 
         sources[key] = rows;
 
@@ -459,7 +461,7 @@ for column in AA_METADATA:
 
 SOURCES = [
     {"key": "lma", "df": lma_df, "lookup_col": "lma_lookup", "model_kw": ["model"], "score_kw": ["arena", "elo", "score", "rating"], "type": "int"},
-    {"key": "aa",  "df": aa_df,  "lookup_col": "aa_lookup",  "model_kw": ["model", "name"], "score_kw": ["quality", "score", "index"], "type": "int"},
+    {"key": "aa",  "df": aa_df,  "lookup_col": "aa_slug",    "model_kw": ["slug"], "score_kw": ["quality", "score", "index"], "type": "int"},
     {"key": "lb",  "df": lb_df,  "lookup_col": "lb_lookup",  "model_kw": ["model"], "score_kw": ["average", "overall", "total", "score"], "type": "float"},
 ];
 
@@ -473,7 +475,7 @@ for idx, row in fixed_df.iterrows():
             result.at[idx, src["key"]] = score;
             matches_found[src["key"]] += 1;
             if src["key"] == "aa":
-                matched = aa_df[aa_df["Model"].str.strip().str.lower() == str(row["aa_lookup"]).strip().lower()].iloc[0]
+                matched = aa_df[aa_df["aa_slug"].str.strip().str.lower() == str(row["aa_slug"]).strip().lower()].iloc[0]
                 for column in AA_METADATA:
                     result.at[idx, column] = matched[column]
 
@@ -581,7 +583,7 @@ if new_tracking_issues:
 print_step("Collecting untracked models across sources...")
 untracked_list = [];
 untracked_list.extend(get_untracked_models(lma_df, "LMArena", ['arena', 'elo', 'score', 'rating'], fixed_df, 'lma_lookup', top_n=30));
-untracked_list.extend(get_untracked_models(aa_df, "Artificial Analysis", ['quality', 'score', 'index'], fixed_df, 'aa_lookup', top_n=30));
+untracked_list.extend(get_untracked_models(aa_df, "Artificial Analysis", ['quality', 'score', 'index'], fixed_df, 'aa_slug', top_n=30, match_col='aa_slug'));
 untracked_list.extend(get_untracked_models(lb_df, "LiveBench", ['average', 'overall', 'total', 'score'], fixed_df, 'lb_lookup', top_n=30));
 
 print_step("Grouping untracked models using fuzzy matching...")

@@ -8,6 +8,7 @@
         "release_date": "2026-09-30",
         "lma_lookup": "Gemini 4 Argon (High)",
         "aa_lookup": "Gemini 4 Argon (high)",
+        "aa_slug": "gemini-4-argon",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 10
@@ -21,6 +22,7 @@
         "release_date": "2026-09-02",
         "lma_lookup": "Gemini 3.8 Flash (High)",
         "aa_lookup": "Gemini 3.8 Flash (high)",
+        "aa_slug": "gemini-3-8-flash",
         "lb_lookup": "Gemini 3.8 Flash High",
         "scatter_default": 1,
         "cost_output": 3.75
@@ -34,6 +36,7 @@
         "release_date": "2026-07-22",
         "lma_lookup": "Gemini 3.7 Flash (High)",
         "aa_lookup": "Gemini 3.7 Flash (high)",
+        "aa_slug": "gemini-3-7-flash",
         "lb_lookup": "Gemini 3.7 Flash High",
         "scatter_default": 1,
         "cost_output": 3.75
@@ -47,6 +50,7 @@
         "release_date": "2026-07-22",
         "lma_lookup": "gemini-3.6-flash-high",
         "aa_lookup": "Gemini 3.6 Flash (high)",
+        "aa_slug": "gemini-3-6-flash",
         "lb_lookup": "Gemini 3.6 Flash High",
         "scatter_default": 1,
         "cost_output": 1.88
@@ -60,6 +64,7 @@
         "release_date": "2026-05-19",
         "lma_lookup": "gemini-3.5-flash-high",
         "aa_lookup": "Gemini 3.5 Flash (high)",
+        "aa_slug": "gemini-3-5-flash",
         "lb_lookup": "Gemini 3.5 Flash High",
         "scatter_default": 1,
         "cost_output": 4.50
@@ -73,6 +78,7 @@
         "release_date": "2026-04-02",
         "lma_lookup": "gemma-4-31b",
         "aa_lookup": "Gemma 4 31B",
+        "aa_slug": "gemma-4-31b",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 0.4
@@ -86,6 +92,7 @@
         "release_date": "2026-02-19",
         "lma_lookup": "Gemini 3.1 Pro Preview",
         "aa_lookup": "Gemini 3.1 Pro Preview",
+        "aa_slug": "gemini-3-1-pro-preview",
         "lb_lookup": "Gemini 3.1 Pro Preview High",
         "scatter_default": 1,
         "cost_output": 12
@@ -99,6 +106,7 @@
         "release_date": "2025-11-18",
         "lma_lookup": "Gemini 3 Pro",
         "aa_lookup": "Gemini 3 Pro Preview (low)",
+        "aa_slug": "gemini-3-pro-low",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 12
@@ -112,6 +120,7 @@
         "release_date": "2025-12-17",
         "lma_lookup": "gemini-3-flash",
         "aa_lookup": "Gemini 3 Flash",
+        "aa_slug": "gemini-3-flash-reasoning",
         "lb_lookup": null,
         "cost_output": 3
     },
@@ -124,6 +133,7 @@
         "release_date": "2025-06-17",
         "lma_lookup": "gemini-2.5-pro",
         "aa_lookup": "Gemini 2.5 Pro",
+        "aa_slug": "gemini-2-5-pro",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 10
@@ -137,6 +147,7 @@
         "release_date": "2025-09-25",
         "lma_lookup": "gemini-2.5-flash",
         "aa_lookup": "Gemini 2.5 Flash (Sep)",
+        "aa_slug": "gemini-2-5-flash-preview-09-2025-reasoning",
         "lb_lookup": null,
         "cost_output": 2.5
     },
@@ -149,6 +160,7 @@
         "release_date": "2026-09-28",
         "lma_lookup": "claude-sonnet-5.5-xhigh",
         "aa_lookup": "Claude Sonnet 5.5 (max with fallback)",
+        "aa_slug": "claude-sonnet-5-5",
         "lb_lookup": "Claude Sonnet 5.5 Max Effort",
         "scatter_default": 1,
         "cost_output": 10
@@ -162,6 +174,7 @@
         "release_date": "2026-09-22",
         "lma_lookup": "Claude Opus 5.5 (High)",
         "aa_lookup": "Claude Opus 5.5 (max with fallback)",
+        "aa_slug": "claude-opus-5-5",
         "lb_lookup": "Claude 5.5 Opus Thinking Max Effort",
         "scatter_default": 1,
         "cost_output": 20
@@ -175,6 +188,7 @@
         "release_date": "2026-09-01",
         "lma_lookup": "Claude Fable 5.1 (Max)",
         "aa_lookup": "Claude Fable 5.1 (max with fallback)",
+        "aa_slug": "claude-fable-5-1",
         "lb_lookup": "Claude Fable 5.1 Max Effort",
         "scatter_default": 1,
         "deactivated": 0,
@@ -189,6 +203,7 @@
         "release_date": "2026-07-24",
         "lma_lookup": "Claude Opus 5 (Max)",
         "aa_lookup": "Claude Opus 5 (max)",
+        "aa_slug": "claude-opus-5",
         "lb_lookup": "Claude 5 Opus Thinking Max Effort",
         "scatter_default": 1,
         "cost_output": 25
@@ -202,6 +217,7 @@
         "release_date": "2026-06-30",
         "lma_lookup": "claude-sonnet-5-high",
         "aa_lookup": "Claude Sonnet 5 (max)",
+        "aa_slug": "claude-sonnet-5",
         "lb_lookup": "Claude Sonnet 5 xHigh Effort",
         "scatter_default": 1,
         "cost_output": 10
@@ -215,6 +231,7 @@
         "release_date": "2026-06-09",
         "lma_lookup": "Claude Fable 5 (High)",
         "aa_lookup": "Claude Fable 5 (with fallback)",
+        "aa_slug": "claude-fable-5",
         "lb_lookup": "Claude Fable 5 Max Effort",
         "scatter_default": 1,
         "deactivated": 0,
@@ -229,6 +246,7 @@
         "release_date": "2026-05-28",
         "lma_lookup": "claude-opus-4-8-high",
         "aa_lookup": "Claude Opus 4.8 (max)",
+        "aa_slug": "claude-opus-4-8",
         "lb_lookup": "Claude 4.8 Opus Thinking Max Effort",
         "scatter_default": 1,
         "cost_output": 25
@@ -242,6 +260,7 @@
         "release_date": "2026-04-16",
         "lma_lookup": "Claude Opus 4.7 (High)",
         "aa_lookup": "Claude Opus 4.7 (Non-reasoning, high)",
+        "aa_slug": "claude-opus-4-7",
         "lb_lookup": "Claude 4.7 Opus Thinking xHigh Effort",
         "scatter_default": 1,
         "cost_output": 25
@@ -255,6 +274,7 @@
         "release_date": "2026-02-05",
         "lma_lookup": "Claude Opus 4.6 (High)",
         "aa_lookup": "Claude Opus 4.6 (max)",
+        "aa_slug": "claude-opus-4-6-adaptive",
         "lb_lookup": "Claude 4.6 Opus Thinking High Effort",
         "scatter_default": 1,
         "cost_output": 25
@@ -268,6 +288,7 @@
         "release_date": "2026-02-17",
         "lma_lookup": "claude-sonnet-4-6",
         "aa_lookup": "Claude Sonnet 4.6 (max)",
+        "aa_slug": "claude-sonnet-4-6-adaptive",
         "lb_lookup": "Claude 4.6 Sonnet Thinking Medium Effort",
         "cost_output": 15
     },
@@ -280,6 +301,7 @@
         "release_date": "2025-11-24",
         "lma_lookup": "claude-opus-4-5-20251101-high-32k",
         "aa_lookup": "Claude Opus 4.5",
+        "aa_slug": "claude-opus-4-5-thinking",
         "lb_lookup": "Claude 4.5 Opus Thinking High Effort",
         "scatter_default": 1,
         "cost_output": 25
@@ -293,6 +315,7 @@
         "release_date": "2025-09-29",
         "lma_lookup": "claude-sonnet-4-5-20250929-high-32k",
         "aa_lookup": "Claude 4.5 Sonnet",
+        "aa_slug": "claude-4-5-sonnet-thinking",
         "lb_lookup": null,
         "cost_output": 15
     },
@@ -305,6 +328,7 @@
         "release_date": "2025-08-05",
         "lma_lookup": "claude-opus-4-1-20250805",
         "aa_lookup": "Claude 4.1 Opus",
+        "aa_slug": "claude-4-1-opus-thinking",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 75
@@ -318,6 +342,7 @@
         "release_date": "2025-10-15",
         "lma_lookup": "claude-haiku-4-5-20251001",
         "aa_lookup": "Claude 4.5 Haiku",
+        "aa_slug": "claude-4-5-haiku-reasoning",
         "lb_lookup": null,
         "cost_output": 5
     },
@@ -330,6 +355,7 @@
         "release_date": "2026-09-29",
         "lma_lookup": "gpt-6.1-sol-max",
         "aa_lookup": "GPT-6.1 Sol (max)",
+        "aa_slug": "gpt-6-1-sol",
         "lb_lookup": "GPT-6.1 Sol Max Effort",
         "scatter_default": 1,
         "cost_output": 10
@@ -343,6 +369,7 @@
         "release_date": "2026-09-22",
         "lma_lookup": "gpt-6-sol-max",
         "aa_lookup": "GPT-6 Sol (max)",
+        "aa_slug": "gpt-6-sol",
         "lb_lookup": "GPT-6 Sol Max Effort",
         "scatter_default": 1,
         "cost_output": 10
@@ -356,6 +383,7 @@
         "release_date": "2026-09-03",
         "lma_lookup": "gpt-6-astra-max",
         "aa_lookup": "GPT-6 Astra (max)",
+        "aa_slug": "gpt-6-astra",
         "lb_lookup": "GPT-6 Astra Max Effort",
         "scatter_default": 1,
         "cost_output": 50
@@ -369,6 +397,7 @@
         "release_date": "2026-07-09",
         "lma_lookup": "gpt-5.6-sol-xhigh",
         "aa_lookup": "GPT-5.6 Sol (max)",
+        "aa_slug": "gpt-5-6-sol",
         "lb_lookup": "GPT-5.6 Sol Max Effort",
         "scatter_default": 1,
         "cost_output": 30
@@ -382,6 +411,7 @@
         "release_date": "2026-07-09",
         "lma_lookup": "gpt-5.6-terra-xhigh",
         "aa_lookup": "GPT-5.6 Terra (max)",
+        "aa_slug": "gpt-5-6-terra",
         "lb_lookup": "GPT-5.6 Terra Max Effort",
         "scatter_default": 1,
         "cost_output": 12
@@ -395,6 +425,7 @@
         "release_date": "2026-07-09",
         "lma_lookup": "gpt-5.6-luna-xhigh",
         "aa_lookup": "GPT-5.6 Luna (max)",
+        "aa_slug": "gpt-5-6-luna",
         "lb_lookup": "GPT-5.6 Luna Max Effort",
         "scatter_default": 1,
         "cost_output": 1.20
@@ -408,6 +439,7 @@
         "release_date": "2026-04-23",
         "lma_lookup": "gpt-5.5-high",
         "aa_lookup": "GPT-5.5 (xhigh)",
+        "aa_slug": "gpt-5-5",
         "lb_lookup": "GPT-5.5 Thinking xHigh Effort",
         "scatter_default": 1,
         "cost_output": 30
@@ -421,6 +453,7 @@
         "release_date": "2026-03-18",
         "lma_lookup": "gpt-5.4-mini-high",
         "aa_lookup": "GPT-5.4 mini (xhigh)",
+        "aa_slug": "gpt-5-4-mini",
         "lb_lookup": "GPT-5.4 Mini xHigh",
         "scatter_default": 1,
         "cost_output": 4.5
@@ -434,6 +467,7 @@
         "release_date": "2026-03-05",
         "lma_lookup": "gpt-5.4-high",
         "aa_lookup": "GPT-5.4 (xhigh)",
+        "aa_slug": "gpt-5-4",
         "lb_lookup": "GPT-5.4 Thinking xHigh Effort",
         "scatter_default": 1,
         "cost_output": 15
@@ -447,6 +481,7 @@
         "release_date": "2025-12-11",
         "lma_lookup": "gpt-5.2-high",
         "aa_lookup": "GPT-5.2 (xhigh)",
+        "aa_slug": "gpt-5-2",
         "lb_lookup": "GPT-5.2 High",
         "scatter_default": 1,
         "cost_output": 14
@@ -460,6 +495,7 @@
         "release_date": "2025-11-12",
         "lma_lookup": "gpt-5.1-high",
         "aa_lookup": "GPT-5.1 (high)",
+        "aa_slug": "gpt-5-1",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 10
@@ -473,6 +509,7 @@
         "release_date": "2025-08-07",
         "lma_lookup": "gpt-5-high",
         "aa_lookup": "GPT-5 (high)",
+        "aa_slug": "gpt-5",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 10
@@ -486,6 +523,7 @@
         "release_date": "2025-04-16",
         "lma_lookup": "o3-2025-04-16",
         "aa_lookup": "o3",
+        "aa_slug": "o3",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 8
@@ -499,6 +537,7 @@
         "release_date": "2025-08-07",
         "lma_lookup": "gpt-5-mini-high",
         "aa_lookup": "GPT-5 mini (high)",
+        "aa_slug": "gpt-5-mini",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 2
@@ -512,6 +551,7 @@
         "release_date": "2025-08-07",
         "lma_lookup": "gpt-5-nano-high",
         "aa_lookup": "GPT-5 nano (high)",
+        "aa_slug": "gpt-5-nano",
         "lb_lookup": null,
         "cost_output": 0.4
     },
@@ -524,6 +564,7 @@
         "release_date": "2025-08-07",
         "lma_lookup": "gpt-oss-120b",
         "aa_lookup": "gpt-oss-120B (high)",
+        "aa_slug": "gpt-oss-120b",
         "lb_lookup": null,
         "cost_output": 0.6
     },
@@ -536,6 +577,7 @@
         "release_date": "2026-08-26",
         "lma_lookup": "glm-5.3-flash",
         "aa_lookup": "GLM-5.3-Flash",
+        "aa_slug": "glm-5-3-flash",
         "lb_lookup": "GLM-5.3 Flash",
         "scatter_default": 0,
         "cost_output": 0.5
@@ -549,6 +591,7 @@
         "release_date": "2026-08-19",
         "lma_lookup": "glm-5.3-max",
         "aa_lookup": "GLM-5.3 (max)",
+        "aa_slug": "glm-5-3",
         "lb_lookup": "GLM-5.3",
         "scatter_default": 1,
         "cost_output": 4.4
@@ -562,6 +605,7 @@
         "release_date": "2026-06-16",
         "lma_lookup": "glm-5.2-max",
         "aa_lookup": "GLM-5.2 (max)",
+        "aa_slug": "glm-5-2",
         "lb_lookup": "GLM-5.2",
         "scatter_default": 1,
         "cost_output": 4.4
@@ -575,6 +619,7 @@
         "release_date": "2026-04-07",
         "lma_lookup": "glm-5.1",
         "aa_lookup": "GLM-5.1",
+        "aa_slug": "glm-5-1",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 4.4
@@ -588,6 +633,7 @@
         "release_date": "2026-02-11",
         "lma_lookup": "glm-5",
         "aa_lookup": "GLM-5",
+        "aa_slug": "glm-5",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 3.2
@@ -601,6 +647,7 @@
         "release_date": "2025-12-22",
         "lma_lookup": "glm-4.7",
         "aa_lookup": "GLM-4.7",
+        "aa_slug": "glm-4-7",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 2.2
@@ -614,6 +661,7 @@
         "release_date": "2025-09-30",
         "lma_lookup": "glm-4.6",
         "aa_lookup": "GLM-4.6",
+        "aa_slug": "glm-4-6-reasoning",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 2.2
@@ -627,6 +675,7 @@
         "release_date": "2026-05-19",
         "lma_lookup": "qwen3.8-max",
         "aa_lookup": "Qwen3.8 Max",
+        "aa_slug": "qwen3-8-max",
         "lb_lookup": "Qwen 3.8 Max",
         "scatter_default": 1,
         "cost_output": 6
@@ -640,6 +689,7 @@
         "release_date": "2026-05-19",
         "lma_lookup": "qwen3.7-max-preview",
         "aa_lookup": "Qwen3.7 Max",
+        "aa_slug": "qwen3-7-max",
         "lb_lookup": "Qwen 3.7 Max",
         "scatter_default": 1,
         "cost_output": 7.5
@@ -653,6 +703,7 @@
         "release_date": "2026-04-02",
         "lma_lookup": "qwen3.6-plus",
         "aa_lookup": "Qwen3.6 Plus",
+        "aa_slug": "qwen3-6-plus",
         "lb_lookup": "Qwen 3.6 Plus",
         "scatter_default": 1,
         "cost_output": 3
@@ -666,6 +717,7 @@
         "release_date": "2026-02-16",
         "lma_lookup": "qwen3.5-397b-a17b",
         "aa_lookup": "Qwen3.5 397B A17B",
+        "aa_slug": "qwen3-5-397b-a17b",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 3.6
@@ -679,6 +731,7 @@
         "release_date": "2025-09-24",
         "lma_lookup": "qwen3-max-2025-09-23",
         "aa_lookup": "Qwen3 235B A22B 2507",
+        "aa_slug": "qwen3-max",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 3.9
@@ -692,6 +745,7 @@
         "release_date": "2026-04-24",
         "lma_lookup": "deepseek-v4-flash-high-preview",
         "aa_lookup": "DeepSeek V4 Flash 0731 (max)",
+        "aa_slug": "deepseek-v4-flash",
         "lb_lookup": "DeepSeek V4 Flash 0731",
         "cost_output": 0.28
     },
@@ -704,6 +758,7 @@
         "release_date": "2026-04-24",
         "lma_lookup": "deepseek-v4-pro-high-20260813",
         "aa_lookup": "DeepSeek V4 Pro 0813 (max)",
+        "aa_slug": "deepseek-v4-pro",
         "lb_lookup": "DeepSeek V4 Pro 0813",
         "scatter_default": 1,
         "cost_output": 0.87
@@ -717,6 +772,7 @@
         "release_date": "2025-12-01",
         "lma_lookup": "deepseek-v3.2-thinking",
         "aa_lookup": "DeepSeek V3.2",
+        "aa_slug": "deepseek-v3-2-reasoning",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 0.42
@@ -730,6 +786,7 @@
         "release_date": "2026-09-21",
         "lma_lookup": "grok-4.7-xhigh",
         "aa_lookup": "Grok 4.7 (xhigh)",
+        "aa_slug": "grok-4-7",
         "lb_lookup": "Grok 4.7 xHigh",
         "scatter_default": 1,
         "cost_output": 6.0
@@ -743,6 +800,7 @@
         "release_date": "2026-08-12",
         "lma_lookup": "grok-4.6-high",
         "aa_lookup": "Grok 4.6 (xhigh)",
+        "aa_slug": "grok-4-6-xhigh",
         "lb_lookup": "Grok 4.6 xHigh",
         "scatter_default": 1,
         "cost_output": 6.0
@@ -756,6 +814,7 @@
         "release_date": "2026-07-08",
         "lma_lookup": "grok-4.5",
         "aa_lookup": "Grok 4.5 (high)",
+        "aa_slug": "grok-4-5",
         "lb_lookup": "Grok 4.5",
         "scatter_default": 1,
         "cost_output": 6.0
@@ -769,6 +828,7 @@
         "release_date": "2026-04-30",
         "lma_lookup": "grok-4.3",
         "aa_lookup": "Grok 4.3 (high)",
+        "aa_slug": "grok-4-3",
         "lb_lookup": "Grok 4.3",
         "scatter_default": 1,
         "cost_output": 2.5
@@ -782,6 +842,7 @@
         "release_date": "2026-02-17",
         "lma_lookup": "grok-4.20-beta1",
         "aa_lookup": "Grok 4.20 0309 v2",
+        "aa_slug": "grok-4-20",
         "lb_lookup": null,
         "cost_output": 6
     },
@@ -805,6 +866,7 @@
         "release_date": "2025-11-19",
         "lma_lookup": "grok-4-1-fast-reasoning",
         "aa_lookup": "Grok 4.1 Fast",
+        "aa_slug": "grok-4-1-fast-reasoning",
         "lb_lookup": null
     },
     {
@@ -816,6 +878,7 @@
         "release_date": "2025-07-09",
         "lma_lookup": "grok-4-0709",
         "aa_lookup": "Grok 4",
+        "aa_slug": "grok-4",
         "lb_lookup": null,
         "cost_output": 15
     },
@@ -828,6 +891,7 @@
         "release_date": "2025-08-12",
         "lma_lookup": "mistral-medium-2508",
         "aa_lookup": "Mistral Medium 3.1",
+        "aa_slug": "mistral-medium-3-1",
         "lb_lookup": null
     },
     {
@@ -839,6 +903,7 @@
         "release_date": "2025-06-10",
         "lma_lookup": "magistral-medium-2506",
         "aa_lookup": "Magistral Medium 1.2",
+        "aa_slug": "magistral-medium-2509",
         "lb_lookup": null,
         "cost_output": 5
     },
@@ -851,6 +916,7 @@
         "release_date": "2026-10-12",
         "lma_lookup": "Muse Wonder (Max)",
         "aa_lookup": "Muse Wonder (max)",
+        "aa_slug": "muse-wonder",
         "lb_lookup": "Muse Wonder 1.0 Max Effort",
         "scatter_default": 1,
         "cost_output": 20
@@ -864,6 +930,7 @@
         "release_date": "2026-09-02",
         "lma_lookup": "Muse Spark 1.3 (Max)",
         "aa_lookup": "Muse Spark 1.3 (max)",
+        "aa_slug": "muse-spark-1-3",
         "lb_lookup": "Muse Spark 1.3 xHigh Effort",
         "scatter_default": 1,
         "cost_output": 4.25
@@ -877,6 +944,7 @@
         "release_date": "2026-08-05",
         "lma_lookup": "Muse Spark 1.2 (xHigh)",
         "aa_lookup": "Muse Spark 1.2 (xhigh)",
+        "aa_slug": "muse-spark-1-2",
         "lb_lookup": "Muse Spark 1.2 xHigh Effort",
         "scatter_default": 1,
         "cost_output": 4.25
@@ -890,6 +958,7 @@
         "release_date": "2026-07-09",
         "lma_lookup": "Muse Spark 1.1",
         "aa_lookup": "Muse Spark 1.1 (xhigh)",
+        "aa_slug": "muse-spark-1-1",
         "lb_lookup": "Muse Spark 1.1 xHigh Effort",
         "scatter_default": 1,
         "cost_output": 4.25
@@ -903,6 +972,7 @@
         "release_date": "2026-04-08",
         "lma_lookup": "Muse Spark",
         "aa_lookup": "Muse Spark",
+        "aa_slug": "muse-spark",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 0
@@ -916,6 +986,7 @@
         "release_date": "2026-06-04",
         "lma_lookup": "nvidia-nemotron-3-ultra-550b-a55b-nvfp4",
         "aa_lookup": "Nemotron 3 Ultra",
+        "aa_slug": "nvidia-nemotron-3-ultra-550b-a55b",
         "lb_lookup": "Nemotron 3 Ultra 550B A55B",
         "scatter_default": 1,
         "cost_output": 3.27
@@ -929,6 +1000,7 @@
         "release_date": "2026-03-14",
         "lma_lookup": "nvidia-nemotron-3-super-120b-a12b",
         "aa_lookup": "Nemotron 3 Super",
+        "aa_slug": "nvidia-nemotron-3-super-120b-a12b",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 0.9
@@ -942,6 +1014,7 @@
         "release_date": "2025-04-07",
         "lma_lookup": "llama-3.1-nemotron-ultra-253b-v1",
         "aa_lookup": "Llama Nemotron Ultra",
+        "aa_slug": "llama-3-1-nemotron-ultra-253b-v1-reasoning",
         "lb_lookup": null
     },
     {
@@ -953,6 +1026,7 @@
         "release_date": "2025-07-25",
         "lma_lookup": "nvidia-llama-3.3-nemotron-super-49b-v1.5",
         "aa_lookup": "Llama Nemotron Super 49B v1.5",
+        "aa_slug": "llama-nemotron-super-49b-v1-5-reasoning",
         "lb_lookup": null,
         "cost_output": 0.4
     },
@@ -965,6 +1039,7 @@
         "release_date": "2025-12-15",
         "lma_lookup": "nvidia-nemotron-3-nano-30b-a3b-bf16",
         "aa_lookup": "Nemotron 3 Nano",
+        "aa_slug": "nvidia-nemotron-3-nano-30b-a3b-reasoning",
         "lb_lookup": null,
         "cost_output": 0.2
     },
@@ -977,6 +1052,7 @@
         "release_date": "2026-06-01",
         "lma_lookup": "minimax-m3",
         "aa_lookup": "MiniMax-M3",
+        "aa_slug": "minimax-m3",
         "lb_lookup": "Minimax M3",
         "scatter_default": 1,
         "cost_output": 1.2
@@ -990,6 +1066,7 @@
         "release_date": "2026-03-17",
         "lma_lookup": "minimax-m2.7",
         "aa_lookup": "MiniMax-M2.7",
+        "aa_slug": "minimax-m2-7",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 1.2
@@ -1003,6 +1080,7 @@
         "release_date": "2026-02-12",
         "lma_lookup": "minimax-m2.5",
         "aa_lookup": "Minimax-M2.5",
+        "aa_slug": "minimax-m2-5",
         "lb_lookup": null,
         "cost_output": 1.2
     },
@@ -1015,6 +1093,7 @@
         "release_date": "2026-01-22",
         "lma_lookup": "ernie-5.0-0110",
         "aa_lookup": "ERNIE 5.0 Thinking Preview",
+        "aa_slug": "ernie-5-0-thinking-preview",
         "lb_lookup": null,
         "cost-output": 0
     },
@@ -1027,6 +1106,7 @@
         "release_date": "2026-07-16",
         "lma_lookup": "Kimi K3 (Max)",
         "aa_lookup": "Kimi K3 (max)",
+        "aa_slug": "kimi-k3",
         "lb_lookup": "Kimi K3",
         "cost_output": 15
     },
@@ -1039,6 +1119,7 @@
         "release_date": "2026-06-12",
         "lma_lookup": null,
         "aa_lookup": "Kimi K2.7 Code",
+        "aa_slug": "kimi-k2-7-code",
         "lb_lookup": "Kimi K2.7 Code",
         "cost_output": 4
     },
@@ -1051,6 +1132,7 @@
         "release_date": "2026-04-20",
         "lma_lookup": "kimi-k2.6",
         "aa_lookup": "Kimi K2.6",
+        "aa_slug": "kimi-k2-6",
         "lb_lookup": "Kimi K2.6 Thinking",
         "cost_output": 4
     },
@@ -1063,6 +1145,7 @@
         "release_date": "2026-01-27",
         "lma_lookup": "kimi-k2.5-thinking",
         "aa_lookup": "Kimi K2.5",
+        "aa_slug": "kimi-k2-5",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 3
@@ -1076,6 +1159,7 @@
         "release_date": "2025-11-06",
         "lma_lookup": "kimi-k2-thinking-turbo",
         "aa_lookup": "Kimi K2 Thinking",
+        "aa_slug": "kimi-k2-thinking",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 2.5
@@ -1089,6 +1173,7 @@
         "release_date": "2026-04-22",
         "lma_lookup": "mimo-v2.5-pro",
         "aa_lookup": "MiMo-V2.5-Pro",
+        "aa_slug": "mimo-v2-5-pro",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 0.87
@@ -1102,6 +1187,7 @@
         "release_date": "2026-03-18",
         "lma_lookup": "mimo-v2-pro",
         "aa_lookup": "MiMo-V2-Pro",
+        "aa_slug": "mimo-v2-pro",
         "lb_lookup": null,
         "cost_output": 3
     },
@@ -1114,6 +1200,7 @@
         "release_date": "2026-02-12",
         "lma_lookup": "step-3.5-flash",
         "aa_lookup": "Step 3.5 Flash 2603",
+        "aa_slug": "step-3-5-flash",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 0.3
@@ -1127,6 +1214,7 @@
         "release_date": "2026-09-18",
         "lma_lookup": "Step 5 Preview",
         "aa_lookup": "Step 5 Preview",
+        "aa_slug": "step-5",
         "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 2.7

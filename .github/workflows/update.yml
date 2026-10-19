@@ -43,6 +43,7 @@ jobs:
         env:
           FIREBASE_DATABASE_URL: ${{ secrets.FIREBASE_DATABASE_URL }}
           GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+          AA_API_KEY: ${{ secrets.AA_API_KEY }}
         run: python update.py
 
       - name: Build email subject
