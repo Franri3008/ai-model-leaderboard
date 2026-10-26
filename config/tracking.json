@@ -9,7 +9,7 @@
         "lma_lookup": "Gemini 4 Argon (High)",
         "aa_lookup": "Gemini 4 Argon (high)",
         "aa_slug": "gemini-4-argon",
-        "lb_lookup": null,
+        "lb_lookup": "Gemini 4 Argon",
         "scatter_default": 1,
         "cost_output": 10
     },
@@ -23,7 +23,7 @@
         "lma_lookup": "Gemini 3.8 Flash (High)",
         "aa_lookup": "Gemini 3.8 Flash (high)",
         "aa_slug": "gemini-3-8-flash",
-        "lb_lookup": "Gemini 3.8 Flash High",
+        "lb_lookup": "Gemini 3.8 Flash",
         "scatter_default": 1,
         "cost_output": 3.75
     },
@@ -37,7 +37,7 @@
         "lma_lookup": "Gemini 3.7 Flash (High)",
         "aa_lookup": "Gemini 3.7 Flash (high)",
         "aa_slug": "gemini-3-7-flash",
-        "lb_lookup": "Gemini 3.7 Flash High",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 3.75
     },
@@ -51,7 +51,7 @@
         "lma_lookup": "Gemini 3.6 Flash (High)",
         "aa_lookup": "Gemini 3.6 Flash (high)",
         "aa_slug": "gemini-3-6-flash",
-        "lb_lookup": "Gemini 3.6 Flash High",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 1.88
     },
@@ -65,7 +65,7 @@
         "lma_lookup": "Gemini 3.5 Flash (High)",
         "aa_lookup": "Gemini 3.5 Flash (high)",
         "aa_slug": "gemini-3-5-flash",
-        "lb_lookup": "Gemini 3.5 Flash High",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 4.50
     },
@@ -79,7 +79,7 @@
         "lma_lookup": "Gemma 4 31B",
         "aa_lookup": "Gemma 4 31B",
         "aa_slug": "gemma-4-31b",
-        "lb_lookup": null,
+        "lb_lookup": "Gemma 4 31B",
         "scatter_default": 1,
         "cost_output": 0.4
     },
@@ -93,7 +93,7 @@
         "lma_lookup": "Gemini 3.1 Pro Preview",
         "aa_lookup": "Gemini 3.1 Pro Preview",
         "aa_slug": "gemini-3-1-pro-preview",
-        "lb_lookup": "Gemini 3.1 Pro Preview High",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 12
     },
@@ -161,7 +161,7 @@
         "lma_lookup": "Claude Sonnet 5.5 (xHigh)",
         "aa_lookup": "Claude Sonnet 5.5 (max with fallback)",
         "aa_slug": "claude-sonnet-5-5",
-        "lb_lookup": "Claude Sonnet 5.5 Max Effort",
+        "lb_lookup": "Claude Sonnet 5.5",
         "scatter_default": 1,
         "cost_output": 10
     },
@@ -175,7 +175,7 @@
         "lma_lookup": "Claude Opus 5.5 (High)",
         "aa_lookup": "Claude Opus 5.5 (max with fallback)",
         "aa_slug": "claude-opus-5-5",
-        "lb_lookup": "Claude 5.5 Opus Thinking Max Effort",
+        "lb_lookup": "Claude Opus 5.5",
         "scatter_default": 1,
         "cost_output": 20
     },
@@ -189,7 +189,7 @@
         "lma_lookup": "Claude Fable 5.1 (Max)",
         "aa_lookup": "Claude Fable 5.1 (max with fallback)",
         "aa_slug": "claude-fable-5-1",
-        "lb_lookup": "Claude Fable 5.1 Max Effort",
+        "lb_lookup": "Claude Fable 5.1",
         "scatter_default": 1,
         "deactivated": 0,
         "cost_output": 50
@@ -204,7 +204,7 @@
         "lma_lookup": "Claude Opus 5 (Max)",
         "aa_lookup": "Claude Opus 5 (max)",
         "aa_slug": "claude-opus-5",
-        "lb_lookup": "Claude 5 Opus Thinking Max Effort",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 25
     },
@@ -218,7 +218,7 @@
         "lma_lookup": "Claude Sonnet 5 (High)",
         "aa_lookup": "Claude Sonnet 5 (max)",
         "aa_slug": "claude-sonnet-5",
-        "lb_lookup": "Claude Sonnet 5 xHigh Effort",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 10
     },
@@ -232,7 +232,7 @@
         "lma_lookup": "Claude Fable 5 (High)",
         "aa_lookup": "Claude Fable 5 (with fallback)",
         "aa_slug": "claude-fable-5",
-        "lb_lookup": "Claude Fable 5 Max Effort",
+        "lb_lookup": null,
         "scatter_default": 1,
         "deactivated": 0,
         "cost_output": 50
@@ -247,7 +247,7 @@
         "lma_lookup": "Claude Opus 4.8 (High)",
         "aa_lookup": "Claude Opus 4.8 (max)",
         "aa_slug": "claude-opus-4-8",
-        "lb_lookup": "Claude 4.8 Opus Thinking Max Effort",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 25
     },
@@ -261,7 +261,7 @@
         "lma_lookup": "Claude Opus 4.7 (High)",
         "aa_lookup": "Claude Opus 4.7 (Non-reasoning, high)",
         "aa_slug": "claude-opus-4-7",
-        "lb_lookup": "Claude 4.7 Opus Thinking xHigh Effort",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 25
     },
@@ -275,7 +275,7 @@
         "lma_lookup": "Claude Opus 4.6 (High)",
         "aa_lookup": "Claude Opus 4.6 (max)",
         "aa_slug": "claude-opus-4-6-adaptive",
-        "lb_lookup": "Claude 4.6 Opus Thinking High Effort",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 25
     },
@@ -289,7 +289,7 @@
         "lma_lookup": "Claude Sonnet 4.6",
         "aa_lookup": "Claude Sonnet 4.6 (max)",
         "aa_slug": "claude-sonnet-4-6-adaptive",
-        "lb_lookup": "Claude 4.6 Sonnet Thinking Medium Effort",
+        "lb_lookup": null,
         "cost_output": 15
     },
     {
@@ -302,7 +302,7 @@
         "lma_lookup": "Claude Opus 4.5 (High, 32K, 20251101)",
         "aa_lookup": "Claude Opus 4.5",
         "aa_slug": "claude-opus-4-5-thinking",
-        "lb_lookup": "Claude 4.5 Opus Thinking High Effort",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 25
     },
@@ -356,7 +356,7 @@
         "lma_lookup": "GPT-6.1 Sol (Max)",
         "aa_lookup": "GPT-6.1 Sol (max)",
         "aa_slug": "gpt-6-1-sol",
-        "lb_lookup": "GPT-6.1 Sol Max Effort",
+        "lb_lookup": "GPT-6.1 Sol",
         "scatter_default": 1,
         "cost_output": 10
     },
@@ -370,7 +370,7 @@
         "lma_lookup": "GPT-6 Sol (Max)",
         "aa_lookup": "GPT-6 Sol (max)",
         "aa_slug": "gpt-6-sol",
-        "lb_lookup": "GPT-6 Sol Max Effort",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 10
     },
@@ -384,7 +384,7 @@
         "lma_lookup": "GPT-6 Astra (Max)",
         "aa_lookup": "GPT-6 Astra (max)",
         "aa_slug": "gpt-6-astra",
-        "lb_lookup": "GPT-6 Astra Max Effort",
+        "lb_lookup": "GPT-6 Astra",
         "scatter_default": 1,
         "cost_output": 50
     },
@@ -398,7 +398,7 @@
         "lma_lookup": "GPT-5.6 Sol (xHigh)",
         "aa_lookup": "GPT-5.6 Sol (max)",
         "aa_slug": "gpt-5-6-sol",
-        "lb_lookup": "GPT-5.6 Sol Max Effort",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 30
     },
@@ -412,7 +412,7 @@
         "lma_lookup": "GPT-5.6 Terra (xHigh)",
         "aa_lookup": "GPT-5.6 Terra (max)",
         "aa_slug": "gpt-5-6-terra",
-        "lb_lookup": "GPT-5.6 Terra Max Effort",
+        "lb_lookup": "GPT-5.6 Terra",
         "scatter_default": 1,
         "cost_output": 12
     },
@@ -426,7 +426,7 @@
         "lma_lookup": "GPT-5.6 Luna (xHigh)",
         "aa_lookup": "GPT-5.6 Luna (max)",
         "aa_slug": "gpt-5-6-luna",
-        "lb_lookup": "GPT-5.6 Luna Max Effort",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 1.20
     },
@@ -440,7 +440,7 @@
         "lma_lookup": "GPT-5.5 (High)",
         "aa_lookup": "GPT-5.5 (xhigh)",
         "aa_slug": "gpt-5-5",
-        "lb_lookup": "GPT-5.5 Thinking xHigh Effort",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 30
     },
@@ -454,7 +454,7 @@
         "lma_lookup": "GPT-5.4 mini (High)",
         "aa_lookup": "GPT-5.4 mini (xhigh)",
         "aa_slug": "gpt-5-4-mini",
-        "lb_lookup": "GPT-5.4 Mini xHigh",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 4.5
     },
@@ -468,7 +468,7 @@
         "lma_lookup": "GPT-5.4 (High)",
         "aa_lookup": "GPT-5.4 (xhigh)",
         "aa_slug": "gpt-5-4",
-        "lb_lookup": "GPT-5.4 Thinking xHigh Effort",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 15
     },
@@ -482,7 +482,7 @@
         "lma_lookup": "GPT-5.2 (High)",
         "aa_lookup": "GPT-5.2 (xhigh)",
         "aa_slug": "gpt-5-2",
-        "lb_lookup": "GPT-5.2 High",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 14
     },
@@ -592,7 +592,7 @@
         "lma_lookup": "GLM-5.3 (Max)",
         "aa_lookup": "GLM-5.3 (max)",
         "aa_slug": "glm-5-3",
-        "lb_lookup": "GLM-5.3",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 4.4
     },
@@ -606,7 +606,7 @@
         "lma_lookup": "GLM-5.2 (Max)",
         "aa_lookup": "GLM-5.2 (max)",
         "aa_slug": "glm-5-2",
-        "lb_lookup": "GLM-5.2",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 4.4
     },
@@ -676,7 +676,7 @@
         "lma_lookup": "qwen3.8-max",
         "aa_lookup": "Qwen3.8 Max",
         "aa_slug": "qwen3-8-max",
-        "lb_lookup": "Qwen 3.8 Max",
+        "lb_lookup": "Qwen3.8 Max",
         "scatter_default": 1,
         "cost_output": 6
     },
@@ -690,7 +690,7 @@
         "lma_lookup": "qwen3.7-max-preview",
         "aa_lookup": "Qwen3.7 Max",
         "aa_slug": "qwen3-7-max",
-        "lb_lookup": "Qwen 3.7 Max",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 7.5
     },
@@ -704,7 +704,7 @@
         "lma_lookup": "qwen3.6-plus",
         "aa_lookup": "Qwen3.6 Plus",
         "aa_slug": "qwen3-6-plus",
-        "lb_lookup": "Qwen 3.6 Plus",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 3
     },
@@ -746,7 +746,7 @@
         "lma_lookup": "DeepSeek-V4-Flash Preview (High)",
         "aa_lookup": "DeepSeek V4 Flash 0731 (max)",
         "aa_slug": "deepseek-v4-flash",
-        "lb_lookup": "DeepSeek V4 Flash 0731",
+        "lb_lookup": null,
         "cost_output": 0.28
     },
     {
@@ -759,7 +759,7 @@
         "lma_lookup": "DeepSeek-V4-Pro (High, 20260813)",
         "aa_lookup": "DeepSeek V4 Pro 0813 (max)",
         "aa_slug": "deepseek-v4-pro",
-        "lb_lookup": "DeepSeek V4 Pro 0813",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 0.87
     },
@@ -787,7 +787,7 @@
         "lma_lookup": "Grok 4.7 (xHigh)",
         "aa_lookup": "Grok 4.7 (xhigh)",
         "aa_slug": "grok-4-7",
-        "lb_lookup": "Grok 4.7 xHigh",
+        "lb_lookup": "Grok 4.7",
         "scatter_default": 1,
         "cost_output": 6.0
     },
@@ -801,7 +801,7 @@
         "lma_lookup": "Grok 4.6 (High)",
         "aa_lookup": "Grok 4.6 (xhigh)",
         "aa_slug": "grok-4-6-xhigh",
-        "lb_lookup": "Grok 4.6 xHigh",
+        "lb_lookup": "Grok 4.6",
         "scatter_default": 1,
         "cost_output": 6.0
     },
@@ -815,7 +815,7 @@
         "lma_lookup": "Grok 4.5",
         "aa_lookup": "Grok 4.5 (high)",
         "aa_slug": "grok-4-5",
-        "lb_lookup": "Grok 4.5",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 6.0
     },
@@ -829,7 +829,7 @@
         "lma_lookup": "Grok 4.3",
         "aa_lookup": "Grok 4.3 (high)",
         "aa_slug": "grok-4-3",
-        "lb_lookup": "Grok 4.3",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 2.5
     },
@@ -917,7 +917,7 @@
         "lma_lookup": "Muse Wonder (Max)",
         "aa_lookup": "Muse Wonder (max)",
         "aa_slug": "muse-wonder",
-        "lb_lookup": "Muse Wonder 1.0 Max Effort",
+        "lb_lookup": "Muse Wonder 1.0",
         "scatter_default": 1,
         "cost_output": 20
     },
@@ -931,7 +931,7 @@
         "lma_lookup": "Muse Spark 1.3 (Max)",
         "aa_lookup": "Muse Spark 1.3 (max)",
         "aa_slug": "muse-spark-1-3",
-        "lb_lookup": "Muse Spark 1.3 xHigh Effort",
+        "lb_lookup": "Muse Spark 1.3",
         "scatter_default": 1,
         "cost_output": 4.25
     },
@@ -945,7 +945,7 @@
         "lma_lookup": "Muse Spark 1.2 (xHigh)",
         "aa_lookup": "Muse Spark 1.2 (xhigh)",
         "aa_slug": "muse-spark-1-2",
-        "lb_lookup": "Muse Spark 1.2 xHigh Effort",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 4.25
     },
@@ -959,7 +959,7 @@
         "lma_lookup": "Muse Spark 1.1",
         "aa_lookup": "Muse Spark 1.1 (xhigh)",
         "aa_slug": "muse-spark-1-1",
-        "lb_lookup": "Muse Spark 1.1 xHigh Effort",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 4.25
     },
@@ -987,7 +987,7 @@
         "lma_lookup": "NVIDIA-Nemotron-3-Ultra-550B-A55B (NVFP4)",
         "aa_lookup": "Nemotron 3 Ultra",
         "aa_slug": "nvidia-nemotron-3-ultra-550b-a55b",
-        "lb_lookup": "Nemotron 3 Ultra 550B A55B",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 3.27
     },
@@ -1053,7 +1053,7 @@
         "lma_lookup": "minimax-m3",
         "aa_lookup": "MiniMax-M3",
         "aa_slug": "minimax-m3",
-        "lb_lookup": "Minimax M3",
+        "lb_lookup": null,
         "scatter_default": 1,
         "cost_output": 1.2
     },
@@ -1107,7 +1107,7 @@
         "lma_lookup": null,
         "aa_lookup": "Kimi K3.1 Pro",
         "aa_slug": "kimi-k3-1-pro",
-        "lb_lookup": null,
+        "lb_lookup": "Kimi K3.1 Pro",
         "cost_output": 10
     },
     {
@@ -1133,7 +1133,7 @@
         "lma_lookup": null,
         "aa_lookup": "Kimi K2.7 Code",
         "aa_slug": "kimi-k2-7-code",
-        "lb_lookup": "Kimi K2.7 Code",
+        "lb_lookup": null,
         "cost_output": 4
     },
     {
@@ -1146,7 +1146,7 @@
         "lma_lookup": "Kimi K2.6",
         "aa_lookup": "Kimi K2.6",
         "aa_slug": "kimi-k2-6",
-        "lb_lookup": "Kimi K2.6 Thinking",
+        "lb_lookup": null,
         "cost_output": 4
     },
     {
@@ -1228,7 +1228,7 @@
         "lma_lookup": "Step 5 Preview",
         "aa_lookup": "Step 5 Preview",
         "aa_slug": "step-5",
-        "lb_lookup": null,
+        "lb_lookup": "Step 5 (Preview)",
         "scatter_default": 1,
         "cost_output": 2.7
     }
