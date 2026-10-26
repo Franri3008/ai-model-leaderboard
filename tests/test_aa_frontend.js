@@ -63,3 +63,15 @@ test('LiveBench 1.0 scores never fill in for a missing 2.0 score', () => {
   const cell = LB.tooltip.renderScoreCell('old', 'lb', 0, v => v.toFixed(1), now);
   assert.equal(cell.html, '-');
 });
+
+test('LiveBench 2.0 marker and note texts are exact and read the one start date', () => {
+  assert.equal(LB.liveBench.v2Start, '2026-10-26');
+  assert.equal(LB.liveBench.noteText, 'LiveBench 2.0 scores, from 26 October 2026.');
+  assert.equal(LB.liveBench.markerText, 'LiveBench moved to version 2.0 on 26 October 2026. Scores before and after come from different tests.');
+  assert.ok(LB.liveBench.noteHtml(null).includes(LB.liveBench.noteText));
+  assert.ok(LB.liveBench.noteHtml('2026-10-26').includes(LB.liveBench.noteText));
+  assert.equal(LB.liveBench.noteHtml('2026-10-25'), '');
+  assert.equal(LB.liveBench.spans('2026-09-28', '2026-10-26'), true);
+  assert.equal(LB.liveBench.spans('2026-10-26', '2026-10-26'), false);
+  assert.equal(LB.liveBench.spans('2026-09-01', '2026-10-24'), false);
+});

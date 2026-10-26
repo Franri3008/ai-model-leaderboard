@@ -2,12 +2,28 @@
   const LB = global.LB = global.LB || {};
   const LIVEBENCH_V2_START = '2026-10-26';
 
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  function formatLongDate(iso) {
+    const [y, m, d] = String(iso).split('-').map(Number);
+    return `${d} ${MONTHS[m - 1]} ${y}`;
+  }
+
   function reconstructSnapshot(historyData, snapshotDate) {
     const latest = {};
     historyData.forEach(row => {
       if (row.date <= snapshotDate) latest[row.model] = row;
     });
     return Object.values(latest);
+  }
+
+  function spansLiveBenchV2(fromDate, toDate) {
+    return !!fromDate && !!toDate && fromDate < LIVEBENCH_V2_START && toDate >= LIVEBENCH_V2_START;
+  }
+
+  function liveBenchNoteHtml(viewDate) {
+    if (viewDate && viewDate < LIVEBENCH_V2_START) return '';
+    return `<div class="lb-version-note" style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">${LB.liveBench.noteText}</div>`;
   }
 
   function normalizeSnapshotDate(snapshotParam) {
@@ -175,4 +191,13 @@
 
   LB.loadData = loadData;
   LB.buildLastTrackedScores = buildLastTrackedScores;
+  LB.reconstructSnapshot = reconstructSnapshot;
+  LB.normalizeSnapshotDate = normalizeSnapshotDate;
+  LB.liveBench = {
+    v2Start: LIVEBENCH_V2_START,
+    noteText: `LiveBench 2.0 scores, from ${formatLongDate(LIVEBENCH_V2_START)}.`,
+    markerText: `LiveBench moved to version 2.0 on ${formatLongDate(LIVEBENCH_V2_START)}. Scores before and after come from different tests.`,
+    spans: spansLiveBenchV2,
+    noteHtml: liveBenchNoteHtml
+  };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -8,6 +8,7 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="scripts/lb-config.js"></script>
   <script src="scripts/tooltip.js"></script>
+  <script src="scripts/data-loader.js"></script>
   <script src="scripts/viz-controls.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="styles/common.css">
@@ -426,16 +427,6 @@
       return isNaN(n) ? 0 : n;
     }
 
-    function reconstructSnapshot(data, date) {
-      const latest = {};
-      data.forEach(row => {
-        if (row.date <= date) {
-          latest[row.model] = row;
-        }
-      });
-      return Object.values(latest);
-    }
-
     function findDateForWeeksAgo(dates, latest, weeks) {
       if (dates.length < 2) return dates[0] || latest;
       const latestMs = new Date(latest).getTime();
@@ -619,8 +610,9 @@
       svg.selectAll('*').remove();
       svg.attr('width', containerWidth);
 
-      const pastSnapshot = reconstructSnapshot(historyData, pastDate);
-      const latestSnapshot = reconstructSnapshot(historyData, latestDate);
+      const pastSnapshot = LB.reconstructSnapshot(historyData, pastDate);
+      const latestSnapshot = LB.reconstructSnapshot(historyData, latestDate);
+      const spansV2 = (activeSource === 'LiveBench' || activeSource === 'ALL') && LB.liveBench.spans(pastDate, latestDate);
 
       const baseline = getGpt5Baseline(latestSnapshot);
 
@@ -633,9 +625,12 @@
       const pastModels = new Set(pastTop.map(d => d.model));
       const latestModels = new Set(latestTop.map(d => d.model));
 
+      const v2Badges = spansV2 && activeSource === 'LiveBench';
       const badges = {};
       latestTop.forEach(d => {
-        if (!pastModels.has(d.model)) {
+        if (v2Badges) {
+          if (pastModels.has(d.model)) badges[d.model] = { type: 'V2' };
+        } else if (!pastModels.has(d.model)) {
           badges[d.model] = { type: 'NEW' };
         } else {
           const pastEntry = pastTop.find(p => p.model === d.model);
@@ -650,7 +645,7 @@
 
       const outBadges = {};
       pastTop.forEach(d => {
-        if (!latestModels.has(d.model)) {
+        if (!v2Badges && !latestModels.has(d.model)) {
           outBadges[d.model] = { type: 'OUT' };
         }
       });
@@ -818,6 +813,57 @@
           .attr('data-model', pd.model)
           .attr('class', 'bump-line');
       });
+
+      if (spansV2) {
+        const markerX = (midLeftX + midRightX) / 2;
+        const lineBottom = Math.max(startYLeft + totalLeftHeight, startYRight + totalRightHeight) + 2;
+        const markerW = statusBadgeWidth;
+        const markerH = Math.max(12, statusBadgeHeight);
+        const markerY = Math.max(markerH / 2 + 2, smallY - labelSmallFontSize / 2);
+        const markerG = svg.append('g').attr('class', 'lb-v2-marker');
+        markerG.append('line')
+          .attr('x1', markerX).attr('x2', markerX)
+          .attr('y1', markerY + markerH / 2).attr('y2', lineBottom)
+          .attr('stroke', '#2756d3')
+          .attr('stroke-width', 1)
+          .attr('stroke-dasharray', '4 3')
+          .attr('opacity', 0.7)
+          .attr('pointer-events', 'none');
+        markerG.append('rect')
+          .attr('class', 'badge-rect')
+          .attr('x', markerX - markerW / 2)
+          .attr('y', markerY - markerH / 2)
+          .attr('width', markerW)
+          .attr('height', markerH)
+          .attr('fill', '#2756d3')
+          .attr('stroke', '#1e3fa0')
+          .attr('pointer-events', 'none');
+        markerG.append('text')
+          .attr('class', 'badge')
+          .attr('x', markerX)
+          .attr('y', markerY)
+          .attr('fill', '#fff')
+          .attr('font-size', Math.max(9, badgeFontSize))
+          .attr('pointer-events', 'none')
+          .text('2.0');
+        const hitW = Math.max(markerW, 16);
+        markerG.append('rect')
+          .attr('class', 'lb-v2-hit')
+          .attr('x', markerX - hitW / 2)
+          .attr('y', markerY - markerH / 2)
+          .attr('width', hitW)
+          .attr('height', Math.max(1, lineBottom - (markerY - markerH / 2)))
+          .attr('fill', 'transparent')
+          .style('cursor', 'help')
+          .on('mouseenter click', event => {
+            tooltip.html(`<div style="max-width:220px;text-align:center;">${LB.liveBench.markerText}</div>`).style('opacity', 1);
+            LB.tooltip.position(tooltip, event, { offsetX: 14, offsetY: -20 });
+          })
+          .on('mousemove', event => {
+            LB.tooltip.position(tooltip, event, { offsetX: 14, offsetY: -20 });
+          })
+          .on('mouseleave', () => tooltip.style('opacity', 0));
+      }
 
       const leftGroup = svg.append('g');
       pastTop.forEach((d, i) => {
@@ -991,14 +1037,15 @@
               .attr('font-size', badgeFontSize)
               .text(badgeText);
           } else {
+            const isV2 = badge.type === 'V2';
             const delta = badge.delta;
             const bw = Math.max(18, Math.min(24, 22 * rowScale));
             const bh = Math.max(10, Math.min(14, 13 * rowScale, rowHeight * 0.45));
             const rankWidth = rankText.node() ? rankText.node().getComputedTextLength() : rankFontSize;
             const badgeCenterX = rankX + rankWidth + bw / 2 + Math.max(4, 5 * rowScale);
             const badgeY = y;
-            badgeText = delta > 0 ? `+${delta}` : `${delta}`;
-            badgeColor = '#9ca3af';
+            badgeText = isV2 ? '2.0' : (delta > 0 ? `+${delta}` : `${delta}`);
+            badgeColor = isV2 ? '#2756d3' : '#9ca3af';
             badgeTextColor = '#fff';
             entryG.append('rect')
               .attr('class', 'badge-rect')
@@ -1007,7 +1054,7 @@
               .attr('width', bw)
               .attr('height', bh)
               .attr('fill', badgeColor)
-              .attr('stroke', '#6b7280');
+              .attr('stroke', isV2 ? '#1e3fa0' : '#6b7280');
             entryG.append('text')
               .attr('class', 'badge')
               .attr('x', badgeCenterX)

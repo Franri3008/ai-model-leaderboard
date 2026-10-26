@@ -259,6 +259,7 @@
     let rawData = [];
     let sourceData = null;
     let snapshotMode = false;
+    let viewDate = null;
     let lastTrackedScores = {};
     let questions = [];
     let modelIcons = {};
@@ -346,6 +347,7 @@
         displayDefault: 0
       });
       const snapshotParam = query.snapshot;
+      viewDate = snapshotParam ? LB.normalizeSnapshotDate(snapshotParam) : null;
 
       LB.loadData({ dataBase: DATA_BASE, snapshotParam }).then(state => {
         rawData = state.rawData;
@@ -838,6 +840,7 @@
           html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Artificial Analysis</td><td style="text-align:right;padding:2px 0;">${aaCell.html}</td></tr>`;
           html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LiveBench</td><td style="text-align:right;padding:2px 0;">${lbCell.html}</td></tr>`;
           html += `</table>`;
+          if (lbCell.html !== '-' && !lbCell.estimated) html += LB.liveBench.noteHtml(viewDate);
           if (anyUntracked) {
             html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>`;
           }
@@ -855,6 +858,7 @@
           html += `<table style="width:100%;margin-top:4px;border-spacing:0;">`;
           html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">${active.question}</td><td style="text-align:right;padding:2px 0;">${scoreHtml}</td></tr>`;
           html += `</table>`;
+          if (active.question === 'LiveBench') html += LB.liveBench.noteHtml(viewDate);
           if (d.untracked) {
             html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Untracked model</div>`;
           }
@@ -1149,6 +1153,7 @@
           html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Artificial Analysis</td><td style="text-align:right;padding:2px 0;">${aaCell.html}</td></tr>`;
           html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LiveBench</td><td style="text-align:right;padding:2px 0;">${lbCell.html}</td></tr>`;
           html += `</table>`;
+          if (lbCell.html !== '-' && !lbCell.estimated) html += LB.liveBench.noteHtml(viewDate);
           if (anyUntracked) {
             html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>`;
           }
@@ -1166,6 +1171,7 @@
           html += `<table style="width:100%;margin-top:4px;border-spacing:0;">`;
           html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">${active.question}</td><td style="text-align:right;padding:2px 0;">${scoreHtml}</td></tr>`;
           html += `</table>`;
+          if (active.question === 'LiveBench') html += LB.liveBench.noteHtml(viewDate);
           if (d.untracked) {
             html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Untracked model</div>`;
           }

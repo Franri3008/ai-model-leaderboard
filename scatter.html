@@ -928,6 +928,7 @@
                     let body;
                     let anyUntracked = false;
                     let anyEstimated = false;
+                    let lbShown = false;
                     const relRow = d.date
                         ? `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Released</td><td style="text-align:right;padding:2px 0;">${d3.timeFormat('%b %d, %Y')(d.date)}</td></tr>`
                         : '';
@@ -945,6 +946,7 @@
                         const lbCell = renderCell(d.model, 'lb', lbScore, v => v.toFixed(1), est.lb);
                         anyUntracked = lmaCell.untracked || aaCell.untracked || lbCell.untracked;
                         anyEstimated = lmaCell.estimated || aaCell.estimated || lbCell.estimated;
+                        lbShown = lbCell.html !== '-' && !lbCell.estimated;
                         body = `<table style="width:100%;margin-top:4px;border-spacing:0;">`
                             + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Score</td><td style="text-align:right;padding:2px 0;">${fmt(d.score)}</td></tr>`
                             + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LMArena</td><td style="text-align:right;padding:2px 0;">${lmaCell.html}</td></tr>`
@@ -962,7 +964,9 @@
                             + relRow + costRow
                             + `</table>`;
                     }
-                    const note = (anyUntracked ? LB.tooltip.disclaimerHtml : '')
+                    const showsLiveBench = isAll ? lbShown : active.question === 'LiveBench';
+                    const note = (showsLiveBench ? LB.liveBench.noteHtml(null) : '')
+                        + (anyUntracked ? LB.tooltip.disclaimerHtml : '')
                         + (anyEstimated ? LB.tooltip.estimatedDisclaimerHtml : '')
                         + (d.deactivated ? LB.tooltip.deactivatedDisclaimerHtml : '');
                     tooltip.style('opacity', 1).html(head + body + note);
