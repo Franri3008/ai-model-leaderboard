@@ -1,5 +1,6 @@
 (function (global) {
   const LB = global.LB = global.LB || {};
+  const LIVEBENCH_V2_START = '2026-10-26';
 
   function reconstructSnapshot(historyData, snapshotDate) {
     const latest = {};
@@ -15,10 +16,11 @@
       .replace(/^(\d{4})-(\d{1,2})-(\d{1,2})$/, (m, y, mo, d) => `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}`);
   }
 
-  function buildLastTrackedScores(historyData) {
+  function buildLastTrackedScores(historyData, viewDate) {
     const out = {};
     if (!Array.isArray(historyData)) return out;
     const parseNum = LB.util.parseNum;
+    const dropLiveBenchV1 = !viewDate || viewDate >= LIVEBENCH_V2_START;
     historyData.forEach(row => {
       const m = String(row.model || '').trim();
       if (!m) return;
@@ -26,6 +28,7 @@
       ['lma', 'aa', 'lb'].forEach(k => {
         const raw = row[k];
         if (raw == null || String(raw).trim() === '') return;
+        if (k === 'lb' && dropLiveBenchV1 && String(row.date) < LIVEBENCH_V2_START) return;
         const v = parseNum(raw);
         if (v <= 0) return;
         const existing = out[m][k];
@@ -71,7 +74,8 @@
       fetchHistory(),
       fetchSources()
     ]).then(([rawData, modelsData, trackingData, historyData, sourcesData]) => {
-      const lastTrackedScores = buildLastTrackedScores(snapshotParam ? historyData.filter(row => row.date <= normalizeSnapshotDate(snapshotParam)) : historyData);
+      const snapshotDate = snapshotParam ? normalizeSnapshotDate(snapshotParam) : null;
+      const lastTrackedScores = buildLastTrackedScores(snapshotDate ? historyData.filter(row => row.date <= snapshotDate) : historyData, snapshotDate);
 
       const idToColor = {};
       const idToOrg = {};
@@ -170,4 +174,5 @@
   }
 
   LB.loadData = loadData;
+  LB.buildLastTrackedScores = buildLastTrackedScores;
 })(typeof window !== 'undefined' ? window : globalThis);

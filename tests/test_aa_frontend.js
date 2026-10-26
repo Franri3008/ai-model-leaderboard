@@ -42,3 +42,24 @@ test('snapshot fallbacks cannot leak future AA scores or estimate status', async
   assert.ok(cell.html.includes('39'));
   assert.equal(cell.untracked, true);
 });
+
+test('LiveBench 1.0 scores never fill in for a missing 2.0 score', () => {
+  const history = [
+    {model: 'old', date: '2026-10-22', lma: 1400, aa: 40, lb: 79.19},
+    {model: 'old', date: '2026-10-26', lma: 1400, aa: 40, lb: null},
+    {model: 'new', date: '2026-10-22', lb: 78.54},
+    {model: 'new', date: '2026-10-26', lb: 64.57}
+  ];
+  const now = LB.buildLastTrackedScores(history, null);
+  assert.equal(now.old.lb, undefined);
+  assert.equal(now.old.lma.value, 1400);
+  assert.equal(now.old.aa.value, 40);
+  assert.equal(now.new.lb.value, 64.57);
+  const past = LB.buildLastTrackedScores(history.filter(r => r.date <= '2026-10-22'), '2026-10-22');
+  assert.equal(past.old.lb.value, 79.19);
+  const rawData = [{model: 'old', name: 'Old', lma: 1400, aa: 40, lb: null}];
+  const rows = LB.aggregate({rawData, lastTrackedScores: now, active: {question: 'LiveBench'}});
+  assert.equal(rows.length, 0);
+  const cell = LB.tooltip.renderScoreCell('old', 'lb', 0, v => v.toFixed(1), now);
+  assert.equal(cell.html, '-');
+});
