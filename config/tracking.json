@@ -347,6 +347,20 @@
         "cost_output": 5
     },
     {
+        "model": "gpt-6-1-terra",
+        "name": "GPT 6.1 Terra",
+        "logo": "gpt",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-10-26",
+        "lma_lookup": null,
+        "aa_lookup": "GPT-6.1 Terra (Max)",
+        "aa_slug": "gpt-6-1-terra",
+        "lb_lookup": "GPT-6.1 Terra",
+        "scatter_default": 1,
+        "cost_output": 5
+    },
+    {
         "model": "gpt-6-1-sol",
         "name": "GPT 6.1 Sol",
         "logo": "gpt",
