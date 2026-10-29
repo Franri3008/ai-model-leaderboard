@@ -20,8 +20,34 @@ def model(slug="gpt-5-4", score=38.9756):
                 evaluations=dict(artificial_analysis_intelligence_index=score), pricing={})
 
 
-def page(models):
-    return dict(status=200, prompt_options={}, data=models)
+def page(models, number=1, total=1, tier='free', version=5):
+    return dict(tier=tier, intelligence_index_version=version, data=models,
+                pagination=dict(page=number, page_size=200, total_pages=total, has_more=number < total))
+
+
+def parse(models, version=5):
+    return scraper_aa.parse_models(models, version)
+
+
+def reply(payload=None, status=200, headers=None):
+    response = Mock(status_code=status, headers=headers or {})
+    response.json.return_value = payload if payload is not None else {'error': f'error {status}'}
+    return response
+
+
+def fake_api(routes):
+    calls = []
+
+    def get(url, headers, params, timeout):
+        calls.append((url, params['page']))
+        return routes[(url, params['page'])]
+    return get, calls
+
+
+def paged(models, size, url=None, tier='free'):
+    url = url or scraper_aa.URL
+    chunks = [models[i:i + size] for i in range(0, len(models), size)] or [[]]
+    return {(url, n + 1): reply(page(chunk, n + 1, len(chunks), tier)) for n, chunk in enumerate(chunks)}
 
 
 def pipeline_functions():
@@ -41,51 +67,166 @@ def pipeline_functions():
 
 class ArtificialAnalysisTests(unittest.TestCase):
     def test_api_rows_rounding_and_metadata(self):
-        df = scraper_aa.parse_models(page([model(), model('mini', 24.5), model('zero', 0), model('missing', None)]))
-        self.assertEqual(df['Intelligence Index'].tolist(), [39, 25, 0])
+        no_creator = model('anon', 12); no_creator['model_creator'] = None
+        df = parse([model(), model('mini', 24.5), model('zero', 0), model('missing', None), no_creator], 5)
+        self.assertEqual(df['Intelligence Index'].tolist(), [39, 25, 0, 12])
         self.assertTrue(df.aa_estimated.isna().all())
-        self.assertEqual(df.aa_version.tolist(), [''] * 3)
-        self.assertEqual(df.aa_slug.tolist(), ['gpt-5-4', 'mini', 'zero'])
-        self.assertEqual(df.Creator.tolist(), ['OpenAI'] * 3)
+        self.assertEqual(df.aa_version.tolist(), ['v5.0'] * 4)
+        self.assertEqual(parse([model()], 4.1).aa_version.tolist(), ['v4.1'])
+        self.assertEqual(df.aa_slug.tolist(), ['gpt-5-4', 'mini', 'zero', 'anon'])
+        self.assertEqual(df.Creator.tolist(), ['OpenAI'] * 3 + [''])
 
     def test_invalid_scores_fail(self):
         for value in [True, '39', -1, 101, float('nan'), float('inf')]:
             with self.subTest(value=value), self.assertRaises(RuntimeError):
-                scraper_aa.parse_models(page([model(score=value)]))
+                parse([model(score=value)])
 
     def test_duplicate_or_missing_identity_fails(self):
         nameless = model(); nameless['name'] = ''
         for models in [[model(), model()], [nameless]]:
             with self.subTest(models=models), self.assertRaises(RuntimeError):
-                scraper_aa.parse_models(page(models))
+                parse(models)
 
-    def test_schema_change_fails(self):
+    def test_model_schema_change_fails(self):
         no_index = model(); no_index['evaluations'] = {'new_index': 39}
         no_creator = model(); del no_creator['model_creator']
-        for payload in [{'status': 200, 'models': []}, {'status': 500, 'data': [model()]}, page([no_index]), page([no_creator]), page([]), []]:
+        bad_creator = model(); bad_creator['model_creator'] = 'OpenAI'
+        for models in [[no_index], [no_creator], [bad_creator], [], ['gpt-5-4']]:
+            with self.subTest(models=str(models)[:60]), self.assertRaises(RuntimeError):
+                parse(models)
+
+    def test_page_schema_change_fails(self):
+        legacy = dict(status=200, prompt_options={}, data=[model()])
+        no_pagination = page([model()]); del no_pagination['pagination']
+        no_version = page([model()]); del no_version['intelligence_index_version']
+        bad_tier = page([model()], tier='enterprise')
+        bad_more = page([model()]); bad_more['pagination']['has_more'] = 'no'
+        empty_but_more = page([], 1, 3)
+        stopped_early = page([model()], 1, 3); stopped_early['pagination']['has_more'] = False
+        for payload in [legacy, no_pagination, no_version, bad_tier, bad_more, empty_but_more, stopped_early, []]:
             with self.subTest(payload=str(payload)[:60]), self.assertRaises(RuntimeError):
-                scraper_aa.parse_models(payload)
+                scraper_aa.check_page(payload, 1)
+        with self.assertRaisesRegex(RuntimeError, 'page 2 when page 1'):
+            scraper_aa.check_page(page([model()], 2, 3), 1)
+        self.assertEqual(scraper_aa.check_page(page([model()], 2, 3), 2)['data'][0]['slug'], 'gpt-5-4')
 
     def test_missing_key_stops_scrape_without_request(self):
         with patch.dict(scraper_aa.os.environ, {'AA_API_KEY': ''}), patch.object(scraper_aa.requests, 'get') as get, self.assertRaises(RuntimeError):
             scraper_aa.scrape()
         get.assert_not_called()
 
-    def test_http_error_stops_scrape(self):
-        response = Mock(status_code=401)
-        with patch.dict(scraper_aa.os.environ, {'AA_API_KEY': 'test-key'}), patch.object(scraper_aa.requests, 'get', return_value=response), self.assertRaises(RuntimeError):
-            scraper_aa.scrape()
+    def run_scrape(self, routes, minimum=1, previous=None):
+        get, calls = fake_api(routes)
+        with patch.dict(scraper_aa.os.environ, {'AA_API_KEY': 'test-key'}), patch.object(scraper_aa.requests, 'get', side_effect=get) as mock_get, \
+                patch.object(scraper_aa, 'MIN_SCORED_MODELS', minimum), patch.object(scraper_aa, 'previous_scored_count', return_value=previous):
+            try:
+                return scraper_aa.scrape(), calls, mock_get
+            except RuntimeError as exc:
+                exc.calls = calls
+                raise
 
-    def test_http_scrape_uses_one_request_with_key_header(self):
-        response = Mock(status_code=200)
-        response.json.return_value = page([model()])
-        with patch.dict(scraper_aa.os.environ, {'AA_API_KEY': 'test-key'}), patch.object(scraper_aa.requests, 'get', return_value=response) as get:
-            self.assertEqual(scraper_aa.scrape().iloc[0]['Intelligence Index'], 39)
-            get.assert_called_once_with(scraper_aa.URL, headers={'x-api-key': 'test-key'}, timeout=(10, 45))
+    def test_http_errors_stop_scrape(self):
+        for status, text in [(401, 'AA_API_KEY missing or invalid'), (410, 'retired'), (429, 'retry after 3600s'), (500, 'HTTP 500')]:
+            with self.subTest(status=status), self.assertRaisesRegex(RuntimeError, text) as ctx:
+                self.run_scrape({(scraper_aa.URL, 1): reply(status=status, headers={'Retry-After': '3600'})})
+            self.assertEqual(ctx.exception.calls, [(scraper_aa.URL, 1)])
+
+    def test_invalid_json_stops_scrape(self):
+        broken = reply(); broken.json.side_effect = ValueError('bad')
+        with self.assertRaisesRegex(RuntimeError, 'invalid JSON on page 1'):
+            self.run_scrape({(scraper_aa.URL, 1): broken})
+
+    def test_pro_request_uses_key_header_and_page_param(self):
+        df, calls, get = self.run_scrape({(scraper_aa.URL, 1): reply(page([model()], tier='pro'))})
+        self.assertEqual(df.iloc[0]['Intelligence Index'], 39)
+        get.assert_called_once_with(scraper_aa.URL, headers={'x-api-key': 'test-key'}, params={'page': 1}, timeout=(10, 45))
+
+    def test_follows_every_page_until_list_ends(self):
+        models = [model(f'm{i}', 50) for i in range(704)]
+        df, calls, _ = self.run_scrape(paged(models, 200, tier='pro'))
+        self.assertEqual(calls, [(scraper_aa.URL, n) for n in (1, 2, 3, 4)])
+        self.assertEqual(len(df), 704)
+        self.assertEqual(df.aa_slug.iloc[-1], 'm703')
+
+    def test_duplicate_slug_across_pages_fails(self):
+        routes = {(scraper_aa.URL, 1): reply(page([model('a')], 1, 2, 'pro')), (scraper_aa.URL, 2): reply(page([model('a')], 2, 2, 'pro'))}
+        with self.assertRaisesRegex(RuntimeError, 'duplicated'):
+            self.run_scrape(routes)
+
+    def test_pages_must_agree_on_version_and_tier(self):
+        for second in [page([model('b')], 2, 2, 'pro', 4.1), page([model('b')], 2, 2, 'free')]:
+            routes = {(scraper_aa.URL, 1): reply(page([model('a')], 1, 2, 'pro')), (scraper_aa.URL, 2): reply(second)}
+            with self.subTest(second=second['tier']), self.assertRaisesRegex(RuntimeError, 'disagree'):
+                self.run_scrape(routes)
+
+    def test_error_on_later_page_stops_scrape(self):
+        routes = {(scraper_aa.URL, 1): reply(page([model('a')], 1, 2, 'pro')), (scraper_aa.URL, 2): reply(status=500)}
+        with self.assertRaisesRegex(RuntimeError, 'HTTP 500 .* page 2'):
+            self.run_scrape(routes)
+
+    def test_page_cap_stops_endless_paging(self):
+        routes = {(scraper_aa.URL, n): reply(page([model(f'm{n}')], n, 10_000, 'pro')) for n in range(1, scraper_aa.MAX_PAGES + 2)}
+        with self.assertRaisesRegex(RuntimeError, f'after {scraper_aa.MAX_PAGES} pages') as ctx:
+            self.run_scrape(routes)
+        self.assertEqual(len(ctx.exception.calls), scraper_aa.MAX_PAGES)
+
+    def test_forbidden_pro_falls_back_to_free_list(self):
+        models = [model(f'm{i}', 50) for i in range(250)]
+        routes = {(scraper_aa.URL, 1): reply({'error': 'Language models list requires a Pro subscription'}, 403), **paged(models, 200, scraper_aa.FREE_URL)}
+        df, calls, _ = self.run_scrape(routes)
+        self.assertEqual(calls, [(scraper_aa.URL, 1), (scraper_aa.FREE_URL, 1), (scraper_aa.FREE_URL, 2)])
+        self.assertEqual(len(df), 250)
+
+    def test_free_list_error_after_fallback_stops_scrape(self):
+        routes = {(scraper_aa.URL, 1): reply(status=403), (scraper_aa.FREE_URL, 1): reply(status=401)}
+        with self.assertRaisesRegex(RuntimeError, 'HTTP 401 for .*/free page 1'):
+            self.run_scrape(routes)
+
+    def scrape_with(self, count, previous):
+        models = [model(f'm{i}', 50) for i in range(count)]
+        return self.run_scrape(paged(models, 200), scraper_aa.MIN_SCORED_MODELS, previous)[0]
+
+    def test_short_list_against_previous_run_fails(self):
+        with self.assertRaisesRegex(RuntimeError, 'below the floor of 352'):
+            self.scrape_with(78, 704)
+        with self.assertRaises(RuntimeError):
+            self.scrape_with(351, 704)
+        self.assertEqual(len(self.scrape_with(352, 704)), 352)
+
+    def test_short_list_without_previous_count_uses_fixed_floor(self):
+        floor = scraper_aa.MIN_SCORED_MODELS
+        for previous in [None, 78, 100]:
+            with self.subTest(previous=previous), self.assertRaisesRegex(RuntimeError, f'below the floor of {floor}'):
+                self.scrape_with(floor - 1, previous)
+        self.assertEqual(len(self.scrape_with(floor, None)), floor)
+
+    def test_short_list_fails_before_scraped_file_is_written(self):
+        update_src = (ROOT / 'update.py').read_text()
+        self.assertLess(update_src.index('df = scrape();'), update_src.index('df.to_csv(out_file'))
+        with patch.object(scraper_aa.pd.DataFrame, 'to_csv') as to_csv, self.assertRaises(RuntimeError):
+            self.scrape_with(78, 704)
+        to_csv.assert_not_called()
+
+    def test_previous_count_reads_firebase_metadata(self):
+        ref = Mock(); ref.get.return_value = 704
+        fake_db = Mock(reference=Mock(return_value=ref))
+        with patch.dict(scraper_aa.os.environ, {'FIREBASE_DATABASE_URL': 'https://example.invalid'}), \
+                patch.dict('sys.modules', {'firebase_admin': Mock(db=fake_db), 'firebase_admin.db': fake_db}), \
+                patch('scripts.firebase_upload._init_firebase') as init:
+            self.assertEqual(scraper_aa.previous_scored_count(), 704)
+            init.assert_called_once_with('https://example.invalid')
+            fake_db.reference.assert_called_once_with(scraper_aa.PREVIOUS_COUNT_PATH)
+            for bad in [None, True, '704', 0]:
+                ref.get.return_value = bad
+                self.assertIsNone(scraper_aa.previous_scored_count())
+            ref.get.side_effect = ValueError('down')
+            self.assertIsNone(scraper_aa.previous_scored_count())
+        with patch.dict(scraper_aa.os.environ, {'FIREBASE_DATABASE_URL': ''}):
+            self.assertIsNone(scraper_aa.previous_scored_count())
 
     def test_source_export_and_exact_variant_matching(self):
         funcs = pipeline_functions()
-        df = scraper_aa.parse_models(page([model()]))
+        df = parse([model()])
         df.loc[0, 'Model'] = 'GPT-5.4 (Xhigh)'
         match = funcs['match_source_score']
         self.assertEqual(match(df, 'gpt-5-4', ['slug'], ['index']), 39)
@@ -133,7 +274,7 @@ class ArtificialAnalysisTests(unittest.TestCase):
             history.write_text('date;model;lma;aa;lb;aa_estimated;aa_version;aa_slug\n2026-01-01;gpt54;1477;39;77.97;0;v4.3;gpt-5-4\n')
             self.assertEqual(funcs['append_history'](result, history), 1)
             self.assertEqual(funcs['append_history'](result, history), 0)
-        df = scraper_aa.parse_models(page([model(), model('new-model', 50)]))
+        df = parse([model(), model('new-model', 50)])
         df['Model'] = ['GPT-5.4 (Xhigh)', 'New Model']
         tracking = pd.DataFrame([dict(model='gpt54', name='GPT 5.4', aa_lookup='GPT-5.4 (xhigh)', aa_slug='gpt-5-4')])
         untracked = funcs['get_untracked_models'](df, 'Artificial Analysis', ['index'], tracking, 'aa_slug', match_col='aa_slug')
