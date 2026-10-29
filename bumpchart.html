@@ -7,8 +7,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="scripts/lb-config.js"></script>
+  <script src="scripts/util.js"></script>
   <script src="scripts/tooltip.js"></script>
   <script src="scripts/data-loader.js"></script>
+  <script src="scripts/aggregation.js"></script>
   <script src="scripts/viz-controls.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="styles/common.css">
@@ -455,7 +457,7 @@
       let scored;
       if (source === 'ALL') {
         const maxLma = gpt5Baseline.lma || 1434;
-        const maxAa = gpt5Baseline.aa || 45;
+        const aaRef = gpt5Baseline.aa;
         const maxLb = gpt5Baseline.lb || 70.48;
 
         scored = snapshotRows.map(d => {
@@ -470,7 +472,7 @@
           const missingCount = (hasLma ? 0 : 1) + (hasAa ? 0 : 1) + (hasLb ? 0 : 1);
 
           let normalizedLma = lma > 0 ? (lma / (2 * maxLma)) : 0;
-          let normalizedAa = aa > 0 ? (aa / (2 * maxAa)) : 0;
+          let normalizedAa = aa > 0 ? (aa / (2 * LB.aaAnchorFor(aaRef, d.aa_version))) : 0;
           let normalizedLb = lb > 0 ? (lb / (2 * maxLb)) : 0;
 
           if (missingCount === 1) {
@@ -489,11 +491,14 @@
           lma: parseNum(d.lma), aa: parseNum(d.aa), lb: parseNum(d.lb)
         }));
       } else if (source === 'Artificial Analysis') {
-        scored = snapshotRows.map(d => ({
-          model: String(d.model || '').trim(),
-          score: parseNum(d.aa),
-          lma: parseNum(d.lma), aa: parseNum(d.aa), lb: parseNum(d.lb)
-        }));
+        const v5Only = snapshotRows.some(d => parseNum(d.aa) > 0 && LB.aaIndex.isV5(d.aa_version));
+        scored = snapshotRows
+          .filter(d => !v5Only || LB.aaIndex.isV5(d.aa_version))
+          .map(d => ({
+            model: String(d.model || '').trim(),
+            score: parseNum(d.aa),
+            lma: parseNum(d.lma), aa: parseNum(d.aa), lb: parseNum(d.lb)
+          }));
       } else {
         scored = snapshotRows.map(d => ({
           model: String(d.model || '').trim(),
@@ -541,6 +546,7 @@
       scored.forEach(d => {
         const raw = snapshotRows.find(r => String(r.model || '').trim() === d.model);
         d.providerEstimated = !!raw && Number(raw.aa_estimated) === 1;
+        d.aaVersion = raw ? (raw.aa_version || '') : '';
         d.name = modelNames[d.model] || d.model;
         d.icon = modelIcons[d.model] || '';
         d.deactivated = !ignoreDeact && !!(trackingMap[d.model] && Number(trackingMap[d.model].deactivated) === 1);
@@ -554,7 +560,7 @@
       const gpt5 = snapshotRows.find(d => String(d.model || '').trim() === 'gpt-5-high');
       return {
         lma: gpt5 ? parseNum(gpt5.lma) : 1434,
-        aa: gpt5 ? parseNum(gpt5.aa) : 45,
+        aa: LB.aaAnchors(gpt5),
         lb: gpt5 ? parseNum(gpt5.lb) : 70.48
       };
     }
@@ -613,6 +619,7 @@
       const pastSnapshot = LB.reconstructSnapshot(historyData, pastDate);
       const latestSnapshot = LB.reconstructSnapshot(historyData, latestDate);
       const spansV2 = (activeSource === 'LiveBench' || activeSource === 'ALL') && LB.liveBench.spans(pastDate, latestDate);
+      const spansAaV5 = (activeSource === 'Artificial Analysis' || activeSource === 'ALL') && LB.aaIndex.spans(pastDate, latestDate);
 
       const baseline = getGpt5Baseline(latestSnapshot);
 
@@ -626,10 +633,11 @@
       const latestModels = new Set(latestTop.map(d => d.model));
 
       const v2Badges = spansV2 && activeSource === 'LiveBench';
+      const v5Badges = spansAaV5 && activeSource === 'Artificial Analysis';
       const badges = {};
       latestTop.forEach(d => {
-        if (v2Badges) {
-          if (pastModels.has(d.model)) badges[d.model] = { type: 'V2' };
+        if (v2Badges || v5Badges) {
+          if (pastModels.has(d.model)) badges[d.model] = { type: v5Badges ? 'V5' : 'V2' };
         } else if (!pastModels.has(d.model)) {
           badges[d.model] = { type: 'NEW' };
         } else {
@@ -645,7 +653,7 @@
 
       const outBadges = {};
       pastTop.forEach(d => {
-        if (!v2Badges && !latestModels.has(d.model)) {
+        if (!v2Badges && !v5Badges && !latestModels.has(d.model)) {
           outBadges[d.model] = { type: 'OUT' };
         }
       });
@@ -734,7 +742,7 @@
         html += `<table style="width:100%;margin-top:4px;border-spacing:0;">`;
         html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Date</td><td style="text-align:right;padding:2px 0;">${dateLabel}</td></tr>`;
         html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LMArena</td><td style="text-align:right;padding:2px 0;">${d.lma > 0 ? Math.round(d.lma).toLocaleString() : '—'}</td></tr>`;
-        html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Artificial Analysis</td><td style="text-align:right;padding:2px 0;">${d.aa > 0 ? Math.round(d.aa) : '—'}</td></tr>`;
+        html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Artificial Analysis</td><td style="text-align:right;padding:2px 0;">${d.aa > 0 ? Math.round(d.aa) + LB.aaIndex.label(d.aaVersion, dateStr) : '—'}</td></tr>`;
         html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LiveBench</td><td style="text-align:right;padding:2px 0;">${d.lb > 0 ? d.lb.toFixed(2) : '—'}</td></tr>`;
         html += `</table>`;
         if (d.deactivated) {
@@ -814,17 +822,20 @@
           .attr('class', 'bump-line');
       });
 
-      if (spansV2) {
-        const markerX = (midLeftX + midRightX) / 2;
-        const lineBottom = Math.max(startYLeft + totalLeftHeight, startYRight + totalRightHeight) + 2;
+      const switchMarkers = [];
+      if (spansV2) switchMarkers.push({ cls: 'lb-v2-marker', label: '2.0', fill: '#2756d3', stroke: '#1e3fa0', text: LB.liveBench.markerText });
+      if (spansAaV5) switchMarkers.push({ cls: 'aa-v5-marker', label: 'v5', fill: '#7c3aed', stroke: '#5b21b6', text: LB.aaIndex.markerText });
+      switchMarkers.forEach((m, mi) => {
         const markerW = statusBadgeWidth;
+        const markerX = (midLeftX + midRightX) / 2 + (mi - (switchMarkers.length - 1) / 2) * (markerW + 4);
+        const lineBottom = Math.max(startYLeft + totalLeftHeight, startYRight + totalRightHeight) + 2;
         const markerH = Math.max(12, statusBadgeHeight);
         const markerY = Math.max(markerH / 2 + 2, smallY - labelSmallFontSize / 2);
-        const markerG = svg.append('g').attr('class', 'lb-v2-marker');
+        const markerG = svg.append('g').attr('class', m.cls);
         markerG.append('line')
           .attr('x1', markerX).attr('x2', markerX)
           .attr('y1', markerY + markerH / 2).attr('y2', lineBottom)
-          .attr('stroke', '#2756d3')
+          .attr('stroke', m.fill)
           .attr('stroke-width', 1)
           .attr('stroke-dasharray', '4 3')
           .attr('opacity', 0.7)
@@ -835,8 +846,8 @@
           .attr('y', markerY - markerH / 2)
           .attr('width', markerW)
           .attr('height', markerH)
-          .attr('fill', '#2756d3')
-          .attr('stroke', '#1e3fa0')
+          .attr('fill', m.fill)
+          .attr('stroke', m.stroke)
           .attr('pointer-events', 'none');
         markerG.append('text')
           .attr('class', 'badge')
@@ -845,10 +856,10 @@
           .attr('fill', '#fff')
           .attr('font-size', Math.max(9, badgeFontSize))
           .attr('pointer-events', 'none')
-          .text('2.0');
+          .text(m.label);
         const hitW = Math.max(markerW, 16);
         markerG.append('rect')
-          .attr('class', 'lb-v2-hit')
+          .attr('class', m.cls + '-hit')
           .attr('x', markerX - hitW / 2)
           .attr('y', markerY - markerH / 2)
           .attr('width', hitW)
@@ -856,14 +867,14 @@
           .attr('fill', 'transparent')
           .style('cursor', 'help')
           .on('mouseenter click', event => {
-            tooltip.html(`<div style="max-width:220px;text-align:center;">${LB.liveBench.markerText}</div>`).style('opacity', 1);
+            tooltip.html(`<div style="max-width:220px;text-align:center;">${m.text}</div>`).style('opacity', 1);
             LB.tooltip.position(tooltip, event, { offsetX: 14, offsetY: -20 });
           })
           .on('mousemove', event => {
             LB.tooltip.position(tooltip, event, { offsetX: 14, offsetY: -20 });
           })
           .on('mouseleave', () => tooltip.style('opacity', 0));
-      }
+      });
 
       const leftGroup = svg.append('g');
       pastTop.forEach((d, i) => {
@@ -1038,14 +1049,15 @@
               .text(badgeText);
           } else {
             const isV2 = badge.type === 'V2';
+            const isV5 = badge.type === 'V5';
             const delta = badge.delta;
             const bw = Math.max(18, Math.min(24, 22 * rowScale));
             const bh = Math.max(10, Math.min(14, 13 * rowScale, rowHeight * 0.45));
             const rankWidth = rankText.node() ? rankText.node().getComputedTextLength() : rankFontSize;
             const badgeCenterX = rankX + rankWidth + bw / 2 + Math.max(4, 5 * rowScale);
             const badgeY = y;
-            badgeText = isV2 ? '2.0' : (delta > 0 ? `+${delta}` : `${delta}`);
-            badgeColor = isV2 ? '#2756d3' : '#9ca3af';
+            badgeText = isV2 ? '2.0' : isV5 ? 'v5' : (delta > 0 ? `+${delta}` : `${delta}`);
+            badgeColor = isV2 ? '#2756d3' : isV5 ? '#7c3aed' : '#9ca3af';
             badgeTextColor = '#fff';
             entryG.append('rect')
               .attr('class', 'badge-rect')
@@ -1054,7 +1066,7 @@
               .attr('width', bw)
               .attr('height', bh)
               .attr('fill', badgeColor)
-              .attr('stroke', isV2 ? '#1e3fa0' : '#6b7280');
+              .attr('stroke', isV2 ? '#1e3fa0' : isV5 ? '#5b21b6' : '#6b7280');
             entryG.append('text')
               .attr('class', 'badge')
               .attr('x', badgeCenterX)
@@ -1220,6 +1232,7 @@
         d3.json(`${CONFIG_BASE}/config/tracking.json`)
       ]).then(([history, modelsData, trackingData]) => {
         historyData = history;
+        LB.aaIndex.init(historyData);
 
         const idToOrg = {};
         modelsData.forEach(m => { idToColor[m.id] = m.color; idToOrg[m.id] = m.org; });

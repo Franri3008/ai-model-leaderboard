@@ -115,10 +115,11 @@ class ArtificialAnalysisTests(unittest.TestCase):
             scraper_aa.scrape()
         get.assert_not_called()
 
-    def run_scrape(self, routes, minimum=1, previous=None):
+    def run_scrape(self, routes, minimum=1, previous=None, previous_version=None, new_minimum=1):
         get, calls = fake_api(routes)
         with patch.dict(scraper_aa.os.environ, {'AA_API_KEY': 'test-key'}), patch.object(scraper_aa.requests, 'get', side_effect=get) as mock_get, \
-                patch.object(scraper_aa, 'MIN_SCORED_MODELS', minimum), patch.object(scraper_aa, 'previous_scored_count', return_value=previous):
+                patch.object(scraper_aa, 'MIN_SCORED_MODELS', minimum), patch.object(scraper_aa, 'MIN_SCORED_NEW_INDEX', new_minimum), \
+                patch.object(scraper_aa, 'previous_run', return_value=(previous, previous_version)):
             try:
                 return scraper_aa.scrape(), calls, mock_get
             except RuntimeError as exc:
@@ -182,23 +183,88 @@ class ArtificialAnalysisTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'HTTP 401 for .*/free page 1'):
             self.run_scrape(routes)
 
-    def scrape_with(self, count, previous):
-        models = [model(f'm{i}', 50) for i in range(count)]
-        return self.run_scrape(paged(models, 200), scraper_aa.MIN_SCORED_MODELS, previous)[0]
+    def scrape_with(self, count, previous, previous_version='v5.0', models=None):
+        models = models or [model(f'm{i}', 50) for i in range(count)]
+        return self.run_scrape(paged(models, 200), scraper_aa.MIN_SCORED_MODELS, previous, previous_version,
+                               scraper_aa.MIN_SCORED_NEW_INDEX)[0]
 
-    def test_short_list_against_previous_run_fails(self):
+    def test_current_index_guard_uses_half_of_previous_on_same_version(self):
         with self.assertRaisesRegex(RuntimeError, 'below the floor of 352'):
             self.scrape_with(78, 704)
         with self.assertRaises(RuntimeError):
             self.scrape_with(351, 704)
         self.assertEqual(len(self.scrape_with(352, 704)), 352)
 
-    def test_short_list_without_previous_count_uses_fixed_floor(self):
-        floor = scraper_aa.MIN_SCORED_MODELS
-        for previous in [None, 78, 100]:
+    def test_current_index_guard_skips_half_of_previous_after_version_change(self):
+        floor = scraper_aa.MIN_SCORED_NEW_INDEX
+        for version in [None, 'v4.3', 'v4']:
+            with self.subTest(version=version):
+                self.assertEqual(len(self.scrape_with(78, 704, version)), 78)
+                with self.assertRaisesRegex(RuntimeError, f'below the floor of {floor}'):
+                    self.scrape_with(floor - 1, 704, version)
+        for previous in [None, 30]:
             with self.subTest(previous=previous), self.assertRaisesRegex(RuntimeError, f'below the floor of {floor}'):
                 self.scrape_with(floor - 1, previous)
         self.assertEqual(len(self.scrape_with(floor, None)), floor)
+
+    def v4_models(self, total, with_v4, v4_key='artificial_analysis_intelligence_index_v4_3'):
+        models = [model(f'm{i}', 70 if i < 78 else None) for i in range(total)]
+        for i, m in enumerate(models):
+            m['evaluations'][v4_key] = 40.6 if i < with_v4 else None
+        return models
+
+    def test_v4_rule_used_when_v4_index_covers_enough_models(self):
+        df = self.scrape_with(0, 704, None, self.v4_models(716, 400))
+        self.assertEqual(len(df), 400)
+        self.assertEqual(set(df['Intelligence Index']), {41})
+        self.assertEqual(set(df.aa_version), {'v4.3'})
+        for version in [None, 'v4.3', 'v5.0']:
+            with self.subTest(version=version), self.assertRaisesRegex(RuntimeError, 'below the floor of 352'):
+                self.scrape_with(0, 704, version, self.v4_models(716, 300))
+
+    def test_v4_key_names_are_matched_defensively(self):
+        cases = {'artificial_analysis_intelligence_index_v4': 'v4', 'artificial_analysis_intelligence_index_v4_0': 'v4.0',
+                 'artificial_analysis_intelligence_index_v4.3': 'v4.3', 'aa_intelligence_index_V4': 'v4',
+                 'intelligence_index_v_4_2': 'v4.2'}
+        for key, label in cases.items():
+            with self.subTest(key=key):
+                rule = scraper_aa.choose_rule(self.v4_models(250, 250, key), 5)
+                self.assertEqual((rule['name'], rule['key'], rule['label']), ('v4', key, label))
+        for key in ['terminalbench_v4_0', 'artificial_analysis_coding_index_v4', 'artificial_analysis_intelligence_index_v40']:
+            with self.subTest(key=key):
+                self.assertEqual(scraper_aa.choose_rule(self.v4_models(250, 250, key), 5)['name'], 'current')
+
+    def test_current_rule_used_when_v4_index_is_short_or_absent(self):
+        for models, reason in [(self.v4_models(716, 150), 'has 150, below 200'), ([model(f'm{i}', 50) for i in range(300)], 'no v4')]:
+            with self.subTest(reason=reason):
+                rule = scraper_aa.choose_rule(models, 5)
+                self.assertEqual((rule['name'], rule['key'], rule['label'], rule['floor']),
+                                 ('current', scraper_aa.SCORE_KEY, 'v5.0', scraper_aa.MIN_SCORED_NEW_INDEX))
+                self.assertIn(reason, rule['reason'])
+        df = self.scrape_with(0, 704, 'v4.3', self.v4_models(716, 150))
+        self.assertEqual((len(df), set(df.aa_version)), (78, {'v5.0'}))
+
+    def test_logs_evaluation_keys_and_version_fields_without_scores(self):
+        models = self.v4_models(5, 2)
+        models[0]['evaluations']['artificial_analysis_coding_index'] = None
+        models[0]['intelligence_index_version'] = 4.3
+        models[1]['index_version'] = None
+        with patch.object(scraper_aa, 'print_step') as log:
+            rule = scraper_aa.choose_rule(models, 5)
+        lines = [c.args[0] for c in log.call_args_list]
+        self.assertEqual(lines[0], 'AA: evaluations keys with non-null counts over 5 models: '
+                         'artificial_analysis_coding_index=0, artificial_analysis_intelligence_index=5, '
+                         'artificial_analysis_intelligence_index_v4_3=2')
+        self.assertEqual(lines[1], 'AA: top-level model fields that look like an index version: index_version=0, intelligence_index_version=1')
+        self.assertNotIn('70', ' '.join(lines))
+        self.assertEqual(rule['name'], 'current')
+
+    def test_scrape_logs_rule_and_guard(self):
+        with patch.object(scraper_aa, 'print_step') as log:
+            self.scrape_with(78, 704, 'v4.3', [model(f'm{i}', 50) for i in range(78)])
+        text = '\n'.join(c.args[0] for c in log.call_args_list)
+        self.assertIn('AA: rule current uses artificial_analysis_intelligence_index as v5.0 because no v4 intelligence index key', text)
+        self.assertIn('AA: size guard floor 50 (previous run was on index v4.3, half-of-previous skipped', text)
 
     def test_short_list_fails_before_scraped_file_is_written(self):
         update_src = (ROOT / 'update.py').read_text()
@@ -207,22 +273,31 @@ class ArtificialAnalysisTests(unittest.TestCase):
             self.scrape_with(78, 704)
         to_csv.assert_not_called()
 
-    def test_previous_count_reads_firebase_metadata(self):
-        ref = Mock(); ref.get.return_value = 704
+    def test_previous_run_reads_firebase_metadata(self):
+        ref = Mock(); ref.get.return_value = {'rows_scraped': {'artificial_analysis': 704}, 'aa_index_version': 'v5.0'}
         fake_db = Mock(reference=Mock(return_value=ref))
         with patch.dict(scraper_aa.os.environ, {'FIREBASE_DATABASE_URL': 'https://example.invalid'}), \
                 patch.dict('sys.modules', {'firebase_admin': Mock(db=fake_db), 'firebase_admin.db': fake_db}), \
                 patch('scripts.firebase_upload._init_firebase') as init:
-            self.assertEqual(scraper_aa.previous_scored_count(), 704)
+            self.assertEqual(scraper_aa.previous_run(), (704, 'v5.0'))
             init.assert_called_once_with('https://example.invalid')
-            fake_db.reference.assert_called_once_with(scraper_aa.PREVIOUS_COUNT_PATH)
+            fake_db.reference.assert_called_once_with(scraper_aa.PREVIOUS_STATS_PATH)
+            ref.get.return_value = {'rows_scraped': {'artificial_analysis': 704}}
+            self.assertEqual(scraper_aa.previous_run(), (704, None))
             for bad in [None, True, '704', 0]:
-                ref.get.return_value = bad
-                self.assertIsNone(scraper_aa.previous_scored_count())
+                ref.get.return_value = {'rows_scraped': {'artificial_analysis': bad}, 'aa_index_version': 5}
+                self.assertEqual(scraper_aa.previous_run(), (None, None))
+            ref.get.return_value = 'stats'
+            self.assertEqual(scraper_aa.previous_run(), (None, None))
             ref.get.side_effect = ValueError('down')
-            self.assertIsNone(scraper_aa.previous_scored_count())
+            self.assertEqual(scraper_aa.previous_run(), (None, None))
         with patch.dict(scraper_aa.os.environ, {'FIREBASE_DATABASE_URL': ''}):
-            self.assertIsNone(scraper_aa.previous_scored_count())
+            self.assertEqual(scraper_aa.previous_run(), (None, None))
+
+    def test_metadata_records_aa_index_version(self):
+        src = (ROOT / 'update.py').read_text()
+        self.assertIn('"aa_index_version": str(aa_df["aa_version"].iloc[0])', src)
+        self.assertLess(src.index('"rows_scraped": {'), src.index('"aa_index_version"'))
 
     def test_source_export_and_exact_variant_matching(self):
         funcs = pipeline_functions()
@@ -264,6 +339,35 @@ class ArtificialAnalysisTests(unittest.TestCase):
             self.assertEqual(payloads['history'][-1]['aa_version'], 'v4.4')
             self.assertEqual(payloads['processed'][0]['aa_estimated'], 0)
 
+    def test_missing_aa_score_never_writes_or_blanks_history(self):
+        funcs = pipeline_functions()
+        header = 'date;model;lma;aa;lb;aa_estimated;aa_version;aa_slug\n'
+        result = pd.DataFrame([dict(model='gpt54', lma=1477, aa=None, lb=77.97, aa_estimated=None, aa_version=None, aa_slug=None),
+                               dict(model='new', lma=1400, aa=None, lb=None, aa_estimated=None, aa_version=None, aa_slug=None)])
+        with tempfile.TemporaryDirectory() as tmp:
+            history = Path(tmp) / 'history.csv'
+            history.write_text(header + '2026-01-01;gpt54;1477;39;77.97;;v4.3;gpt-5-4\n')
+            append = funcs['append_history']
+            self.assertEqual(append(result, history), 1)
+            self.assertEqual(append(result, history), 0)
+            result.loc[0, 'lma'] = 1480
+            self.assertEqual(append(result, history), 1)
+            rows = pd.read_csv(history, sep=';')
+            last = rows[rows.model == 'gpt54'].iloc[-1]
+            self.assertEqual((last.lma, last.aa, last.lb, last.aa_version, last.aa_slug), (1480, 39, 77.97, 'v4.3', 'gpt-5-4'))
+            history.write_text(header + '2026-01-01;gpt54;1477;39;77.97;;v4.3;gpt-5-4\n2026-10-29;gpt54;1477;;77.97;;;\n')
+            result = result.iloc[:1].copy(); result.loc[0, 'lma'] = 1477
+            self.assertEqual(append(result, history), 0)
+            result.loc[0, 'lb'] = 78.1
+            self.assertEqual(append(result, history), 1)
+            last = pd.read_csv(history, sep=';').iloc[-1]
+            self.assertEqual((last.aa, last.lb, last.aa_version), (39, 78.1, 'v4.3'))
+            result.loc[0, ['aa', 'aa_version', 'aa_slug']] = [52, 'v5.0', 'gpt-5-4']
+            self.assertEqual(append(result, history), 1)
+            self.assertEqual(pd.read_csv(history, sep=';').iloc[-1].aa_version, 'v5.0')
+            result.loc[0, 'lma'] = None
+            self.assertEqual(append(result, history), 1)
+            self.assertTrue(pd.isna(pd.read_csv(history, sep=';').iloc[-1].lma))
 
     def test_unknown_estimate_is_stable_and_untracked_check_uses_slug(self):
         funcs = pipeline_functions()

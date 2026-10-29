@@ -292,7 +292,11 @@
     const clampToDomain = LB.util.clampToDomain;
     function renderScoreCell(model, key, currentScore, formatter, estimate) {
       const raw = rawData.find(r => r.model === model);
-      return LB.tooltip.renderScoreCell(model, key, currentScore, formatter, lastTrackedScores, estimate, key === 'aa' && raw && Number(raw.aa_estimated) === 1);
+      const cell = LB.tooltip.renderScoreCell(model, key, currentScore, formatter, lastTrackedScores, estimate, key === 'aa' && raw && Number(raw.aa_estimated) === 1);
+      if (key === 'aa' && cell.html !== '-') {
+        cell.html += LB.aaIndex.label(cell.estimated ? 'v5' : LB.aaIndex.versionOf(raw || { model }, lastTrackedScores), viewDate);
+      }
+      return cell;
     }
     function isDeactivated(model) {
       return !!(modelToDeactivated && modelToDeactivated[model]);
@@ -497,6 +501,7 @@
         lbSegment: d.lbSegment || 0,
         untracked: !!d.untracked,
         providerEstimated: !!d.providerEstimated,
+        aaVersion: d.aaVersion,
         estimates: d.estimates,
         deactivated: isDeactivationActive(d.model)
       }));
@@ -841,6 +846,7 @@
           html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LiveBench</td><td style="text-align:right;padding:2px 0;">${lbCell.html}</td></tr>`;
           html += `</table>`;
           if (lbCell.html !== '-' && !lbCell.estimated) html += LB.liveBench.noteHtml(viewDate);
+          if (aaCell.html !== '-') html += LB.aaIndex.noteHtml(viewDate);
           if (anyUntracked) {
             html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>`;
           }
@@ -854,11 +860,13 @@
           const scoreHtml = d.untracked
             ? `<span style="color:#888;">${fmt(d.total)}</span> <span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#888;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;vertical-align:middle;">!</span>`
             : fmt(d.total);
+          const versionHtml = active.question === 'Artificial Analysis' ? LB.aaIndex.label(d.aaVersion, viewDate) : '';
           html = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name || d.id}</b>${modelToOrg[d.model] ? '<br><span style="font-size:0.9em;">' + modelToOrg[d.model] + '</span>' : ''}</div>`;
           html += `<table style="width:100%;margin-top:4px;border-spacing:0;">`;
-          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">${active.question}</td><td style="text-align:right;padding:2px 0;">${scoreHtml}</td></tr>`;
+          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">${active.question}</td><td style="text-align:right;padding:2px 0;">${scoreHtml}${versionHtml}</td></tr>`;
           html += `</table>`;
           if (active.question === 'LiveBench') html += LB.liveBench.noteHtml(viewDate);
+          if (active.question === 'Artificial Analysis') html += LB.aaIndex.noteHtml(viewDate);
           if (d.untracked) {
             html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Untracked model</div>`;
           }
@@ -1154,6 +1162,7 @@
           html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LiveBench</td><td style="text-align:right;padding:2px 0;">${lbCell.html}</td></tr>`;
           html += `</table>`;
           if (lbCell.html !== '-' && !lbCell.estimated) html += LB.liveBench.noteHtml(viewDate);
+          if (aaCell.html !== '-') html += LB.aaIndex.noteHtml(viewDate);
           if (anyUntracked) {
             html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Model stopped being tracked</div>`;
           }
@@ -1167,11 +1176,13 @@
           const scoreHtml = d.untracked
             ? `<span style="color:#888;">${fmt(d.total)}</span> <span style="display:inline-block;width:13px;height:13px;border-radius:50%;background:#888;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:13px;vertical-align:middle;">!</span>`
             : fmt(d.total);
+          const versionHtml = active.question === 'Artificial Analysis' ? LB.aaIndex.label(d.aaVersion, viewDate) : '';
           html = `<div style="text-align:center;margin-bottom:4px;"><b>${d.name || d.id}</b>${modelToOrg[d.model] ? '<br><span style="font-size:0.9em;">' + modelToOrg[d.model] + '</span>' : ''}</div>`;
           html += `<table style="width:100%;margin-top:4px;border-spacing:0;">`;
-          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">${active.question}</td><td style="text-align:right;padding:2px 0;">${scoreHtml}</td></tr>`;
+          html += `<tr><td style="text-align:left;padding:2px 8px 2px 0;">${active.question}</td><td style="text-align:right;padding:2px 0;">${scoreHtml}${versionHtml}</td></tr>`;
           html += `</table>`;
           if (active.question === 'LiveBench') html += LB.liveBench.noteHtml(viewDate);
+          if (active.question === 'Artificial Analysis') html += LB.aaIndex.noteHtml(viewDate);
           if (d.untracked) {
             html += `<div style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">! Untracked model</div>`;
           }

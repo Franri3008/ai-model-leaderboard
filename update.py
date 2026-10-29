@@ -378,7 +378,10 @@ def append_history(result, history_file):
         else:
             last = prev.iloc[-1];
             changed = False;
+            aa_missing = pd.isna(row["aa"]);
             for col in ["lma", "aa", "lb", *AA_METADATA]:
+                if aa_missing and col in ["aa", *AA_METADATA]:
+                    continue;
                 old_val = last[col];
                 new_val = row[col];
                 # AA may not publish a version label. An empty one is not a change.
@@ -394,7 +397,11 @@ def append_history(result, history_file):
                     changed = True;
                     break;
             if changed:
-                new_rows.append({"date": today, **{col: row[col] for col in HISTORY_COLUMNS if col != "date"}});
+                values = {col: row[col] for col in HISTORY_COLUMNS if col != "date"};
+                known = prev[prev["aa"].notna()];
+                if aa_missing and not known.empty:
+                    values.update({col: known.iloc[-1][col] for col in ["aa", *AA_METADATA]});
+                new_rows.append({"date": today, **values});
 
     if new_rows:
         history = pd.concat([history, pd.DataFrame(new_rows)], ignore_index=True);
@@ -767,7 +774,8 @@ metadata = {
             "lmarena": len(lma_df) if lma_df is not None else 0,
             "artificial_analysis": len(aa_df) if aa_df is not None else 0,
             "livebench": len(lb_df) if lb_df is not None else 0
-        }
+        },
+        "aa_index_version": str(aa_df["aa_version"].iloc[0]) if aa_df is not None and len(aa_df) else None
     },
     "alerts_summary": {
         "tracking_issues": len(tracking_issues),

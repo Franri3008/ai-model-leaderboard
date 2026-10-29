@@ -1,6 +1,8 @@
 (function (global) {
   const LB = global.LB = global.LB || {};
   const LIVEBENCH_V2_START = '2026-10-26';
+  const AA_V5_START_FALLBACK = null;
+  const AA_RATIO_MIN_MODELS = 3;
 
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -24,6 +26,91 @@
   function liveBenchNoteHtml(viewDate) {
     if (viewDate && viewDate < LIVEBENCH_V2_START) return '';
     return `<div class="lb-version-note" style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">${LB.liveBench.noteText}</div>`;
+  }
+
+  function isAaV5(version) {
+    return /^v5/i.test(String(version == null ? '' : version).trim());
+  }
+
+  function hasNum(v) {
+    if (v == null || String(v).trim() === '') return false;
+    const n = parseFloat(String(v).replace(/,/g, '.'));
+    return !isNaN(n) && n > 0;
+  }
+
+  function findAaV5Start(historyData) {
+    let first = null;
+    (historyData || []).forEach(row => {
+      if (isAaV5(row.aa_version) && (!first || String(row.date) < first)) first = String(row.date);
+    });
+    return first || AA_V5_START_FALLBACK;
+  }
+
+  function median(values) {
+    const arr = values.slice().sort((a, b) => a - b);
+    const mid = Math.floor(arr.length / 2);
+    return arr.length % 2 ? arr[mid] : (arr[mid - 1] + arr[mid]) / 2;
+  }
+
+  function findAaV5Ratio(historyData) {
+    const byModel = {};
+    (historyData || []).slice().sort((a, b) => String(a.date).localeCompare(String(b.date))).forEach(row => {
+      const m = String(row.model || '').trim();
+      if (!m || !hasNum(row.aa)) return;
+      const v = parseFloat(String(row.aa).replace(/,/g, '.'));
+      const slot = byModel[m] = byModel[m] || {};
+      if (isAaV5(row.aa_version)) slot.v5 = v;
+      else if (slot.v5 == null) slot.v4 = v;
+    });
+    const ratios = Object.values(byModel).filter(s => s.v4 > 0 && s.v5 > 0).map(s => s.v5 / s.v4);
+    return ratios.length >= AA_RATIO_MIN_MODELS ? median(ratios) : null;
+  }
+
+  function findGpt5AaV5(historyData) {
+    let best = null;
+    (historyData || []).forEach(row => {
+      if (String(row.model || '').trim() !== 'gpt-5-high' || !isAaV5(row.aa_version) || !hasNum(row.aa)) return;
+      if (!best || String(row.date) >= best.date) best = { date: String(row.date), value: parseFloat(String(row.aa).replace(/,/g, '.')) };
+    });
+    return best ? best.value : null;
+  }
+
+  function initAaIndex(historyData) {
+    const aa = LB.aaIndex;
+    aa.v5Start = findAaV5Start(historyData);
+    aa.v5Ratio = findAaV5Ratio(historyData);
+    aa.gpt5V5 = findGpt5AaV5(historyData);
+    aa.noteText = aa.v5Start ? `Artificial Analysis Index v5 scores from ${formatLongDate(aa.v5Start)}. They run lower than v4 scores.` : '';
+    aa.markerText = aa.v5Start ? `Artificial Analysis moved its Intelligence Index to v5 on ${formatLongDate(aa.v5Start)}. v5 scores run lower, so scores before and after are not comparable.` : '';
+    return aa;
+  }
+
+  function aaSwitchShown(viewDate) {
+    const start = LB.aaIndex.v5Start;
+    return !!start && !(viewDate && viewDate < start);
+  }
+
+  function spansAaV5(fromDate, toDate) {
+    const start = LB.aaIndex.v5Start;
+    return !!start && !!fromDate && !!toDate && fromDate < start && toDate >= start;
+  }
+
+  function aaVersionLabel(version, viewDate) {
+    if (!aaSwitchShown(viewDate)) return '';
+    const major = isAaV5(version) ? 'v5' : 'v4';
+    return ` <span class="aa-version" style="color:#999;font-size:0.85em;">${major}</span>`;
+  }
+
+  function aaNoteHtml(viewDate) {
+    if (!aaSwitchShown(viewDate)) return '';
+    return `<div class="aa-version-note" style="margin-top:6px;font-size:11px;color:#bbb;font-style:italic;text-align:center;">${LB.aaIndex.noteText}</div>`;
+  }
+
+  function aaVersionOf(row, lastTrackedScores) {
+    if (row && hasNum(row.aa)) return row.aa_version || '';
+    const model = row && String(row.model || '').trim();
+    const last = model && lastTrackedScores && lastTrackedScores[model] && lastTrackedScores[model].aa;
+    return last ? (last.version || '') : '';
   }
 
   function normalizeSnapshotDate(snapshotParam) {
@@ -50,6 +137,7 @@
         const existing = out[m][k];
         if (!existing || row.date >= existing.date) {
           out[m][k] = { value: v, date: row.date, providerEstimated: k === 'aa' && Number(row.aa_estimated) === 1 };
+          if (k === 'aa') out[m][k].version = row.aa_version || '';
         }
       });
     });
@@ -91,7 +179,9 @@
       fetchSources()
     ]).then(([rawData, modelsData, trackingData, historyData, sourcesData]) => {
       const snapshotDate = snapshotParam ? normalizeSnapshotDate(snapshotParam) : null;
-      const lastTrackedScores = buildLastTrackedScores(snapshotDate ? historyData.filter(row => row.date <= snapshotDate) : historyData, snapshotDate);
+      const visibleHistory = snapshotDate ? historyData.filter(row => row.date <= snapshotDate) : historyData;
+      const lastTrackedScores = buildLastTrackedScores(visibleHistory, snapshotDate);
+      initAaIndex(visibleHistory);
 
       const idToColor = {};
       const idToOrg = {};
@@ -199,5 +289,18 @@
     markerText: `LiveBench moved to version 2.0 on ${formatLongDate(LIVEBENCH_V2_START)}. Scores before and after come from different tests.`,
     spans: spansLiveBenchV2,
     noteHtml: liveBenchNoteHtml
+  };
+  LB.aaIndex = {
+    v5Start: AA_V5_START_FALLBACK,
+    v5Ratio: null,
+    gpt5V5: null,
+    noteText: '',
+    markerText: '',
+    init: initAaIndex,
+    isV5: isAaV5,
+    spans: spansAaV5,
+    label: aaVersionLabel,
+    noteHtml: aaNoteHtml,
+    versionOf: aaVersionOf
   };
 })(typeof window !== 'undefined' ? window : globalThis);

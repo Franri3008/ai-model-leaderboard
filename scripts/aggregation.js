@@ -1,5 +1,25 @@
 (function (global) {
   const LB = global.LB = global.LB || {};
+  const AA_V4_GPT5_FALLBACK = 45;
+  const AA_V5_GPT5_REFERENCE = null;
+
+  function aaAnchors(gpt5Row) {
+    const parseNum = LB.util.parseNum;
+    const idx = LB.aaIndex || {};
+    const isV5 = idx.isV5 || (() => false);
+    const live = gpt5Row ? parseNum(gpt5Row.aa) : 0;
+    const liveIsV5 = live > 0 && isV5(gpt5Row.aa_version);
+    const v4 = live > 0 && !liveIsV5 ? live : AA_V4_GPT5_FALLBACK;
+    if (liveIsV5) return { v4, v5: live, v5Source: 'gpt5' };
+    if (idx.gpt5V5 > 0) return { v4, v5: idx.gpt5V5, v5Source: 'gpt5' };
+    if (AA_V5_GPT5_REFERENCE > 0) return { v4, v5: AA_V5_GPT5_REFERENCE, v5Source: 'constant' };
+    if (idx.v5Ratio > 0) return { v4, v5: v4 * idx.v5Ratio, v5Source: 'ratio' };
+    return { v4, v5: v4, v5Source: 'none' };
+  }
+
+  function aaAnchorFor(anchors, version) {
+    return LB.aaIndex && LB.aaIndex.isV5(version) ? anchors.v5 : anchors.v4;
+  }
 
   function aggregate(input) {
     const parseNum = LB.util.parseNum;
@@ -27,20 +47,23 @@
         if (typeof onMissingBaseline === 'function') onMissingBaseline();
         return [];
       }
-      const anchor = { lma: parseNum(gpt5.lma) || 1434, aa: parseNum(gpt5.aa) || 45, lb: parseNum(gpt5.lb) || 70.48 };
+      const aaRef = aaAnchors(gpt5);
+      const anchor = { lma: parseNum(gpt5.lma) || 1434, aa: aaRef.v4, lb: parseNum(gpt5.lb) || 70.48 };
       const AXES = ['lma', 'aa', 'lb'];
+      const showV5 = !!(LB.aaIndex && LB.aaIndex.v5Start);
 
       // resolve each source: live value, else last tracked score (stale), else missing
-      const resolveSrc = (last, k, cur) => {
+      const resolveSrc = (last, k, cur, curVersion) => {
         const c = parseNum(cur);
-        if (c > 0) return { value: c, state: 'live' };
+        const toCommon = (v, version) => k === 'aa' ? v * aaRef.v4 / aaAnchorFor(aaRef, version) : v;
+        if (c > 0) return { value: toCommon(c, curVersion), state: 'live' };
         const h = last[k] && last[k].value;
-        return h > 0 ? { value: h, state: 'stale' } : { value: null, state: 'missing' };
+        return h > 0 ? { value: toCommon(h, last[k].version), state: 'stale' } : { value: null, state: 'missing' };
       };
       const resolved = rawData.map(d => {
         const model = String(d.model || '').trim();
         const last = (lastTrackedScores && lastTrackedScores[model]) || {};
-        return { d, model, src: { lma: resolveSrc(last, 'lma', d.lma), aa: resolveSrc(last, 'aa', d.aa), lb: resolveSrc(last, 'lb', d.lb) } };
+        return { d, model, src: { lma: resolveSrc(last, 'lma', d.lma), aa: resolveSrc(last, 'aa', d.aa, d.aa_version), lb: resolveSrc(last, 'lb', d.lb) } };
       });
 
       // per-axis sorted field of known values, used to estimate a missing source by percentile
@@ -70,7 +93,10 @@
           const target = present.reduce((s, a) => s + pctile(a, src[a].value), 0) / present.length;
           AXES.forEach(a => {
             let v = src[a].value;
-            if (v == null) { v = quantile(a, target); estimates[a] = v; }
+            if (v == null) {
+              v = quantile(a, target);
+              estimates[a] = a === 'aa' && showV5 ? v * aaRef.v5 / aaRef.v4 : v;
+            }
             norm[a] = v / (2 * anchor[a]);
           });
         }
@@ -94,6 +120,7 @@
           score: parseNum(d.score),
           untracked: !d.tracked,
           providerEstimated: key === 'aa' && Number(d.aa_estimated) === 1,
+          aaVersion: key === 'aa' ? (d.aa_version || '') : undefined,
           deactivated: !!(modelToDeactivated && modelToDeactivated[String(d.id || '').trim()])
         }));
       } else {
@@ -112,8 +139,12 @@
           const historical = lastTrackedScores && lastTrackedScores[model] && lastTrackedScores[model][key];
           const providerEstimated = key === 'aa' && (cur > 0
             ? Number(d.aa_estimated) === 1 : !!(historical && historical.providerEstimated));
-          return { model, name: String(d.name || '').trim(), score, untracked, providerEstimated, deactivated: !!(modelToDeactivated && modelToDeactivated[model]) };
+          const aaVersion = key === 'aa' ? (cur > 0 ? (d.aa_version || '') : ((historical && historical.version) || '')) : undefined;
+          return { model, name: String(d.name || '').trim(), score, untracked, providerEstimated, aaVersion, deactivated: !!(modelToDeactivated && modelToDeactivated[model]) };
         });
+      }
+      if (key === 'aa' && LB.aaIndex && rows.some(r => r.score > 0 && LB.aaIndex.isV5(r.aaVersion))) {
+        rows = rows.filter(r => LB.aaIndex.isV5(r.aaVersion));
       }
     } else {
       rows = rawData.map(d => ({
@@ -155,6 +186,8 @@
   }
 
   LB.aggregate = aggregate;
+  LB.aaAnchors = aaAnchors;
+  LB.aaAnchorFor = aaAnchorFor;
   function computeFrontier(items) {
     const valid = (items || []).filter(it =>
       it && it.model && it.date instanceof Date && !isNaN(it.date.getTime()));

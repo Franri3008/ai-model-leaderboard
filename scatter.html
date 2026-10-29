@@ -553,6 +553,7 @@
                     os: modelToOs[d.model] !== undefined ? modelToOs[d.model] : 0,
                     untracked: !!d.untracked,
                     providerEstimated: !!d.providerEstimated,
+                    aaVersion: d.aaVersion,
                     estimates: d.estimates,
                     deactivated: isDeactivationActive(d.model)
                 };
@@ -917,8 +918,14 @@
                 .attr('y', d => y(d.score))
                 .style('opacity', 1);
 
-            const renderCell = (model, key, currentScore, formatter, estimate) =>
-                LB.tooltip.renderScoreCell(model, key, currentScore, formatter, lastTrackedScores, estimate, key === 'aa' && rawData.some(r => r.model === model && Number(r.aa_estimated) === 1));
+            const renderCell = (model, key, currentScore, formatter, estimate) => {
+                const raw = rawData.find(r => r.model === model);
+                const cell = LB.tooltip.renderScoreCell(model, key, currentScore, formatter, lastTrackedScores, estimate, key === 'aa' && !!raw && Number(raw.aa_estimated) === 1);
+                if (key === 'aa' && cell.html !== '-') {
+                    cell.html += LB.aaIndex.label(cell.estimated ? 'v5' : LB.aaIndex.versionOf(raw || { model }, lastTrackedScores), null);
+                }
+                return cell;
+            };
 
             layers.dots.selectAll('circle')
                 .on('mouseover', function (event, d) {
@@ -929,6 +936,7 @@
                     let anyUntracked = false;
                     let anyEstimated = false;
                     let lbShown = false;
+                    let aaShown = false;
                     const relRow = d.date
                         ? `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Released</td><td style="text-align:right;padding:2px 0;">${d3.timeFormat('%b %d, %Y')(d.date)}</td></tr>`
                         : '';
@@ -947,6 +955,7 @@
                         anyUntracked = lmaCell.untracked || aaCell.untracked || lbCell.untracked;
                         anyEstimated = lmaCell.estimated || aaCell.estimated || lbCell.estimated;
                         lbShown = lbCell.html !== '-' && !lbCell.estimated;
+                        aaShown = aaCell.html !== '-';
                         body = `<table style="width:100%;margin-top:4px;border-spacing:0;">`
                             + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Score</td><td style="text-align:right;padding:2px 0;">${fmt(d.score)}</td></tr>`
                             + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">LMArena</td><td style="text-align:right;padding:2px 0;">${lmaCell.html}</td></tr>`
@@ -955,9 +964,10 @@
                             + relRow + costRow
                             + `</table>`;
                     } else {
-                        const scoreCell = d.untracked
+                        const versionHtml = active.question === 'Artificial Analysis' ? LB.aaIndex.label(d.aaVersion, null) : '';
+                        const scoreCell = (d.untracked
                             ? `<span style="color:#888;">${fmt(d.score)}</span> ${LB.tooltip.badgeHtml}`
-                            : fmt(d.score);
+                            : fmt(d.score)) + versionHtml;
                         anyUntracked = !!d.untracked;
                         body = `<table style="width:100%;margin-top:4px;border-spacing:0;">`
                             + `<tr><td style="text-align:left;padding:2px 8px 2px 0;">Score</td><td style="text-align:right;padding:2px 0;">${scoreCell}</td></tr>`
@@ -965,7 +975,9 @@
                             + `</table>`;
                     }
                     const showsLiveBench = isAll ? lbShown : active.question === 'LiveBench';
+                    const showsAa = isAll ? aaShown : active.question === 'Artificial Analysis';
                     const note = (showsLiveBench ? LB.liveBench.noteHtml(null) : '')
+                        + (showsAa ? LB.aaIndex.noteHtml(null) : '')
                         + (anyUntracked ? LB.tooltip.disclaimerHtml : '')
                         + (anyEstimated ? LB.tooltip.estimatedDisclaimerHtml : '')
                         + (d.deactivated ? LB.tooltip.deactivatedDisclaimerHtml : '');

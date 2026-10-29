@@ -1,5 +1,6 @@
 import math
 import os
+import re
 from decimal import Decimal, ROUND_HALF_UP
 
 import pandas as pd
@@ -14,7 +15,11 @@ TIERS = ("free", "pro", "commercial")
 MAX_PAGES = 25
 TIMEOUT = (10, 45)
 MIN_SCORED_MODELS = 200
-PREVIOUS_COUNT_PATH = "metadata/stats/rows_scraped/artificial_analysis"
+MIN_SCORED_NEW_INDEX = 50
+PREVIOUS_STATS_PATH = "metadata/stats"
+V4_TOKEN = re.compile(r"(?<![a-z0-9])v_?4(?:[._](\d+))?(?![0-9])")
+VERSION_FIELD = re.compile(r"version|index", re.IGNORECASE)
+MODEL_FIELDS = ("id", "slug", "name", "model_creator", "evaluations", "pricing", "release_date")
 
 
 def is_number(value):
@@ -44,23 +49,82 @@ def check_page(payload, page):
 
 
 def version_label(version):
-    return f"v{float(version)}"
+    return version if isinstance(version, str) else f"v{float(version)}"
 
 
-def parse_models(models, version):
-    rows = []
-    seen = set()
+def check_models(models):
     for model in models:
         if not isinstance(model, dict) or not all(k in model for k in ("slug", "name", "model_creator", "evaluations")):
             raise RuntimeError("AA model schema changed")
+        if not isinstance(model["evaluations"], dict) or SCORE_KEY not in model["evaluations"]:
+            raise RuntimeError("AA model schema changed")
+
+
+def evaluation_counts(models):
+    counts = {}
+    for model in models:
+        for key, value in model["evaluations"].items():
+            counts[key] = counts.get(key, 0) + (value is not None)
+    return counts
+
+
+def version_fields(models):
+    counts = {}
+    for model in models:
+        for key, value in model.items():
+            if key not in MODEL_FIELDS and VERSION_FIELD.search(key):
+                counts[key] = counts.get(key, 0) + (value is not None)
+    return counts
+
+
+def log_fields(models):
+    counts = evaluation_counts(models)
+    listed = ", ".join(f"{k}={counts[k]}" for k in sorted(counts))
+    print_step(f"AA: evaluations keys with non-null counts over {len(models)} models: {listed or 'none'}")
+    fields = version_fields(models)
+    listed = ", ".join(f"{k}={fields[k]}" for k in sorted(fields))
+    print_step(f"AA: top-level model fields that look like an index version: {listed or 'none'}")
+    return counts
+
+
+def v4_candidates(counts):
+    found = []
+    for key, count in counts.items():
+        match = V4_TOKEN.search(key.lower())
+        if key != SCORE_KEY and "intelligence" in key.lower() and match:
+            found.append((count, key, f"v4.{match.group(1)}" if match.group(1) else "v4"))
+    return sorted(found, reverse=True)
+
+
+def choose_rule(models, version):
+    counts = log_fields(models)
+    candidates = v4_candidates(counts)
+    if candidates and candidates[0][0] >= MIN_SCORED_MODELS:
+        count, key, label = candidates[0]
+        return dict(name="v4", key=key, label=label, floor=MIN_SCORED_MODELS, same_version_only=False,
+                    reason=f"{key} has {count} models with a value, at least {MIN_SCORED_MODELS}")
+    if candidates:
+        why = ", ".join(f"{key} has {count}" for count, key, _ in candidates) + f", below {MIN_SCORED_MODELS}"
+    else:
+        why = "no v4 intelligence index key in evaluations"
+    return dict(name="current", key=SCORE_KEY, label=version_label(version), floor=MIN_SCORED_NEW_INDEX,
+                same_version_only=True, reason=why)
+
+
+def parse_models(models, version, key=SCORE_KEY):
+    rows = []
+    seen = set()
+    label = version_label(version)
+    check_models(models)
+    for model in models:
         evaluations, creator = model["evaluations"], model["model_creator"]
-        if not isinstance(evaluations, dict) or SCORE_KEY not in evaluations or not isinstance(creator, (dict, type(None))):
+        if not isinstance(creator, (dict, type(None))):
             raise RuntimeError("AA model schema changed")
         slug, name = model["slug"], model["name"]
         if not isinstance(slug, str) or not slug or not isinstance(name, str) or not name or slug in seen:
             raise RuntimeError("AA model identity is missing or duplicated")
         seen.add(slug)
-        score = evaluations[SCORE_KEY]
+        score = evaluations.get(key)
         if score is None:
             continue
         if not is_number(score) or not 0 <= score <= 100:
@@ -71,7 +135,7 @@ def parse_models(models, version):
             "Creator": (creator or {}).get("name") or "",
             "aa_slug": slug,
             "aa_estimated": None,
-            "aa_version": version_label(version),
+            "aa_version": label,
         })
     if not rows:
         raise RuntimeError("AA dataset contains no intelligence scores")
@@ -139,29 +203,42 @@ def fetch_models(key):
     return url, pages, models
 
 
-def previous_scored_count():
+def previous_run():
     url = os.environ.get("FIREBASE_DATABASE_URL", "").strip()
     if not url:
-        return None
+        return None, None
     try:
         from firebase_admin import db
         from scripts.firebase_upload import _init_firebase
         _init_firebase(url)
-        value = db.reference(PREVIOUS_COUNT_PATH).get()
+        stats = db.reference(PREVIOUS_STATS_PATH).get()
     except Exception as exc:
-        print_step(f"AA: previous count unavailable ({type(exc).__name__})", "WARNING")
-        return None
-    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
-        return None
-    return value
+        print_step(f"AA: previous run stats unavailable ({type(exc).__name__})", "WARNING")
+        return None, None
+    if not isinstance(stats, dict):
+        return None, None
+    count = (stats.get("rows_scraped") or {}).get("artificial_analysis") if isinstance(stats.get("rows_scraped"), dict) else None
+    version = stats.get("aa_index_version")
+    count = count if is_int(count) and count > 0 else None
+    version = version if isinstance(version, str) and version else None
+    return count, version
 
 
-def check_scored_count(count, previous):
-    floor = max(MIN_SCORED_MODELS, previous // 2 if previous else 0)
+def guard_floor(rule, previous, previous_version):
+    if not previous:
+        return rule["floor"], "no previous count"
+    if rule["same_version_only"] and previous_version != rule["label"]:
+        return rule["floor"], f"previous run was on index {previous_version or 'unknown'}, half-of-previous skipped"
+    return max(rule["floor"], previous // 2), f"previous run {previous} on index {previous_version or 'unknown'}"
+
+
+def check_scored_count(count, rule, previous, previous_version):
+    floor, basis = guard_floor(rule, previous, previous_version)
+    print_step(f"AA: size guard floor {floor} ({basis}, fixed minimum {rule['floor']}), {count} scored")
     if count < floor:
         raise RuntimeError(
             f"AA returned {count} scored models, below the floor of {floor} "
-            f"(previous run {previous if previous else 'unknown'}, fixed minimum {MIN_SCORED_MODELS})"
+            f"({basis}, fixed minimum {rule['floor']})"
         )
 
 
@@ -172,13 +249,16 @@ def scrape():
     print_step("Loading AA models from the official API...")
     url, pages, models = fetch_models(key)
     first = pages[0]
-    result = parse_models(models, first["intelligence_index_version"])
+    check_models(models)
+    rule = choose_rule(models, first["intelligence_index_version"])
+    print_step(f"AA: rule {rule['name']} uses {rule['key']} as {rule['label']} because {rule['reason']}")
+    result = parse_models(models, rule["label"], rule["key"])
     extra = sorted(k for k in first if k not in ("tier", "intelligence_index_version", "pagination", "data"))
     print_step(
         f"AA: tier {first['tier']} via {url.rsplit('/api/v2', 1)[-1]}, {len(pages)} pages "
         f"(page size {first['pagination'].get('page_size')}, total_pages {first['pagination']['total_pages']}), "
-        f"{len(models)} models, {len(result)} scored, index {version_label(first['intelligence_index_version'])}, "
-        f"extra top-level keys {extra}"
+        f"{len(models)} models, {len(result)} scored, index {rule['label']}, "
+        f"response index {version_label(first['intelligence_index_version'])}, extra top-level keys {extra}"
     )
-    check_scored_count(len(result), previous_scored_count())
+    check_scored_count(len(result), rule, *previous_run())
     return result
