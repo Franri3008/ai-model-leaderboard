@@ -936,6 +936,19 @@
         "cost_output": 5
     },
     {
+        "model": "mistral-large-4",
+        "name": "Mistral Large 4",
+        "logo": "mistral",
+        "geo": "France",
+        "os": 0,
+        "release_date": null,
+        "lma_lookup": "Mistral Large 4",
+        "aa_lookup": "Mistral Large 4 (High)",
+        "aa_slug": "mistral-large-4",
+        "lb_lookup": "Mistral Large 4 1029",
+        "cost_output": null
+    },
+    {
         "model": "muse-wonder",
         "name": "Muse Wonder",
         "logo": "meta",

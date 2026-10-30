@@ -83,7 +83,7 @@ def check_tracking_status(model_name, fixed_df, lookup_col):
                 return True, row['name'];
     return False, None
 
-def get_untracked_models(df, source_name, score_keywords, fixed_df, lookup_col, top_n=30, match_col=None):
+def get_untracked_models(df, source_name, score_keywords, fixed_df, lookup_col, top_n=50, match_col=None):
     untracked = [];
     if df is None or df.empty:
         return untracked
@@ -589,9 +589,9 @@ if new_tracking_issues:
 # --- Section 3: NEW UNTRACKED MODELS ---
 print_step("Collecting untracked models across sources...")
 untracked_list = [];
-untracked_list.extend(get_untracked_models(lma_df, "LMArena", ['arena', 'elo', 'score', 'rating'], fixed_df, 'lma_lookup', top_n=30));
-untracked_list.extend(get_untracked_models(aa_df, "Artificial Analysis", ['quality', 'score', 'index'], fixed_df, 'aa_slug', top_n=30, match_col='aa_slug'));
-untracked_list.extend(get_untracked_models(lb_df, "LiveBench", ['average', 'overall', 'total', 'score'], fixed_df, 'lb_lookup', top_n=30));
+untracked_list.extend(get_untracked_models(lma_df, "LMArena", ['arena', 'elo', 'score', 'rating'], fixed_df, 'lma_lookup', top_n=50));
+untracked_list.extend(get_untracked_models(aa_df, "Artificial Analysis", ['quality', 'score', 'index'], fixed_df, 'aa_slug', top_n=50, match_col='aa_slug'));
+untracked_list.extend(get_untracked_models(lb_df, "LiveBench", ['average', 'overall', 'total', 'score'], fixed_df, 'lb_lookup', top_n=50));
 
 print_step("Grouping untracked models using fuzzy matching...")
 grouped_models = [];
@@ -637,7 +637,7 @@ new_untracked_groups = register_untracked_models(
 if new_untracked_groups:
     alerts_output.append("");
     alerts_output.append("─" * 70);
-    alerts_output.append("NEW UNTRACKED MODELS — newly entered a source top 30");
+    alerts_output.append("NEW UNTRACKED MODELS — newly entered a source top 50");
     alerts_output.append("─" * 70);
     alerts_output.append("");
     for group in new_untracked_groups:
@@ -725,7 +725,7 @@ if new_tracking_issues:
 
 # Section 2: only models that have never been alerted before.
 if new_untracked_groups:
-    html.append('<h3 style="margin:24px 0 6px 0;font-size:15px;color:#444;border-bottom:1px solid #ddd;padding-bottom:4px;">New untracked models — newly entered a source top 30</h3>')
+    html.append('<h3 style="margin:24px 0 6px 0;font-size:15px;color:#444;border-bottom:1px solid #ddd;padding-bottom:4px;">New untracked models — newly entered a source top 50</h3>')
     html.append('<table style="width:100%;border-collapse:collapse;font-size:13px;">')
     html.append('<thead><tr>'
                 '<th style="text-align:left;padding:6px 8px;background:#f5f5f5;border-bottom:1px solid #ddd;">Model</th>'
