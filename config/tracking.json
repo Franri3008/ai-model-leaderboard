@@ -6,7 +6,7 @@
         "geo": "US",
         "os": 0,
         "release_date": "2026-10-28",
-        "lma_lookup": null,
+        "lma_lookup": "Gemini 4 Carbon (High)",
         "aa_lookup": "Gemini 4 Carbon (High)",
         "aa_slug": "gemini-4-carbon",
         "lb_lookup": null,
@@ -941,12 +941,12 @@
         "logo": "mistral",
         "geo": "France",
         "os": 0,
-        "release_date": null,
+        "release_date": "2026-10-06",
         "lma_lookup": "Mistral Large 4",
         "aa_lookup": "Mistral Large 4 (High)",
         "aa_slug": "mistral-large-4",
         "lb_lookup": "Mistral Large 4 1029",
-        "cost_output": null
+        "cost_output": 2.10
     },
     {
         "model": "muse-wonder",
