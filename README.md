@@ -86,15 +86,58 @@ The run log shows what happened, in these lines.
 
 `aa_estimated` (0/1, empty because the API does not publish it), `aa_version` (the response's `intelligence_index_version`, for example `v5.0`), and `aa_slug` accompany AA scores in processed data, history, and source exports. Provider estimate status is retained in the data; tooltips display the published score without an AA estimate label. AA-published estimates count as an available source in the existing aggregation. Exact variant names remain configured through `aa_lookup`.
 
-## Aggregate score ("ALL" view)
+## Methodology: capability score
 
-Per-source tabs show raw scores. The combined **"ALL"** ranking is computed in the frontend ([`scripts/aggregation.js`](scripts/aggregation.js)): the Python pipeline never normalizes, it only stores raw values.
+The "Overall" tab shows one capability score per model. The frontend computes it in [`scripts/aggregation.js`](scripts/aggregation.js). The Python pipeline only stores raw values and never normalises them. The per-source tabs show raw scores.
 
-1. **Normalize each source against a fixed baseline.** Each raw score is divided by `2 × GPT-5's score on that source` (`lma≈1434`, `aa≈45`, `lb≈70.48`, with those constants as fallback if GPT-5 drops out). This puts every axis on a scale where **GPT-5 = 0.5**, and keeps scores stable over time (they're anchored to a fixed reference, not to the current field).
-2. **Combine.** The aggregate is the mean of the three normalized axes.
-3. **Estimate a missing source** instead of dropping the model or giving it a free pass. When a model isn't on a leaderboard yet (e.g. a new model missing from LMArena), it's placed on that source at the **percentile it holds on the sources it does have**, and that percentile is mapped back to a real value from the source's own distribution. The estimate is then normalized like any real score, so a missing axis no longer inflates the model's rank. Estimated cells are shown in tooltips as `~X (est.)`. A model needs **at least 2 published sources** (live or historical, including AA-published estimates) to appear, at most one axis is ever estimated, so a whole profile is never fabricated from a single score.
-4. **Stale scores persist.** If a model stops being tracked on a source but has history, its last known value is used (greyed with a `!` in tooltips) rather than treated as missing, so models don't vanish from the aggregate once a leaderboard drops them.
-5. **AA index versions.** Since AA's Intelligence Index v5, each AA value is normalised against GPT-5's score on its own index version. The v5 reference is GPT-5's v5 score when AA publishes one. Otherwise it is the v4 reference times the median v5/v4 ratio of rescored models. `AA_V5_GPT5_REFERENCE` in `scripts/aggregation.js` overrides the ratio. The AA tab ranks only v5 scores once v5 exists.
+### Sources
+
+- **LMArena** (`lma`). An Elo rating from human votes, roughly 1200 to 1550.
+- **Artificial Analysis** (`aa`). The Intelligence Index, 0 to 100.
+- **LiveBench** (`lb`). The average over LiveBench's tests, 0 to 100.
+
+### Reference model and target
+
+The reference model is GPT 6.1 Sol (`gpt-6-1-sol`). Its score is fixed at 0.70. Both values live in one constant, `ALL_REFERENCE` in `scripts/aggregation.js`.
+
+Each source gives a part. The part is `0.70 × value / reference value`. The reference value is GPT 6.1 Sol's score on that source's current scale. The capability score is the mean of the three parts. So GPT 6.1 Sol scores 0.70, and a model 10% above it on every source scores 0.77.
+
+Why GPT 6.1 Sol. It has a live score on all three current scales, so no part of the reference is guessed. That gives the three sources equal weight. Why 0.70. On 24 October 2026, the last scored day before the scale switches, the old method gave GPT 6.1 Sol 0.742, and the top models sat between 0.70 and 0.80. A 0.70 target keeps the homepage at about that level.
+
+### Dates before GPT 6.1 Sol
+
+GPT 6.1 Sol first appears in the data on 30 September 2026. Snapshots of earlier dates use the old method. Its constant is `ALL_LEGACY_REFERENCE` in `scripts/aggregation.js`.
+
+- The reference model is GPT-5 (`gpt-5-high`). Its score is 0.50.
+- Each reference value is GPT-5's score in that day's data. If GPT-5 has no score there, the value is the one the old code used. That is 1434 for LMArena, 45 for AA and 70.48 for LiveBench.
+- GPT-5 is not pinned. If it misses a source, it gets an estimate like any other model.
+
+These dates were before AA v5 and LiveBench 2.0, so the old scales apply. The switch is one check in the code. If GPT 6.1 Sol is in the data, it is the reference. If not, GPT-5 is. If neither is there, the Overall tab shows an error and no ranking.
+
+The bump chart's Overall tab uses the same code for both of its dates. A comparison that starts before 30 September 2026 mixes the two methods. On 30 September 2026 the old method scored the top five models about 0.05 higher on average.
+
+### Current scales
+
+Each source is compared only on its current scale.
+
+- **LiveBench 2.0.** Since 26 October 2026 only LiveBench 2.0 scores count. A model with only a LiveBench 1.0 score counts as missing on LiveBench.
+- **AA v5.** Since 29 October 2026 the current scale is Intelligence Index v5. AA did not rescore every model. A model with only a v4 score is moved onto the v5 scale with one ratio. The ratio is the median of v5 score over v4 score for every model that has both. Each model's v4 score is its last one before the switch day. Its v5 score is its latest one. Untagged history rows from the switch day onward are left out. On 3 November 2026 the ratio was 0.761.
+
+### Missing sources
+
+A model needs scores on at least 2 sources to appear. Live and last known scores both count. When a model misses a source, it gets an estimate. The model's percentile on its other sources is averaged. That percentile is read back as a value from the missing source's own list of scores. The estimate then counts like a real score. Tooltips show it as `~X (est.)`.
+
+The reference gets the same treatment. If GPT 6.1 Sol has no score on a source's current scale, its reference value there is its percentile estimate. Its percentile comes from the sources where it does have a current score. Its own part on that source is then exactly 0.70.
+
+If a model drops off a source but has history, its last known score is used. Tooltips grey it out and mark it with `!`.
+
+### Changelog
+
+- **2026-10-26.** LiveBench moved to 2.0. LiveBench 1.0 scores stopped counting for missing 2.0 scores.
+- **2026-10-29.** Artificial Analysis moved to Intelligence Index v5. Each AA score was compared with GPT-5's score on its own index version.
+- **2026-11-03.** The reference moved from GPT-5 at 0.50 to GPT 6.1 Sol at 0.70. GPT-5 had scored 0.40 instead of 0.50. It had no v5 AA score and no LiveBench 2.0 score. Its AA score was divided by a fixed 45 from an older AA scale. Its LiveBench reference was a fixed 70.48 from LiveBench 1.0. The v5 to v4 ratio also came out as exactly 1. History rows from 29 October held v5 values without a version tag, so they were read as v4. The ratio now skips those rows. With GPT-5 as the reference, the AA part was about three times the size of the others, because GPT-5's AA reference had to be estimated. GPT 6.1 Sol has a live score on all three sources, so the parts weigh the same.
+- **2026-11-03.** Snapshots before 30 September 2026 keep the old method, with GPT-5 at 0.50. Their rankings match what the page showed with the code of 24 October 2026.
+- **2026-11-03.** The bump chart's Overall tab now uses the same scoring as the homepage, for both dates it compares. Before, it had its own copy with GPT-5 at 0.50 and a different rule for missing sources. A "Ref" marker now shows when the compared dates cross the reference switch. Its date is the first day GPT 6.1 Sol appears in the history, 30 September 2026 if that cannot be found.
 
 ## History format
 

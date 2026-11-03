@@ -453,36 +453,28 @@
       return Math.max(1, Math.floor(spanDays / 7));
     }
 
-    function computeRankedSnapshot(snapshotRows, source, gpt5Baseline) {
+    function overallScoresAt(snapshotRows, date) {
+      const visible = historyData.filter(row => row.date <= date);
+      LB.aaIndex.init(visible);
+      const rows = LB.aggregate({
+        rawData: snapshotRows,
+        lastTrackedScores: LB.buildLastTrackedScores(visible, date),
+        active: { question: 'ALL' },
+        ignoreModelFilter: true,
+        snapshotMode: true
+      });
+      LB.aaIndex.init(historyData);
+      return rows;
+    }
+
+    function computeRankedSnapshot(snapshotRows, source, date) {
       let scored;
       if (source === 'ALL') {
-        const maxLma = gpt5Baseline.lma || 1434;
-        const aaRef = gpt5Baseline.aa;
-        const maxLb = gpt5Baseline.lb || 70.48;
-
-        scored = snapshotRows.map(d => {
-          const model = String(d.model || '').trim();
-          let lma = parseNum(d.lma);
-          let aa = parseNum(d.aa);
-          let lb = parseNum(d.lb);
-
-          const hasLma = lma > 0;
-          const hasAa = aa > 0;
-          const hasLb = lb > 0;
-          const missingCount = (hasLma ? 0 : 1) + (hasAa ? 0 : 1) + (hasLb ? 0 : 1);
-
-          let normalizedLma = lma > 0 ? (lma / (2 * maxLma)) : 0;
-          let normalizedAa = aa > 0 ? (aa / (2 * LB.aaAnchorFor(aaRef, d.aa_version))) : 0;
-          let normalizedLb = lb > 0 ? (lb / (2 * maxLb)) : 0;
-
-          if (missingCount === 1) {
-            if (!hasLma && hasAa && hasLb) normalizedLma = (normalizedAa + normalizedLb) / 2;
-            else if (!hasAa && hasLma && hasLb) normalizedAa = (normalizedLma + normalizedLb) / 2;
-            else if (!hasLb && hasLma && hasAa) normalizedLb = (normalizedLma + normalizedAa) / 2;
-          }
-
-          const score = (normalizedLma + normalizedAa + normalizedLb) / 3;
-          return { model, score, lma, aa, lb };
+        const byModel = {};
+        snapshotRows.forEach(d => { byModel[String(d.model || '').trim()] = d; });
+        scored = overallScoresAt(snapshotRows, date).map(r => {
+          const d = byModel[r.model] || {};
+          return { model: r.model, score: r.score, lma: parseNum(d.lma), aa: parseNum(d.aa), lb: parseNum(d.lb) };
         });
       } else if (source === 'LMArena') {
         scored = snapshotRows.map(d => ({
@@ -556,15 +548,6 @@
       return scored;
     }
 
-    function getGpt5Baseline(snapshotRows) {
-      const gpt5 = snapshotRows.find(d => String(d.model || '').trim() === 'gpt-5-high');
-      return {
-        lma: gpt5 ? parseNum(gpt5.lma) : 1434,
-        aa: LB.aaAnchors(gpt5),
-        lb: gpt5 ? parseNum(gpt5.lb) : 70.48
-      };
-    }
-
     function formatDate(dateStr) {
       const d = new Date(dateStr + 'T00:00:00');
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -620,11 +603,10 @@
       const latestSnapshot = LB.reconstructSnapshot(historyData, latestDate);
       const spansV2 = (activeSource === 'LiveBench' || activeSource === 'ALL') && LB.liveBench.spans(pastDate, latestDate);
       const spansAaV5 = (activeSource === 'Artificial Analysis' || activeSource === 'ALL') && LB.aaIndex.spans(pastDate, latestDate);
+      const spansRef = activeSource === 'ALL' && LB.referenceSwitch.spans(pastDate, latestDate);
 
-      const baseline = getGpt5Baseline(latestSnapshot);
-
-      const pastRanked = computeRankedSnapshot(pastSnapshot, activeSource, baseline);
-      const latestRanked = computeRankedSnapshot(latestSnapshot, activeSource, baseline);
+      const pastRanked = computeRankedSnapshot(pastSnapshot, activeSource, pastDate);
+      const latestRanked = computeRankedSnapshot(latestSnapshot, activeSource, latestDate);
 
       const pastTop = pastRanked.slice(0, displayLimit);
       const latestTop = latestRanked.slice(0, displayLimit);
@@ -823,6 +805,7 @@
       });
 
       const switchMarkers = [];
+      if (spansRef) switchMarkers.push({ cls: 'ref-switch-marker', label: 'Ref', fill: '#0f766e', stroke: '#115e59', text: LB.referenceSwitch.markerText });
       if (spansV2) switchMarkers.push({ cls: 'lb-v2-marker', label: '2.0', fill: '#2756d3', stroke: '#1e3fa0', text: LB.liveBench.markerText });
       if (spansAaV5) switchMarkers.push({ cls: 'aa-v5-marker', label: 'v5', fill: '#7c3aed', stroke: '#5b21b6', text: LB.aaIndex.markerText });
       switchMarkers.forEach((m, mi) => {
@@ -1233,6 +1216,7 @@
       ]).then(([history, modelsData, trackingData]) => {
         historyData = history;
         LB.aaIndex.init(historyData);
+        LB.referenceSwitch.init(historyData);
 
         const idToOrg = {};
         modelsData.forEach(m => { idToColor[m.id] = m.color; idToOrg[m.id] = m.org; });

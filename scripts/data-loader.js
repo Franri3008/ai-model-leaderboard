@@ -3,6 +3,7 @@
   const LIVEBENCH_V2_START = '2026-10-26';
   const AA_V5_START_FALLBACK = null;
   const AA_RATIO_MIN_MODELS = 3;
+  const REFERENCE_SWITCH_FALLBACK = '2026-09-30';
 
   const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -52,7 +53,11 @@
     return arr.length % 2 ? arr[mid] : (arr[mid - 1] + arr[mid]) / 2;
   }
 
-  function findAaV5Ratio(historyData) {
+  function isAaV4Row(row, v5Start) {
+    return !isAaV5(row.aa_version) && (!v5Start || String(row.date) < v5Start);
+  }
+
+  function findAaV5Ratio(historyData, v5Start) {
     const byModel = {};
     (historyData || []).slice().sort((a, b) => String(a.date).localeCompare(String(b.date))).forEach(row => {
       const m = String(row.model || '').trim();
@@ -60,29 +65,36 @@
       const v = parseFloat(String(row.aa).replace(/,/g, '.'));
       const slot = byModel[m] = byModel[m] || {};
       if (isAaV5(row.aa_version)) slot.v5 = v;
-      else if (slot.v5 == null) slot.v4 = v;
+      else if (isAaV4Row(row, v5Start)) slot.v4 = v;
     });
     const ratios = Object.values(byModel).filter(s => s.v4 > 0 && s.v5 > 0).map(s => s.v5 / s.v4);
     return ratios.length >= AA_RATIO_MIN_MODELS ? median(ratios) : null;
   }
 
-  function findGpt5AaV5(historyData) {
-    let best = null;
-    (historyData || []).forEach(row => {
-      if (String(row.model || '').trim() !== 'gpt-5-high' || !isAaV5(row.aa_version) || !hasNum(row.aa)) return;
-      if (!best || String(row.date) >= best.date) best = { date: String(row.date), value: parseFloat(String(row.aa).replace(/,/g, '.')) };
-    });
-    return best ? best.value : null;
-  }
-
   function initAaIndex(historyData) {
     const aa = LB.aaIndex;
     aa.v5Start = findAaV5Start(historyData);
-    aa.v5Ratio = findAaV5Ratio(historyData);
-    aa.gpt5V5 = findGpt5AaV5(historyData);
+    aa.v5Ratio = findAaV5Ratio(historyData, aa.v5Start);
     aa.noteText = aa.v5Start ? `Artificial Analysis Index v5 scores from ${formatLongDate(aa.v5Start)}. They run lower than v4 scores.` : '';
     aa.markerText = aa.v5Start ? `Artificial Analysis moved its Intelligence Index to v5 on ${formatLongDate(aa.v5Start)}. v5 scores run lower, so scores before and after are not comparable.` : '';
     return aa;
+  }
+
+  function initReferenceSwitch(historyData) {
+    const sw = LB.referenceSwitch;
+    const id = LB.allReference ? LB.allReference.model : 'gpt-6-1-sol';
+    let first = null;
+    (historyData || []).forEach(row => {
+      if (String(row.model || '').trim() === id && (!first || String(row.date) < first)) first = String(row.date);
+    });
+    sw.start = first || REFERENCE_SWITCH_FALLBACK;
+    sw.markerText = `On ${formatLongDate(sw.start)} the reference moved from GPT-5 at 0.50 to GPT 6.1 Sol at 0.70. Scores before and after are not directly comparable.`;
+    return sw;
+  }
+
+  function spansReferenceSwitch(fromDate, toDate) {
+    const start = LB.referenceSwitch.start;
+    return !!start && !!fromDate && !!toDate && fromDate < start && toDate >= start;
   }
 
   function aaSwitchShown(viewDate) {
@@ -290,10 +302,15 @@
     spans: spansLiveBenchV2,
     noteHtml: liveBenchNoteHtml
   };
+  LB.referenceSwitch = {
+    start: REFERENCE_SWITCH_FALLBACK,
+    markerText: '',
+    init: initReferenceSwitch,
+    spans: spansReferenceSwitch
+  };
   LB.aaIndex = {
     v5Start: AA_V5_START_FALLBACK,
     v5Ratio: null,
-    gpt5V5: null,
     noteText: '',
     markerText: '',
     init: initAaIndex,

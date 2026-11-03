@@ -484,7 +484,7 @@
         ignoreModelFilter: !!(opts && opts.ignoreModelFilter),
         onMissingBaseline: () => {
           const chartEl = document.getElementById('chart');
-          if (chartEl) chartEl.innerHTML = '<div style="padding:24px;color:#c00;font-weight:600;">Error: GPT-5 baseline data is missing from the scraping results.</div>';
+          if (chartEl) chartEl.innerHTML = '<div style="padding:24px;color:#c00;font-weight:600;">Error: ' + LB.allReference.name + ' reference data is missing from the scraping results.</div>';
         }
       });
       return aggregated.map(d => ({
