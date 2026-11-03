@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<title>Where frontier models come from</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<link rel="stylesheet" href="styles/common.css">
+<script src="scripts/lb-config.js"></script>
+<script src="scripts/util.js"></script>
+<script src="scripts/data-loader.js"></script>
+<script src="scripts/aggregation.js"></script>
+<script src="scripts/viz-controls.js"></script>
+<script src="scripts/geography.js"></script>
+<style>
+:root {
+    --fs-control:  clamp(9px, 1.4vw, 13px);
+    --fs-meta:     clamp(10px, 1.6vw, 16px);
+    --fs-slider:   clamp(11px, 1.2vw, 13px);
+    --breakpoint-compact: 500px;
+}
+
+html, body { height: 100%; }
+body {
+    margin: 0;
+    overflow: hidden;
+    height: 100%;
+    background: #ffffff;
+}
+
+.viz-grid {
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+}
+#container1 { grid-row: 1; grid-column: 1; overflow: hidden; min-height: 0; min-width: 0; }
+
+#viz { position: relative; overflow: hidden; width: 100%; height: 100%; min-height: 0; min-width: 0; }
+#chart { position: absolute; inset: 0; display: block; }
+
+#tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: #fff;
+    color: #0f172a;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    max-width: 260px;
+    z-index: 100;
+}
+#tooltip .t-name { font-weight: 700; display: block; margin-bottom: 5px; }
+#tooltip .t-k { color: #0f172a; display: inline-block; min-width: 78px; }
+#tooltip .t-v { font-weight: 700; font-variant-numeric: tabular-nums; }
+#tooltip .t-list { display: block; margin-top: 4px; }
+
+.rib, .bar { transition: opacity 0.16s ease; }
+#chart.dim .rib:not(.hoveredLink) { opacity: 0.08 !important; }
+#chart.dim .bar:not(.hoveredLink) { opacity: 0.14 !important; }
+#chart.dim text:not(.hoveredLabel) { opacity: 0.14; }
+text { transition: opacity 0.16s ease; }
+.node-label  { fill: #0f172a; }
+.dev-label   { font-weight: 700; }
+.bar-value   { fill: #fff; font-weight: 700; font-variant-numeric: tabular-nums; }
+.col-head    { fill: #0f172a; font-weight: 700; }
+.col-sub     { fill: #0f172a; font-weight: 400; letter-spacing: 0.09em; }
+.ax-label    { fill: #0f172a; font-weight: 400; font-variant-numeric: tabular-nums; }
+.grid-line   { stroke: #e6e5e2; stroke-width: 1px; }
+.axis-base   { stroke: #0f172a; stroke-width: 1.5px; }
+.hit         { fill: transparent; }
+
+@media (max-width: 899px) {
+    body { overflow-x: auto; }
+    .viz-grid { min-width: 900px; }
+}
+@media (max-height: 519px) {
+    body { overflow-y: auto; }
+    .viz-grid { height: auto; min-height: 520px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+
+<body>
+<div class="viz-grid">
+  <div id="container1" class="container viz-container">
+    <div id="viz">
+      <svg id="chart"></svg>
+    </div>
+  </div>
+</div>
+<div id="tooltip"></div>
+
+<script>
+const SHOW_TOOLTIP  = 1;
+const NODE_W        = 12;
+const RIB_RATIO     = 0.70;
+const LABEL_FS      = 12;
+const LABEL_FS_MIN  = 8.5;
+const HEAD_FS       = 13;
+const SUB_FS        = 9;
+const AXIS_FS       = 9.5;
+const PAD_TOP       = 52;
+const PAD_BOTTOM    = 34;
+const BAR_MIN       = 190;
+const FLOW_MIN      = 60;
+const FLOW1_BASE    = 210;
+const FLOW2_BASE    = 170;
+const FLOW1_MAX     = 330;
+const FLOW2_MAX     = 265;
+const BAR_MAX       = 470;
+const BAR_SHARE     = 0.30;
+const MODEL_GUTTER  = 12;
+const LOGO_MAX      = 18;
+const LOGO_GAP      = 6;
+const WIDTH_FLOOR   = 900;
+const HEIGHT_FLOOR  = 520;
+const CITY_GAP      = 6;
+const COUNTRY_GAP   = 18;
+
+const DATA_BASE = (LB.config && LB.config.dataBase) || ".";
+const CONFIG_BASE = (LB.config && LB.config.configBase) || ".";
+let rows = [], developers = [], cities = [], cityName = {};
+let AX_LO = 0, AX_HI = 1, AX_TICKS = [];
+
+function build(state, geography, snapshotMode) {
+  const aggregated = LB.aggregate({
+    rawData: state.rawData,
+    lastTrackedScores: state.lastTrackedScores,
+    modelToGeo: state.modelToGeo,
+    modelToOs: state.modelToOs,
+    modelToDeactivated: state.modelToDeactivated || {},
+    modelToLogo: state.modelToLogo,
+    active: { question: 'ALL' },
+    hiddenGeos: [],
+    activeOsFilter: null,
+    modeParam: 0,
+    includeSegments: false,
+    snapshotMode,
+    ignoreModelFilter: true
+  });
+  rows = LB.geography.selectRows({ aggregated, modelToLogo: state.modelToLogo, rawData: state.rawData, geography });
+  const order = LB.geography.cityOrder(geography);
+
+  developers = [];
+  rows.forEach(r => {
+    let d = developers.find(x => x.name === r.dev);
+    if (!d) {
+      d = { name: r.dev, city: r.city, color: r.color, logo: state.idToColor[r.lab] ? `logos/${r.lab}.png` : null, ms: [] };
+      developers.push(d);
+    }
+    d.ms.push(r);
+  });
+  cities = [];
+  developers.forEach(d => {
+    let c = cities.find(x => x.key === d.city);
+    if (!c) {
+      const r = d.ms[0];
+      c = { key: d.city, name: r.cityName, country: r.country, color: r.color, devs: [], n: 0 };
+      cities.push(c);
+    }
+    c.devs.push(d); c.n += d.ms.length;
+  });
+  cities.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
+  cityName = {};
+  cities.forEach(c => { cityName[c.key] = c.name; });
+
+  if (!rows.length) return;
+  const scoreMin = d3.min(rows, r => r.score), scoreMax = d3.max(rows, r => r.score);
+  AX_LO = Math.floor((scoreMin - 0.02) * 20) / 20;
+  AX_HI = Math.ceil((scoreMax + 0.01) * 20) / 20;
+  AX_TICKS = d3.range(AX_LO + 0.05, AX_HI + 0.001, 0.05);
+}
+
+const tooltip = document.getElementById('tooltip');
+
+const vizEl = document.getElementById('viz');
+const svg = d3.select('#chart');
+let width = 0, height = 0;
+
+function updateDimensions() {
+  const rect = vizEl.getBoundingClientRect();
+  width  = Math.max(WIDTH_FLOOR, rect.width);
+  height = Math.max(HEIGHT_FLOOR, rect.height);
+  svg.attr('width', width).attr('height', height).attr('viewBox', `0 0 ${width} ${height}`)
+     .style('width', width + 'px').style('height', height + 'px');
+}
+
+function measureWidth(strings, fs, weight) {
+  const g = svg.append('g').attr('font-size', fs + 'px').attr('font-weight', weight || 400);
+  let w = 0;
+  strings.forEach(s => {
+    const t = g.append('text').text(s);
+    w = Math.max(w, t.node().getComputedTextLength());
+  });
+  g.remove();
+  return w;
+}
+
+function stack(nodes, sizeOf, meanOf, gap, rib, top, ph) {
+  nodes.forEach(n => { n.h = sizeOf(n) * rib; n.mid = meanOf(n); });
+  nodes.sort((a, b) => a.mid - b.mid);
+  nodes.forEach(n => n.y0 = n.mid - n.h / 2);
+  for (let k = 1; k < nodes.length; k++) {
+    const prev = nodes[k - 1];
+    if (nodes[k].y0 < prev.y0 + prev.h + gap) nodes[k].y0 = prev.y0 + prev.h + gap;
+  }
+  const last = nodes[nodes.length - 1], over = last.y0 + last.h - (top + ph);
+  if (over > 0) {
+    for (let k = nodes.length - 1; k >= 0; k--) {
+      nodes[k].y0 -= over;
+      if (k > 0 && nodes[k].y0 - (nodes[k - 1].y0 + nodes[k - 1].h) >= gap) break;
+    }
+  }
+  nodes.forEach(n => n.cur = n.y0);
+}
+
+function stackCities(nodes, devs, rib) {
+  nodes.forEach(n => n.h = n.n * rib);
+  const gapAt = k => nodes[k].country === nodes[k - 1].country ? CITY_GAP : COUNTRY_GAP;
+  let total = 0;
+  nodes.forEach((n, k) => total += n.h + (k > 0 ? gapAt(k) : 0));
+  const top = d3.min(devs, d => d.y0), bot = d3.max(devs, d => d.y0 + d.h);
+  let y = (top + bot) / 2 - total / 2;
+  nodes.forEach((n, k) => {
+    if (k > 0) y += gapAt(k);
+    n.y0 = y; n.cur = y; y += n.h;
+  });
+}
+
+function ribbonPath(x1, y1, x2, y2, t) {
+  const cx = (x1 + x2) / 2;
+  return `M${x1},${y1} C${cx},${y1} ${cx},${y2} ${x2},${y2} L${x2},${y2 + t} ` +
+         `C${cx},${y2 + t} ${cx},${y1 + t} ${x1},${y1 + t} Z`;
+}
+
+function render() {
+  if (!rows.length) return;
+  updateDimensions();
+  svg.selectAll('*').remove();
+
+  const ph   = height - PAD_TOP - PAD_BOTTOM;
+  const rowH = ph / rows.length;
+  const rib  = rowH * RIB_RATIO;
+
+  const logoSize = Math.min(LOGO_MAX, Math.max(9, rib * 0.8));
+  let labelFS = Math.max(LABEL_FS_MIN, Math.min(LABEL_FS, rowH * 0.44));
+  let cityW  = measureWidth(cities.map(c => c.name), labelFS);
+  let devW   = measureWidth(developers.map(d => d.name), labelFS, 700) + logoSize + LOGO_GAP;
+  let modelW = measureWidth(rows.map(r => r.model), labelFS);
+
+  const chrome = 9 + NODE_W * 2 + 8 + 14;
+  const barW = Math.max(BAR_MIN, Math.min(width * BAR_SHARE, BAR_MAX));
+  const needAt = () => chrome + cityW + devW + FLOW_MIN + (modelW + MODEL_GUTTER * 2) + barW;
+  if (needAt() > width) {
+    const room = width - chrome - FLOW_MIN - MODEL_GUTTER * 2 - barW;
+    labelFS = Math.max(LABEL_FS_MIN, labelFS * room / (cityW + devW + modelW));
+    cityW  = measureWidth(cities.map(c => c.name), labelFS);
+    devW   = measureWidth(developers.map(d => d.name), labelFS, 700) + logoSize + LOGO_GAP;
+    modelW = measureWidth(rows.map(r => r.model), labelFS);
+  }
+
+  const flow2Min = modelW + MODEL_GUTTER * 2;
+  let flow1 = FLOW1_BASE, flow2 = Math.max(FLOW2_BASE, flow2Min), x0 = 0;
+  const slack = width - (cityW + devW + chrome) - flow1 - flow2 - barW;
+  if (slack < 0) {
+    const floor1 = FLOW_MIN, floor2 = flow2Min;
+    const shrink = Math.max(floor1 + floor2, flow1 + flow2 + slack) / (flow1 + flow2);
+    flow1 = Math.max(floor1, flow1 * shrink);
+    flow2 = Math.max(floor2, flow2 * shrink);
+  } else {
+    const grow = Math.min(slack, Math.max(0, FLOW1_MAX - flow1) + Math.max(0, FLOW2_MAX - flow2));
+    flow1 += grow * FLOW1_BASE / (FLOW1_BASE + FLOW2_BASE);
+    flow2 += grow * FLOW2_BASE / (FLOW1_BASE + FLOW2_BASE);
+    x0 = (slack - grow) / 2;
+  }
+
+  const xCity  = x0 + cityW + 9;
+  const xDev   = xCity + NODE_W + flow1;
+  const xDevEnd = xDev + NODE_W + 8 + devW;
+  const barX   = xDevEnd + flow2;
+  const ribEnd = barX;
+  const xModel = barX - MODEL_GUTTER;
+
+  rows.forEach((r, i) => r.y = PAD_TOP + (i + 0.5) * rowH);
+  stack(developers, d => d.ms.length, d => d3.mean(d.ms, m => m.y), 7, rib, PAD_TOP, ph);
+  stackCities(cities, developers, rib);
+  cities.forEach(c => c.devs.sort((a, b) => a.y0 - b.y0));
+  developers.forEach(d => d.ms.sort((a, b) => a.y - b.y));
+
+  const gRib   = svg.append('g');
+  const gNode  = svg.append('g');
+  const gBar   = svg.append('g');
+  const gAxis  = svg.append('g');
+  const gText  = svg.append('g');
+  const gHit   = svg.append('g');
+
+  [['Urban area', (x0 + xCity + NODE_W) / 2, 'WHERE'],
+   ['Developer', (xDev + xDevEnd) / 2, 'WHO'],
+   ['Model', xModel - modelW / 2, 'WHAT'],
+   ['Capability score', barX + barW / 2, 'HOW GOOD']].forEach(([name, x, sub]) => {
+    gText.append('text').attr('class', 'col-head').attr('x', x).attr('y', PAD_TOP - 26)
+      .attr('font-size', HEAD_FS + 'px').attr('text-anchor', 'middle').text(name);
+    gText.append('text').attr('class', 'col-sub').attr('x', x).attr('y', PAD_TOP - 13)
+      .attr('font-size', SUB_FS + 'px').attr('text-anchor', 'middle').text(sub);
+  });
+
+  const bx = v => barX + (v - AX_LO) / (AX_HI - AX_LO) * barW;
+  AX_TICKS.forEach(v => {
+    gBar.append('line').attr('class', 'grid-line')
+      .attr('x1', bx(v)).attr('y1', PAD_TOP - 4).attr('x2', bx(v)).attr('y2', PAD_TOP + ph + 6);
+  });
+  gAxis.append('line').attr('class', 'axis-base')
+    .attr('x1', barX).attr('y1', PAD_TOP - 4).attr('x2', barX).attr('y2', PAD_TOP + ph + 6);
+  [AX_LO].concat(AX_TICKS).forEach(v => {
+    gText.append('text').attr('class', 'ax-label').attr('x', bx(v)).attr('y', PAD_TOP + ph + 22)
+      .attr('font-size', AXIS_FS + 'px').attr('text-anchor', 'middle').text(v.toFixed(2));
+  });
+
+  cities.forEach(c => {
+    c.devs.forEach(d => {
+      const t = d.ms.length * rib;
+      gRib.append('path').attr('class', 'rib').attr('data-c', c.key)
+        .attr('d', ribbonPath(xCity + NODE_W, c.cur, xDev, d.cur, t))
+        .attr('fill', c.color).attr('opacity', 0.30);
+      c.cur += t;
+    });
+  });
+  developers.forEach(d => {
+    d.ms.forEach(m => {
+      gRib.append('path').attr('class', 'rib').attr('data-c', m.model)
+        .attr('d', ribbonPath(xDev + NODE_W, d.cur, ribEnd, m.y - rib / 2, rib))
+        .attr('fill', d.color).attr('opacity', 0.42);
+      d.cur += rib;
+    });
+  });
+
+  cities.forEach(c => {
+    gNode.append('rect').attr('class', 'rib').attr('data-c', c.key)
+      .attr('x', xCity).attr('y', c.y0).attr('width', NODE_W).attr('height', c.h)
+      .attr('fill', c.color);
+    gText.append('text').attr('class', 'rib').attr('data-c', c.key)
+      .attr('x', xCity - 9).attr('y', c.y0 + c.h / 2).attr('dy', '0.35em')
+      .attr('font-size', labelFS.toFixed(1) + 'px').attr('text-anchor', 'end')
+      .attr('fill', c.color).text(c.name);
+  });
+  developers.forEach(d => {
+    gNode.append('rect').attr('class', 'rib').attr('data-c', d.name)
+      .attr('x', xDev).attr('y', d.y0).attr('width', NODE_W).attr('height', d.h)
+      .attr('fill', d.color).attr('opacity', 0.9);
+    if (d.logo) {
+      gText.append('image').attr('class', 'rib').attr('data-c', d.name)
+        .attr('x', xDev + NODE_W + 8).attr('y', d.y0 + d.h / 2 - logoSize / 2)
+        .attr('width', logoSize).attr('height', logoSize)
+        .attr('preserveAspectRatio', 'xMidYMid meet')
+        .attr('href', d.logo);
+    }
+    gText.append('text').attr('class', 'rib node-label dev-label').attr('data-c', d.name)
+      .attr('x', xDev + NODE_W + 8 + logoSize + LOGO_GAP).attr('y', d.y0 + d.h / 2).attr('dy', '0.35em')
+      .attr('font-size', labelFS.toFixed(1) + 'px').text(d.name);
+  });
+
+  rows.forEach(r => {
+    gText.append('text').attr('class', 'rib node-label').attr('data-c', r.model)
+      .attr('x', xModel).attr('y', r.y).attr('dy', '0.35em')
+      .attr('font-size', labelFS.toFixed(1) + 'px').attr('text-anchor', 'end').text(r.model);
+    gBar.append('rect').attr('class', 'bar').attr('data-c', r.model)
+      .attr('x', barX).attr('y', r.y - rib / 2)
+      .attr('width', Math.max(2, bx(r.score) - barX)).attr('height', rib)
+      .attr('fill', r.color).attr('opacity', 0.88);
+    const valFS = Math.min(11, labelFS);
+    const inside = bx(r.score) - barX > measureWidth([r.score.toFixed(3)], valFS, 700) + 16;
+    gText.append('text').attr('class', 'rib bar-value').attr('data-c', r.model)
+      .attr('x', bx(r.score) + (inside ? -8 : 8)).attr('y', r.y).attr('dy', '0.35em')
+      .attr('font-size', valFS.toFixed(1) + 'px')
+      .attr('text-anchor', inside ? 'end' : 'start')
+      .style('fill', inside ? '#fff' : '#0f172a')
+      .text(r.score.toFixed(3));
+    gHit.append('rect').attr('class', 'hit').attr('data-c', r.model)
+      .attr('x', barX - flow2).attr('y', r.y - rowH / 2)
+      .attr('width', width - (barX - flow2)).attr('height', rowH);
+  });
+}
+
+const chartNode = document.getElementById('chart');
+
+chartNode.addEventListener('mouseover', e => {
+  const hit = e.target.closest('[data-c]');
+  if (!hit) { clearHover(); return; }
+  const key = hit.dataset.c;
+  const hits = rows.filter(r => r.model === key || r.dev === key || r.city === key);
+  if (!hits.length) { clearHover(); return; }
+
+  chartNode.classList.add('dim');
+  chartNode.querySelectorAll('.hoveredLink, .hoveredLabel').forEach(n => n.classList.remove('hoveredLink', 'hoveredLabel'));
+  const keys = new Set();
+  hits.forEach(r => { keys.add(r.model); keys.add(r.dev); keys.add(r.city); });
+  keys.forEach(k => chartNode.querySelectorAll(`[data-c="${CSS.escape(k)}"]`).forEach(n => {
+    n.classList.add(n.tagName === 'text' ? 'hoveredLabel' : 'hoveredLink');
+  }));
+
+  if (!SHOW_TOOLTIP) return;
+  if (hits.length === 1) {
+    const r = hits[0];
+    tooltip.innerHTML = `<span class="t-name">${r.model}</span>` +
+      `<span class="t-k">Developer</span>${r.dev}<br>` +
+      `<span class="t-k">Urban area</span>${r.cityName}<br>` +
+      `<span class="t-k">Score</span><span class="t-v">${r.score.toFixed(3)}</span>`;
+  } else {
+    tooltip.innerHTML = `<span class="t-name">${cityName[key] || key}</span>` +
+      `<span class="t-v">${hits.length}</span> models / best ` +
+      `<span class="t-v">${d3.max(hits, r => r.score).toFixed(3)}</span>` +
+      `<span class="t-list">${hits.map(r => r.model).join(', ')}</span>`;
+  }
+  tooltip.style.opacity = 1;
+});
+
+function clearHover() {
+  chartNode.classList.remove('dim');
+  chartNode.querySelectorAll('.hoveredLink, .hoveredLabel').forEach(n => n.classList.remove('hoveredLink', 'hoveredLabel'));
+  tooltip.style.opacity = 0;
+}
+chartNode.addEventListener('mouseleave', clearHover);
+
+window.addEventListener('mousemove', e => {
+  tooltip.style.left = Math.min(e.clientX + 14, window.innerWidth  - tooltip.offsetWidth  - 8) + 'px';
+  tooltip.style.top  = Math.min(e.clientY - 24, window.innerHeight - tooltip.offsetHeight - 8) + 'px';
+});
+
+function start() {
+  const query = LB.vizControls.readQuery({ colorDefault: '#ffffff' });
+  LB.vizControls.applyPageChrome({ bgColor: query.color });
+  const snapshotParam = query.snapshot;
+  Promise.all([
+    LB.loadData({ dataBase: DATA_BASE, configBase: CONFIG_BASE, snapshotParam }),
+    d3.json(`${CONFIG_BASE}/config/lab-geography.json`)
+  ]).then(([state, geography]) => {
+    build(state, geography, !!snapshotParam);
+    render();
+    window.addEventListener('resize', render);
+    let lastW = 0, lastH = 0;
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => {
+      const r = vizEl.getBoundingClientRect();
+      if (Math.abs(r.width - lastW) < 1 && Math.abs(r.height - lastH) < 1) return;
+      lastW = r.width; lastH = r.height;
+      render();
+    }).observe(vizEl);
+  }).catch(err => console.error('geography: failed to load data', err));
+}
+
+start();
+</script>
+</body>
+</html>

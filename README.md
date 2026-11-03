@@ -18,7 +18,8 @@ scraper_lb.py           LiveBench scraper (static CSV/JSON data files)
 scraper_common.py       Shared scraper helpers (logging, selenium, table parsing)
 config/
   ├── tracking.json     Model metadata & lookup keys
-  └── models.json       Organization colors & logos
+  ├── models.json       Organization colors & logos
+  └── lab-geography.json  Lab to city and country, for geography.html
 data/
   ├── processed.csv     Current aggregated scores (consumed by viz)
   ├── history.csv       Append-only score history (only changed rows)
@@ -138,6 +139,14 @@ If a model drops off a source but has history, its last known score is used. Too
 - **2026-11-03.** The reference moved from GPT-5 at 0.50 to GPT 6.1 Sol at 0.70. GPT-5 had scored 0.40 instead of 0.50. It had no v5 AA score and no LiveBench 2.0 score. Its AA score was divided by a fixed 45 from an older AA scale. Its LiveBench reference was a fixed 70.48 from LiveBench 1.0. The v5 to v4 ratio also came out as exactly 1. History rows from 29 October held v5 values without a version tag, so they were read as v4. The ratio now skips those rows. With GPT-5 as the reference, the AA part was about three times the size of the others, because GPT-5's AA reference had to be estimated. GPT 6.1 Sol has a live score on all three sources, so the parts weigh the same.
 - **2026-11-03.** Snapshots before 30 September 2026 keep the old method, with GPT-5 at 0.50. Their rankings match what the page showed with the code of 24 October 2026.
 - **2026-11-03.** The bump chart's Overall tab now uses the same scoring as the homepage, for both dates it compares. Before, it had its own copy with GPT-5 at 0.50 and a different rule for missing sources. A "Ref" marker now shows when the compared dates cross the reference switch. Its date is the first day GPT 6.1 Sol appears in the history, 30 September 2026 if that cannot be found.
+
+## Geography page
+
+`geography.html` shows where frontier models come from. It links each urban area to its labs, each lab to its best model, and each model to its capability score. It uses the Overall score, the same one as the homepage. It keeps each lab's best scored model that is not deactivated. It shows the top 15 labs. `?snapshot=YYYY-MM-DD` shows a past date, as on the homepage.
+
+A lab is the model's `logo`, the `id` in `config/models.json`. `config/lab-geography.json` places each lab. Under `labs`, each id has a display `label`, a `city` key and a `country`. Under `cities`, each key has a `name`, a `country` and a `color`. Cities appear in the order they are listed there. Cities of one country sit close together.
+
+A lab that is not in `labs` is never dropped. It shows under an "Unmapped" city in grey, and the page logs a console warning that names it. Add the lab to `config/lab-geography.json` to place it. A new organization in `config/models.json` needs an entry there too. `tests/test_geography.js` checks this.
 
 ## History format
 

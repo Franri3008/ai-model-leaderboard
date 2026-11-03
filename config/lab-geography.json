@@ -1,0 +1,28 @@
+{
+  "cities": {
+    "sf": { "name": "San Francisco–Oakland", "country": "US", "color": "#1e3a6d" },
+    "sj": { "name": "San Jose", "country": "US", "color": "#4a7fb5" },
+    "bj": { "name": "Beijing", "country": "China", "color": "#9e2b25" },
+    "hz": { "name": "Hangzhou", "country": "China", "color": "#c76a45" },
+    "sh": { "name": "Shanghai", "country": "China", "color": "#7d3230" },
+    "pa": { "name": "Paris", "country": "France", "color": "#b0842e" }
+  },
+  "labs": {
+    "gemini": { "label": "Google", "city": "sj", "country": "US" },
+    "claude": { "label": "Anthropic", "city": "sf", "country": "US" },
+    "gpt": { "label": "OpenAI", "city": "sf", "country": "US" },
+    "meta": { "label": "Meta", "city": "sf", "country": "US" },
+    "grok": { "label": "xAI", "city": "sj", "country": "US" },
+    "nemotron": { "label": "NVIDIA", "city": "sj", "country": "US" },
+    "moonshot": { "label": "Moonshot AI", "city": "bj", "country": "China" },
+    "zai": { "label": "Zhipu AI", "city": "bj", "country": "China" },
+    "xiaomi": { "label": "Xiaomi", "city": "bj", "country": "China" },
+    "baidu": { "label": "Baidu", "city": "bj", "country": "China" },
+    "qwen": { "label": "Alibaba", "city": "hz", "country": "China" },
+    "deepseek": { "label": "DeepSeek", "city": "hz", "country": "China" },
+    "stepfun": { "label": "StepFun", "city": "sh", "country": "China" },
+    "minimax": { "label": "MiniMax", "city": "sh", "country": "China" },
+    "mistral": { "label": "Mistral AI", "city": "pa", "country": "France" }
+  },
+  "unmapped": { "name": "Unmapped", "country": "Unmapped", "color": "#9ca3af" }
+}
