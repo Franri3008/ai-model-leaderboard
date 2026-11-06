@@ -50,7 +50,7 @@ body {
     border: 1px solid rgba(17, 24, 39, 0.08);
     padding: 8px 12px;
     border-radius: 6px;
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1.4;
     opacity: 0;
     transition: opacity 0.15s ease;
@@ -104,11 +104,11 @@ text { transition: opacity 0.16s ease; }
 const SHOW_TOOLTIP  = 1;
 const NODE_W        = 12;
 const RIB_RATIO     = 0.70;
-const LABEL_FS      = 12;
-const LABEL_FS_MIN  = 8.5;
-const HEAD_FS       = 13;
-const SUB_FS        = 9;
-const AXIS_FS       = 9.5;
+const LABEL_FS      = 16;
+const LABEL_FS_MIN  = 11;
+const HEAD_FS       = 17;
+const SUB_FS        = 11;
+const AXIS_FS       = 12.5;
 const PAD_TOP       = 52;
 const PAD_BOTTOM    = 34;
 const BAR_MIN       = 190;
@@ -120,7 +120,7 @@ const FLOW2_MAX     = 265;
 const BAR_MAX       = 470;
 const BAR_SHARE     = 0.30;
 const MODEL_GUTTER  = 12;
-const LOGO_MAX      = 18;
+const LOGO_MAX      = 24;
 const LOGO_GAP      = 6;
 const WIDTH_FLOOR   = 900;
 const HEIGHT_FLOOR  = 520;
@@ -274,9 +274,9 @@ function render() {
   const slack = width - (cityW + devW + chrome) - flow1 - flow2 - barW;
   if (slack < 0) {
     const floor1 = FLOW_MIN, floor2 = flow2Min;
-    const shrink = Math.max(floor1 + floor2, flow1 + flow2 + slack) / (flow1 + flow2);
-    flow1 = Math.max(floor1, flow1 * shrink);
-    flow2 = Math.max(floor2, flow2 * shrink);
+    const total = Math.max(floor1 + floor2, flow1 + flow2 + slack);
+    flow2 = Math.max(floor2, flow2 * total / (flow1 + flow2));
+    flow1 = Math.max(floor1, total - flow2);
   } else {
     const grow = Math.min(slack, Math.max(0, FLOW1_MAX - flow1) + Math.max(0, FLOW2_MAX - flow2));
     flow1 += grow * FLOW1_BASE / (FLOW1_BASE + FLOW2_BASE);
@@ -377,7 +377,7 @@ function render() {
       .attr('x', barX).attr('y', r.y - rib / 2)
       .attr('width', Math.max(2, bx(r.score) - barX)).attr('height', rib)
       .attr('fill', r.color).attr('opacity', 0.88);
-    const valFS = Math.min(11, labelFS);
+    const valFS = Math.min(14, labelFS);
     const inside = bx(r.score) - barX > measureWidth([r.score.toFixed(3)], valFS, 700) + 16;
     gText.append('text').attr('class', 'rib bar-value').attr('data-c', r.model)
       .attr('x', bx(r.score) + (inside ? -8 : 8)).attr('y', r.y).attr('dy', '0.35em')
