@@ -54,3 +54,23 @@ test('every lab in config/models.json has a place and every place a known city',
     assert.equal(geography.cities[l.city].country, l.country);
   });
 });
+
+test('top sets the number of labs, capped at 15, default 15', () => {
+  assert.equal(LB.geography.labLimit(undefined), 15);
+  assert.equal(LB.geography.labLimit(25), 15);
+  assert.equal(LB.geography.labLimit(12), 12);
+  assert.equal(LB.geography.labLimit(0), 15);
+});
+
+test('the score axis keeps the overall grid and fits single sources', () => {
+  const all = LB.geography.scoreAxis([0.512, 0.703], 'ALL');
+  assert.equal(all.lo, 0.45);
+  assert.equal(all.hi, 0.75);
+  assert.equal(all.ticks.length, 6);
+  assert.equal(all.valueDigits, 3);
+  [[[1380, 1502], 'LMArena'], [[48, 73], 'Artificial Analysis'], [[61.2, 79.8], 'LiveBench']].forEach(([scores, q]) => {
+    const a = LB.geography.scoreAxis(scores, q);
+    assert.ok(a.lo < Math.min(...scores) && a.hi >= Math.max(...scores), q);
+    assert.ok(a.ticks.length >= 2 && a.ticks.length <= 8, q);
+  });
+});

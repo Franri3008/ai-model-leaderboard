@@ -45,9 +45,37 @@
       });
   }
 
+  function labLimit(top) {
+    const n = parseInt(top, 10);
+    return n > 0 ? Math.min(n, TOP_LABS) : TOP_LABS;
+  }
+
+  function scoreAxis(scores, question) {
+    const min = Math.min.apply(null, scores), max = Math.max.apply(null, scores);
+    if (!question || question === 'ALL') {
+      const lo = Math.floor((min - 0.02) * 20) / 20;
+      const hi = Math.ceil((max + 0.01) * 20) / 20;
+      const ticks = [];
+      const n = Math.max(0, Math.ceil((hi + 0.001 - (lo + 0.05)) / 0.05));
+      for (let i = 0; i < n; i++) ticks.push(lo + 0.05 + i * 0.05);
+      return { lo, hi, ticks, valueDigits: 3, tickDigits: 2 };
+    }
+    const span = Math.max(max - min, Math.abs(max) * 0.02, 1e-6);
+    const raw = span * 1.4 / 5;
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map(k => k * mag).find(v => v >= raw);
+    const lo = Math.floor((min - span * 0.25) / step) * step;
+    const hi = Math.ceil((max + span * 0.05) / step) * step;
+    const ticks = [];
+    for (let i = 1; lo + i * step <= hi + step * 1e-3; i++) ticks.push(lo + i * step);
+    const digits = question === 'LiveBench' ? 1 : 0;
+    const tickDigits = Math.max(0, -Math.floor(Math.log10(step) + 1e-9));
+    return { lo, hi, ticks, valueDigits: digits, tickDigits: Math.max(digits, tickDigits) };
+  }
+
   function cityOrder(geography) {
     return Object.keys((geography && geography.cities) || {}).concat(UNMAPPED_KEY);
   }
 
-  LB.geography = { selectRows, cityOrder, UNMAPPED_KEY, TOP_LABS };
+  LB.geography = { selectRows, cityOrder, labLimit, scoreAxis, UNMAPPED_KEY, TOP_LABS };
 })(typeof window !== 'undefined' ? window : globalThis);

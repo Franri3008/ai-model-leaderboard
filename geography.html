@@ -31,13 +31,25 @@ body {
 
 .viz-grid {
     display: grid;
-    grid-template-rows: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
     grid-template-columns: 1fr;
     height: 100%;
     width: 100%;
     box-sizing: border-box;
 }
 #container1 { grid-row: 1; grid-column: 1; overflow: hidden; min-height: 0; min-width: 0; }
+#container4 { display: none; }
+.viz-grid.with-logo #container4 {
+    display: flex;
+    grid-row: 2;
+    grid-column: 1;
+    justify-content: flex-end;
+    align-items: center;
+    height: 40px;
+    padding: 4px 16px 4px 0;
+    box-sizing: border-box;
+}
+.viz-grid.with-logo #container4 .logo { height: 100%; width: auto; }
 
 #viz { position: relative; overflow: hidden; width: 100%; height: 100%; min-height: 0; min-width: 0; }
 #chart { position: absolute; inset: 0; display: block; }
@@ -97,6 +109,11 @@ text { transition: opacity 0.16s ease; }
       <svg id="chart"></svg>
     </div>
   </div>
+  <div id="container4" class="container logo-container">
+    <a href="https://aiworld.eu/" target="_blank" rel="noopener">
+      <img src="https://aiworld.eu/logo-transparent.svg" class="logo" alt="AI World logo">
+    </a>
+  </div>
 </div>
 <div id="tooltip"></div>
 
@@ -130,9 +147,9 @@ const COUNTRY_GAP   = 18;
 const DATA_BASE = (LB.config && LB.config.dataBase) || ".";
 const CONFIG_BASE = (LB.config && LB.config.configBase) || ".";
 let rows = [], developers = [], cities = [], cityName = {};
-let AX_LO = 0, AX_HI = 1, AX_TICKS = [];
+let AX_LO = 0, AX_HI = 1, AX_TICKS = [], VALUE_DIGITS = 3, TICK_DIGITS = 2;
 
-function build(state, geography, snapshotMode) {
+function build(state, geography, snapshotMode, question, limit) {
   const aggregated = LB.aggregate({
     rawData: state.rawData,
     lastTrackedScores: state.lastTrackedScores,
@@ -140,7 +157,7 @@ function build(state, geography, snapshotMode) {
     modelToOs: state.modelToOs,
     modelToDeactivated: state.modelToDeactivated || {},
     modelToLogo: state.modelToLogo,
-    active: { question: 'ALL' },
+    active: { question },
     hiddenGeos: [],
     activeOsFilter: null,
     modeParam: 0,
@@ -148,7 +165,7 @@ function build(state, geography, snapshotMode) {
     snapshotMode,
     ignoreModelFilter: true
   });
-  rows = LB.geography.selectRows({ aggregated, modelToLogo: state.modelToLogo, rawData: state.rawData, geography });
+  rows = LB.geography.selectRows({ aggregated, modelToLogo: state.modelToLogo, rawData: state.rawData, geography, limit });
   const order = LB.geography.cityOrder(geography);
 
   developers = [];
@@ -175,10 +192,12 @@ function build(state, geography, snapshotMode) {
   cities.forEach(c => { cityName[c.key] = c.name; });
 
   if (!rows.length) return;
-  const scoreMin = d3.min(rows, r => r.score), scoreMax = d3.max(rows, r => r.score);
-  AX_LO = Math.floor((scoreMin - 0.02) * 20) / 20;
-  AX_HI = Math.ceil((scoreMax + 0.01) * 20) / 20;
-  AX_TICKS = d3.range(AX_LO + 0.05, AX_HI + 0.001, 0.05);
+  const axis = LB.geography.scoreAxis(rows.map(r => r.score), question);
+  AX_LO = axis.lo;
+  AX_HI = axis.hi;
+  AX_TICKS = axis.ticks;
+  VALUE_DIGITS = axis.valueDigits;
+  TICK_DIGITS = axis.tickDigits;
 }
 
 const tooltip = document.getElementById('tooltip');
@@ -323,7 +342,7 @@ function render() {
     .attr('x1', barX).attr('y1', PAD_TOP - 4).attr('x2', barX).attr('y2', PAD_TOP + ph + 6);
   [AX_LO].concat(AX_TICKS).forEach(v => {
     gText.append('text').attr('class', 'ax-label').attr('x', bx(v)).attr('y', PAD_TOP + ph + 22)
-      .attr('font-size', AXIS_FS + 'px').attr('text-anchor', 'middle').text(v.toFixed(2));
+      .attr('font-size', AXIS_FS + 'px').attr('text-anchor', 'middle').text(v.toFixed(TICK_DIGITS));
   });
 
   cities.forEach(c => {
@@ -378,13 +397,13 @@ function render() {
       .attr('width', Math.max(2, bx(r.score) - barX)).attr('height', rib)
       .attr('fill', r.color).attr('opacity', 0.88);
     const valFS = Math.min(14, labelFS);
-    const inside = bx(r.score) - barX > measureWidth([r.score.toFixed(3)], valFS, 700) + 16;
+    const inside = bx(r.score) - barX > measureWidth([r.score.toFixed(VALUE_DIGITS)], valFS, 700) + 16;
     gText.append('text').attr('class', 'rib bar-value').attr('data-c', r.model)
       .attr('x', bx(r.score) + (inside ? -8 : 8)).attr('y', r.y).attr('dy', '0.35em')
       .attr('font-size', valFS.toFixed(1) + 'px')
       .attr('text-anchor', inside ? 'end' : 'start')
       .style('fill', inside ? '#fff' : '#0f172a')
-      .text(r.score.toFixed(3));
+      .text(r.score.toFixed(VALUE_DIGITS));
     gHit.append('rect').attr('class', 'hit').attr('data-c', r.model)
       .attr('x', barX - flow2).attr('y', r.y - rowH / 2)
       .attr('width', width - (barX - flow2)).attr('height', rowH);
@@ -414,11 +433,11 @@ chartNode.addEventListener('mouseover', e => {
     tooltip.innerHTML = `<span class="t-name">${r.model}</span>` +
       `<span class="t-k">Developer</span>${r.dev}<br>` +
       `<span class="t-k">Urban area</span>${r.cityName}<br>` +
-      `<span class="t-k">Score</span><span class="t-v">${r.score.toFixed(3)}</span>`;
+      `<span class="t-k">Score</span><span class="t-v">${r.score.toFixed(VALUE_DIGITS)}</span>`;
   } else {
     tooltip.innerHTML = `<span class="t-name">${cityName[key] || key}</span>` +
       `<span class="t-v">${hits.length}</span> models / best ` +
-      `<span class="t-v">${d3.max(hits, r => r.score).toFixed(3)}</span>` +
+      `<span class="t-v">${d3.max(hits, r => r.score).toFixed(VALUE_DIGITS)}</span>` +
       `<span class="t-list">${hits.map(r => r.model).join(', ')}</span>`;
   }
   tooltip.style.opacity = 1;
@@ -437,14 +456,14 @@ window.addEventListener('mousemove', e => {
 });
 
 function start() {
-  const query = LB.vizControls.readQuery({ colorDefault: '#ffffff' });
-  LB.vizControls.applyPageChrome({ bgColor: query.color });
+  const query = LB.vizControls.readQuery({ colorDefault: '#ffffff', sourceDefault: 'ALL', topDefault: LB.geography.TOP_LABS });
+  LB.vizControls.applyPageChrome({ bgColor: query.color, logo: query.logo });
   const snapshotParam = query.snapshot;
   Promise.all([
     LB.loadData({ dataBase: DATA_BASE, configBase: CONFIG_BASE, snapshotParam }),
     d3.json(`${CONFIG_BASE}/config/lab-geography.json`)
   ]).then(([state, geography]) => {
-    build(state, geography, !!snapshotParam);
+    build(state, geography, !!snapshotParam, query.source, LB.geography.labLimit(query.top));
     render();
     window.addEventListener('resize', render);
     let lastW = 0, lastH = 0;
