@@ -9,7 +9,7 @@
         "lma_lookup": "Gemini 4 Carbon (High)",
         "aa_lookup": "Gemini 4 Carbon (High)",
         "aa_slug": "gemini-4-carbon",
-        "lb_lookup": null,
+        "lb_lookup": "Gemini 4 Carbon",
         "scatter_default": 1,
         "cost_output": 20.00
     },
