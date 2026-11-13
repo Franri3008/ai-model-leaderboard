@@ -1,5 +1,19 @@
 [
     {
+        "model": "gemini-4-hydrogen",
+        "name": "Gemini 4 Hydrogen",
+        "logo": "gemini",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-11-12",
+        "lma_lookup": null,
+        "aa_lookup": "Gemini 4 Hydrogen (High)",
+        "aa_slug": "gemini-4-hydrogen-high",
+        "lb_lookup": "Gemini 4 Hydrogen",
+        "scatter_default": 1,
+        "cost_output": 7.50
+    },
+    {
         "model": "gemini-4-carbon",
         "name": "Gemini 4 Carbon",
         "logo": "gemini",
