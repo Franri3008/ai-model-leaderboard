@@ -949,7 +949,8 @@
         "lma_lookup": "Mistral Medium 3.1 (2508)",
         "aa_lookup": null,
         "aa_slug": "mistral-medium-3-1",
-        "lb_lookup": null
+        "lb_lookup": null,
+        "cost_output": 2
     },
     {
         "model": "magistral-medium",
