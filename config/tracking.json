@@ -724,6 +724,20 @@
         "cost_output": 2.2
     },
     {
+        "model": "qwen4-max",
+        "name": "Qwen 4 Max",
+        "logo": "qwen",
+        "geo": "China",
+        "os": 1,
+        "release_date": "2026-11-16",
+        "lma_lookup": null,
+        "aa_lookup": "Qwen4 Max",
+        "aa_slug": "qwen4-max",
+        "lb_lookup": null,
+        "scatter_default": 1,
+        "cost_output": 4.50
+    },
+    {
         "model": "qwen3-8-max",
         "name": "Qwen 3.8 Max",
         "logo": "qwen",
