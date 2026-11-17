@@ -733,7 +733,7 @@
         "lma_lookup": null,
         "aa_lookup": "Qwen4 Max",
         "aa_slug": "qwen4-max",
-        "lb_lookup": null,
+        "lb_lookup": "Qwen4-Max",
         "scatter_default": 1,
         "cost_output": 4.50
     },
