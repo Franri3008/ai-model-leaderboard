@@ -9,7 +9,7 @@
         "lma_lookup": "Gemini 4 Neon (High)",
         "aa_lookup": "Gemini 4 Neon (High)",
         "aa_slug": "gemini-4-neon-high",
-        "lb_lookup": null,
+        "lb_lookup": "Gemini 4 Neon",
         "scatter_default": 1,
         "cost_output": 15.00
     },
