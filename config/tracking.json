@@ -980,7 +980,8 @@
         "lma_lookup": "Grok 4.1 Fast (Reasoning)",
         "aa_lookup": null,
         "aa_slug": "grok-4-1-fast-reasoning",
-        "lb_lookup": null
+        "lb_lookup": null,
+        "cost_output": 0.50
     },
     {
         "model": "grok-4",
