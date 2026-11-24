@@ -1,5 +1,33 @@
 [
     {
+        "model": "inkling-2-small",
+        "name": "Inkling 2 Small",
+        "logo": "thinkingmachines",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-11-05",
+        "lma_lookup": "Inkling 2 Small",
+        "aa_lookup": "Inkling 2 Small",
+        "aa_slug": "inkling-2-small",
+        "lb_lookup": "Inkling 2 Small",
+        "scatter_default": 1,
+        "cost_output": 1.00
+    },
+    {
+        "model": "inkling-2-mini",
+        "name": "Inkling 2 Mini",
+        "logo": "thinkingmachines",
+        "geo": "US",
+        "os": 0,
+        "release_date": "2026-11-20",
+        "lma_lookup": "Inkling 2 Mini",
+        "aa_lookup": "Inkling 2 Mini",
+        "aa_slug": "inkling-2-mini",
+        "lb_lookup": "Inkling 2 Mini",
+        "scatter_default": 1,
+        "cost_output": 0.50
+    },
+    {
         "model": "gemini-4-neon",
         "name": "Gemini 4 Neon",
         "logo": "gemini",

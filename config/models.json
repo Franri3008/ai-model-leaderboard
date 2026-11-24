@@ -151,5 +151,15 @@
             "StepFun",
             "Step"
         ]
+    },
+    {
+        "id": "thinkingmachines",
+        "name": "Inkling",
+        "org": "Thinking Machines",
+        "color": "#6d5acd",
+        "aliases": [
+            "Thinking Machines",
+            "thinky"
+        ]
     }
 ]
